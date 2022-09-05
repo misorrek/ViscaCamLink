@@ -1,4 +1,4 @@
-﻿namespace VirtualCamControl
+﻿namespace ViscaCamLink
 {
     using System;
     using System.Windows;
