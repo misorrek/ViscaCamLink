@@ -36,7 +36,7 @@
 
         public String Ip
         {
-            get => GetSetting<String>(nameof(Ip), "192.168.1.162");
+            get => GetSetting<String>(nameof(Ip), "192.168.1.0");
 
             set => AddOrUpdateAppSettings(nameof(Ip), value);
         }

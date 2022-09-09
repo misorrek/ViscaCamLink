@@ -1,17 +1,14 @@
 ﻿namespace ViscaCamLink.Util
-{
-    using Microsoft.Xaml.Behaviors;
+{    
     using System.Collections.Generic;
     using System.Windows;
+
+    using Microsoft.Xaml.Behaviors;
     using TriggerBase = Microsoft.Xaml.Behaviors.TriggerBase;
 
-    public class Behaviors : List<Behavior>
-    {
-    }
+    public class Behaviors : List<Behavior> { }
 
-    public class Triggers : List<TriggerBase>
-    {
-    }
+    public class Triggers : List<TriggerBase> { }
 
     public static class SupplementaryInteraction
     {
@@ -31,7 +28,16 @@
         private static void OnPropertyBehaviorsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var behaviors = Interaction.GetBehaviors(d);
-            foreach (var behavior in e.NewValue as Behaviors) behaviors.Add(behavior);
+
+            if (e.NewValue is not Behaviors eventBehaviors)
+            {
+                return;
+            }
+
+            foreach (var behavior in eventBehaviors)
+            {
+                behaviors.Add(behavior);
+            }
         }
 
         public static Triggers GetTriggers(DependencyObject obj)
@@ -50,7 +56,16 @@
         private static void OnPropertyTriggersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var triggers = Interaction.GetTriggers(d);
-            foreach (var trigger in e.NewValue as Triggers) triggers.Add(trigger);
+
+            if (e.NewValue is not Triggers newTriggers)
+            {
+                return;
+            }
+
+            foreach (var trigger in newTriggers)
+            {
+                triggers.Add(trigger);
+            }
         }
     }
 }

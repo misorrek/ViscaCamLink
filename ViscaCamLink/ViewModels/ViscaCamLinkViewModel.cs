@@ -350,7 +350,7 @@
         {
             var speedInPercent = (Double)AppConfiguration.PanTiltSpeed / ViscaController.MaxPanSpeed;
 
-            return (Byte)(ViscaController.MaxTiltSpeed * Math.Ceiling(speedInPercent));
+            return (Byte)Math.Ceiling(ViscaController.MaxTiltSpeed * speedInPercent);
         }
 
         private void ExecuteZoom(Object? parameter)
