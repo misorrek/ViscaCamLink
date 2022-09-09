@@ -12,7 +12,7 @@ ViscaCamLink ist eine WPF-Desktopanwendung, die eine [PTZ Kamera](https://de.m.w
 ### Steuerung
 
 * Freies Bewegen in jede Richtung (per Schalter)
-* 21-stufige Anpassung der Bewegungsgeschwindigkeit
+* 18-stufige Anpassung der Bewegungsgeschwindigkeit
 * Zurücksetzen in Ausgangsposition
 
 ### Zoom
