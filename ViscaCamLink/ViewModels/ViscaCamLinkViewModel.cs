@@ -3,6 +3,7 @@
     using System;
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
+    using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Input;
@@ -10,7 +11,6 @@
     using CameraControl.Visca;
 
     using ViscaCamLink.Configuration;
-    using ViscaCamLink.Views;
     using ViscaCamLink.Util;
 
     public class ViscaCamLinkViewModel : INotifyPropertyChanged
@@ -25,15 +25,14 @@
             SidebarCommand = new Command(ExecuteSidebar);
             OptionsCommand = new Command(OpenOptions);
             ConnectionEditCommand = new Command(ExecuteConnectionEdit);
-            ReconnectCommand = new Command(ExecuteReconnect, CanExecuteReconnect);
+            ReconnectCommand = new Command(ExecuteReconnect);
             MemoryRenameCommand = new Command(ExecuteMemoryRename);
             MemorySetCommand = new Command(ExecuteMemorySet);
             MemoryCommand = new Command(ExecuteMemorySetOrRecall);            
             HomeCommand = new Command(ExecuteHome);
             MoveBeginCommand = new Command(ExecuteMoveBegin);
             MoveEndCommand = new Command(ExecuteMoveEnd);
-            MoveWithMouseCommand = new Command(ExecuteMoveWithMouse);
-            ZoomCommand = new Command(ExecuteZoom);                        
+            ZoomCommand = new Command(ExecuteZoom);                                   
 
             GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad0, () => ExecuteMemorySetOrRecall("0"));
             GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad1, () => ExecuteMemorySetOrRecall("1"));
@@ -47,37 +46,9 @@
             GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad9, () => ExecuteMemorySetOrRecall("9"));
         }
 
-        public String Ip
-        {
-            get => AppConfiguration.Ip;
+        public ViscaController ViscaController { get; }
 
-            set
-            {
-                AppConfiguration.Ip = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public String Port
-        {
-            get => ":" + AppConfiguration.Port;
-
-            set
-            {
-                AppConfiguration.Port = Int32.Parse(value);
-                NotifyPropertyChanged();
-            }
-        }
-
-        public Int32 MaximalPanTiltSpeed
-        {
-            get => ViscaController.MaxPanSpeed;
-        }
-
-        public Int32 MaximalZoomSpeed
-        {
-            get => ViscaController.MaxZoomSpeed;
-        }
+        public AppConfiguration AppConfiguration { get; }
 
         public ICommand SidebarCommand { get; }
 
@@ -99,9 +70,17 @@
 
         public ICommand MoveEndCommand { get; }
 
-        public ICommand MoveWithMouseCommand { get; }
+        public ICommand ZoomCommand { get; }
 
-        public ICommand ZoomCommand { get; }           
+        public Int32 MaximalPanTiltSpeed
+        {
+            get => ViscaController.MaxPanSpeed;
+        }
+
+        public Int32 MaximalZoomSpeed
+        {
+            get => ViscaController.MaxZoomSpeed;
+        }  
 
         public Boolean MemoryContainerVisible
         {
@@ -136,37 +115,73 @@
             }
         }
 
-        public String MemorySetInfo
+        public String Ip
         {
-            get => _memorySetInfo;
+            get => AppConfiguration.Ip;
 
             set
             {
-                _memorySetInfo = value;
+                AppConfiguration.Ip = value;
                 NotifyPropertyChanged();
             }
         }
 
-        public Action? RequestCloseDialog { get; set; }
-
-        public ViscaController ViscaController { get; }
-
-        public AppConfiguration AppConfiguration { get; }
-
-        public Boolean IsMemorySetting
+        public String Port
         {
-            get => _isMemorySetting;
+            get => AppConfiguration.Port.ToString();
 
             set
             {
-                _isMemorySetting = value;
+                Int32 port;
+
+                if (!String.IsNullOrWhiteSpace(value) && Int32.TryParse(value, out port))
+                {
+                    AppConfiguration.Port = port;
+                    NotifyPropertyChanged();
+                }
+            }
+        }               
+
+        public Boolean IsEditingConnection
+        {
+            get => _isEditingConnection;
+
+            set
+            {
+                _isEditingConnection = value;
                 NotifyPropertyChanged();
             }
         }
 
-        private Boolean _isMemorySetting = false;
+        public Boolean IsSettingMemory
+        {
+            get => _isSettingMemory;
 
-        private String _memorySetInfo = String.Empty;
+            set
+            {
+                _isSettingMemory = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public String MemoryInfo
+        {
+            get => _memoryInfo;
+
+            set
+            {
+                _memoryInfo = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private CancellationTokenSource? MemoryInfoCancellationTokenSource { get; set; } 
+
+        private Boolean _isEditingConnection = false;
+
+        private Boolean _isSettingMemory = false;
+
+        private String _memoryInfo = String.Empty;
 
         private void ExecuteSidebar(Object? parameter)
         {
@@ -189,52 +204,36 @@
 
         private void OpenOptions()
         {
-            MessageBox.Show("Coming soon... (^.^)");
+            MessageBox.Show("Bald verfügbar!");
         }
 
         private void ExecuteConnectionEdit()
         {
-            Ip = GetInput(Ip);
+            IsEditingConnection = !IsEditingConnection;
         }
 
         private void ExecuteReconnect()
         {
-            MessageBox.Show("Test");
-        }
-
-        private Boolean CanExecuteReconnect()
-        {
-            return true;
+            MessageBox.Show("Bald verfügbar!");
         }
 
         private void ExecuteMemoryRename()
         {
-            AppConfiguration.Slot0Name = GetInput(AppConfiguration.Slot0Name);
-        }
-
-        private String GetInput(String current = "")
-        {
-            var viewModel = new SimpleInputViewModel(current);
-            var view = new SimpleInputView();
-
-            view.DataContext = viewModel;
-
-            view.ShowDialog();
-
-            return viewModel.Input;
+            throw new NotImplementedException();
         }
 
         private void ExecuteMemorySet()
         {
-            IsMemorySetting = !IsMemorySetting;
+            IsSettingMemory = !IsSettingMemory;
 
-            if (IsMemorySetting)
+            if (IsSettingMemory)
             {
-                MemorySetInfo = "Wähle einen Slot"; 
+                MemoryInfo = "Wähle einen Slot";
+                MemoryInfoCancellationTokenSource?.Cancel();
             }
             else
             {
-                MemorySetInfo = "Abgebrochen";
+                MemoryInfo = "Abgebrochen";
                 ResetMemorySetInfo();
             }
         }
@@ -245,11 +244,11 @@
             {
                 var slot = Byte.Parse(stringedParameter);
 
-                if (IsMemorySetting)
+                if (IsSettingMemory)
                 {
                     ViscaController.MemorySet(slot);
-                    IsMemorySetting = false;
-                    MemorySetInfo = "Gespeichert";
+                    IsSettingMemory = false;
+                    MemoryInfo = "Gespeichert";
                     ResetMemorySetInfo();
                 }
                 else
@@ -264,7 +263,7 @@
             ViscaController.GoHome();
         }
 
-        private void ExecuteMoveBegin(Object? parameter)
+        private void ExecuteMoveBegin(Object? parameter) //TODO
         {
             if (parameter != null && parameter is MouseEventArgs eventArgs &&
                 eventArgs.Source != null && eventArgs.Source is FrameworkElement element &&
@@ -304,40 +303,14 @@
             }
         }
 
-        private void ExecuteMoveEnd(Object? parameter)
+        private void ExecuteMoveEnd(Object? parameter) //TODO
         {
             ViscaController.ContinuousPanTilt(default(bool?), default(bool?), 0, 0);
         }
 
-        private void ExecuteMoveWithMouse(Object? parameter)
-        {
-            if (parameter != null && (parameter is MouseEventArgs eventArgs) &&
-                eventArgs.Source != null && eventArgs.Source is FrameworkElement element)
-            {
-                var position = eventArgs.GetPosition(element); //TODO
+        private static byte AbsSpeed(int speed) => (byte)Math.Max(Math.Abs(speed), 1); //TODO
 
-                var panSpeed = NormalizeSpeed(position.X, element.ActualWidth, ViscaController.MaxPanSpeed);
-                // Tilt has "up is positive" in camera coordinates, but "up is negative" in screen coordinates
-                var tiltSpeed = -NormalizeSpeed(position.Y, element.ActualHeight, ViscaController.MaxTiltSpeed);
-
-                bool? pan = panSpeed == 0 ? default(bool?) : panSpeed > 0;
-                bool? tilt = tiltSpeed == 0 ? default(bool?) : tiltSpeed > 0;             
-
-                switch (eventArgs.LeftButton)
-                {
-                    case MouseButtonState.Pressed:
-                        ViscaController.ContinuousPanTilt(pan, tilt, (Byte)AppConfiguration.PanTiltSpeed, GetTiltSpeed());
-                        break;
-                    case MouseButtonState.Released:
-                        ViscaController.ContinuousPanTilt(default(bool?), default(bool?), 0, 0);
-                        break;
-                }
-            }
-        }
-
-        private static byte AbsSpeed(int speed) => (byte)Math.Max(Math.Abs(speed), 1);
-
-        private static int NormalizeSpeed(double position, double visualScale, int maxValue)
+        private static int NormalizeSpeed(double position, double visualScale, int maxValue) //TODO
         {
             // Scale to -1 / +1
             double scaledPosition = (position / visualScale) * 2 - 1;
@@ -347,7 +320,7 @@
             return speed;
         }
 
-        private static Boolean? GetPan(String tag)
+        private static Boolean? GetPan(String tag) //TODO
         {
             if (tag.ToLower().Contains("right"))
             {
@@ -360,7 +333,7 @@
             return null;
         }
 
-        private static Boolean? GetTilt(String tag)
+        private static Boolean? GetTilt(String tag) //TODO
         {
             if (tag.ToLower().Contains("up"))
             {
@@ -373,7 +346,7 @@
             return null;
         }
 
-        private Byte GetTiltSpeed()
+        private Byte GetTiltSpeed() //TODO
         {
             var speedInPercent = (Double)AppConfiguration.PanTiltSpeed / ViscaController.MaxPanSpeed;
 
@@ -399,11 +372,13 @@
             }
         }
 
-        private async Task ResetMemorySetInfo() //Cancellation Token needed
+        private async Task ResetMemorySetInfo()
         {
-            await Task.Delay(5000);
+            MemoryInfoCancellationTokenSource = new CancellationTokenSource();
 
-            MemorySetInfo = String.Empty;
+            await Task.Delay(5000, MemoryInfoCancellationTokenSource.Token);
+
+            MemoryInfo = String.Empty;
         }
 
         protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")

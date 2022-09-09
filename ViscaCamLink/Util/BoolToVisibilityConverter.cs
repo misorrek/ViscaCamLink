@@ -23,7 +23,7 @@
        
         public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
         {
-            if (value is not bool)
+            if (value is not Boolean)
             {
                 return FallbackValue;
             }                

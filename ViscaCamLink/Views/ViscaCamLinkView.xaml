@@ -22,7 +22,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <Style x:Key="SidebarButton"
-                   TargetType="Button">
+                   TargetType="{x:Type Button}">
                 <Setter Property="Background" 
                         Value="{StaticResource SecondaryBackgroundBrush}"/>
                 <Setter Property="Template">
@@ -34,7 +34,7 @@
                                             Width="3" 
                                             CornerRadius="1"
                                             BorderThickness="0"
-                                            Background="{StaticResource HighlightBrush}"
+                                            Background="{StaticResource PrimaryHighlightBrush}"
                                             Visibility="{Binding RelativeSource={RelativeSource TemplatedParent},
                                                                  Path=(util:SidebarButtonExtension.BorderVisibility)}"/>
 
@@ -55,8 +55,8 @@
             </Style>
 
             <Style x:Key="MarginedButton"
-                   TargetType="Button"
-                   BasedOn="{StaticResource BaseButton}">
+                   TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource LargeButton}">
                 <Setter Property="Margin"
                         Value="4,4,0,0" />
                 <Style.Triggers>
@@ -131,42 +131,61 @@
         <StackPanel Grid.Column="1"
                     Grid.Row="0"
                     Orientation="Vertical">
-            <Border Margin="{StaticResource DefaultInnerMargin}"
-                    Style="{StaticResource RoundedBorder}">
-                <StackPanel Margin="{StaticResource DefaultInnerMargin}"
+            <Border Margin="{StaticResource DefaultMargin}"
+                    Style="{StaticResource BaseBorder}">
+                <StackPanel Margin="{StaticResource DefaultMargin}"
                             Orientation="Vertical">
-                    <DockPanel Height="24"
-                               LastChildFill="False">
-                        <TextBlock DockPanel.Dock="Left"
-                                   VerticalAlignment="Stretch" 
-                                   Text="{Binding Ip}"                                           
-                                   Style="{StaticResource HeaderTextBlock}" />
+                    <Grid Height="24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="4" />
+                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="4" />
+                            <ColumnDefinition Width="24" />
+                        </Grid.ColumnDefinitions>
 
-                        <TextBlock DockPanel.Dock="Left"                               
-                                   VerticalAlignment="Center" 
-                                   FontSize="{StaticResource SecondaryHeaderFontSize}"
-                                   Text="{Binding Port}"                                           
-                                   Style="{StaticResource BaseTextBlock}" />
+                        <DockPanel Grid.Column="0"
+                                   LastChildFill="False">
+                            <TextBox DockPanel.Dock="Left"
+                                     BorderBrush="{StaticResource DefaultBorderBrush}"
+                                     Text="{Binding Ip}"                       
+                                     IsReadOnly="{Binding IsEditingConnection, 
+                                                          Converter={StaticResource InverseBooleanConverter}}"
+                                     PreviewTextInput="TextBox_PreviewTextInput_NumericDot"
+                                     DataObject.Pasting="TextBox_PastingHandler_NumericDot"
+                                     Style="{StaticResource HeaderTextBox}" />
 
-                        <Button DockPanel.Dock="Right"                                
-                                Width="24"   
-                                VerticalAlignment="Stretch"
-                                Command="{Binding ReconnectCommand}"
-                                Style="{StaticResource BaseButton}">
-                            <Path Data="{StaticResource Refresh}"
-                                  Style="{StaticResource Icon16Path}" />
-                        </Button>
+                            <TextBlock DockPanel.Dock="Left"
+                                       HorizontalAlignment="Center"
+                                       Text=":"                                           
+                                       Style="{StaticResource HeaderTextBlock}" />
 
-                        <Button DockPanel.Dock="Right"
-                                Margin="0,0,4,0"
-                                Width="24"   
+                            <TextBox DockPanel.Dock="Left"      
+                                     BorderBrush="{StaticResource DefaultBorderBrush}"                                 
+                                     Text="{Binding Port}"     
+                                     IsReadOnly="{Binding IsEditingConnection,
+                                                          Converter={StaticResource InverseBooleanConverter}}"
+                                     PreviewTextInput="TextBox_PreviewTextInput_Numeric"
+                                     DataObject.Pasting="TextBox_PastingHandler_Numeric"
+                                     Style="{StaticResource HeaderTextBox}" />
+                        </DockPanel>
+
+                        <Button Grid.Column="2"    
                                 VerticalAlignment="Stretch"
                                 Command="{Binding ConnectionEditCommand}"
                                 Style="{StaticResource BaseButton}">
                             <Path Data="{StaticResource Pencil}"
                                   Style="{StaticResource Icon16Path}" />
                         </Button>
-                    </DockPanel>
+
+                        <Button Grid.Column="4"   
+                                VerticalAlignment="Stretch"
+                                Command="{Binding ReconnectCommand}"
+                                Style="{StaticResource BaseButton}">
+                            <Path Data="{StaticResource Refresh}"
+                                  Style="{StaticResource Icon16Path}" />
+                        </Button>
+                    </Grid>
 
                     <StackPanel Orientation="Horizontal"
                                 Margin="0,4,0,0"
@@ -182,10 +201,10 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource RoundedBorder}"
+            <Border Style="{StaticResource BaseBorder}"
                     Visibility="{Binding MemoryContainerVisible,
                                          Converter={StaticResource BoolToCollapsedConverter}}">
-                <Grid Margin="{StaticResource DefaultInnerMargin}">
+                <Grid Margin="{StaticResource DefaultMargin}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
@@ -219,12 +238,12 @@
                                 Style="{StaticResource BaseButton}">
                             <Path>
                                 <Path.Style>
-                                    <Style TargetType="Path"
+                                    <Style TargetType="{x:Type Path}"
                                            BasedOn="{StaticResource Icon16Path}">
                                         <Setter Property="Data"
                                                 Value="{StaticResource Disk}" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsMemorySetting}" 
+                                            <DataTrigger Binding="{Binding IsSettingMemory}" 
                                                          Value="True">
                                                 <Setter Property="Data"
                                                         Value="{StaticResource Cross}" />
@@ -239,6 +258,7 @@
                                 Margin="0,0,4,0"
                                 Width="24"   
                                 VerticalAlignment="Stretch"
+                                Visibility="Collapsed"
                                 Style="{StaticResource BaseButton}">
                             <Path Data="{StaticResource Pencil}"
                                   Style="{StaticResource Icon16Path}" />
@@ -249,10 +269,11 @@
                            Grid.ColumnSpan="3"
                            Grid.Row="1"
                            HorizontalContentAlignment="Left"                                   
-                           Content="{Binding MemorySetInfo}" 
+                           Content="{Binding MemoryInfo}" 
                            Style="{StaticResource BaseLabel}"
-                           Visibility="{Binding IsMemorySetting, 
-                                                Converter={StaticResource BoolToCollapsedConverter}}"/>
+                           Visibility="{Binding RelativeSource={RelativeSource Self},
+                                                Path=Content,
+                                                Converter={StaticResource StringEmptyToCollapsedConverter}}"/>
 
                     <!-- First Row -->
 
@@ -341,10 +362,10 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource RoundedBorder}"
+            <Border Style="{StaticResource BaseBorder}"
                     Visibility="{Binding MoveContainerVisible,
                                          Converter={StaticResource BoolToCollapsedConverter}}">
-                <Grid Margin="{StaticResource DefaultInnerMargin}">
+                <Grid Margin="{StaticResource DefaultMargin}">
                     <Grid.Resources>
                         <util:Triggers x:Key="MoveTriggers" x:Shared="False">
                             <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
@@ -356,10 +377,18 @@
                         </util:Triggers>
 
                         <Style x:Key="MoveButton"
-                               TargetType="Button"
+                               TargetType="{x:Type Button}"
                                BasedOn="{StaticResource MarginedButton}">
                             <Setter Property="util:SupplementaryInteraction.Triggers"
                                     Value="{StaticResource MoveTriggers}" />
+                        </Style>
+
+                        <Style x:Key="MoveButtonPath"
+                               TargetType="{x:Type Path}"
+                               BasedOn="{StaticResource Icon16Path}">
+                            <Setter Property="Tag"
+                                    Value="{Binding (Button.Tag),
+                                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}" />
                         </Style>
                     </Grid.Resources>
 
@@ -405,7 +434,7 @@
                             Tag="LeftUp"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
-                              Style="{StaticResource Icon16Path}">
+                              Style="{StaticResource MoveButtonPath}">
                             <Path.LayoutTransform>
                                 <RotateTransform Angle="45"></RotateTransform>
                             </Path.LayoutTransform>
@@ -417,7 +446,7 @@
                             Tag="Up"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
-                              Style="{StaticResource Icon16Path}">
+                              Style="{StaticResource MoveButtonPath}">
                             <Path.LayoutTransform>
                                 <RotateTransform Angle="90"></RotateTransform>
                             </Path.LayoutTransform>
@@ -429,7 +458,7 @@
                             Tag="RightUp"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
-                              Style="{StaticResource Icon16Path}">
+                              Style="{StaticResource MoveButtonPath}">
                             <Path.LayoutTransform>
                                 <RotateTransform Angle="135"></RotateTransform>
                             </Path.LayoutTransform>
@@ -441,7 +470,7 @@
                             Tag="Left"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
-                              Style="{StaticResource Icon16Path}">
+                              Style="{StaticResource MoveButtonPath}">
                             <Path.LayoutTransform>
                                 <RotateTransform Angle="0"></RotateTransform>
                             </Path.LayoutTransform>
@@ -451,6 +480,7 @@
                     <Button Grid.Column="1"
                             Grid.Row="2"
                             Tag="Mouse"
+                            IsEnabled="False"
                             Style="{StaticResource MoveButton}">
                         <behaviors:Interaction.Triggers>
                             <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
@@ -475,7 +505,7 @@
                             Tag="Right"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
-                              Style="{StaticResource Icon16Path}">
+                              Style="{StaticResource MoveButtonPath}">
                             <Path.LayoutTransform>
                                 <RotateTransform Angle="180"></RotateTransform>
                             </Path.LayoutTransform>
@@ -487,7 +517,7 @@
                             Tag="LeftDown"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
-                              Style="{StaticResource Icon16Path}">
+                              Style="{StaticResource MoveButtonPath}">
                             <Path.LayoutTransform>
                                 <RotateTransform Angle="315"></RotateTransform>
                             </Path.LayoutTransform>
@@ -499,7 +529,7 @@
                             Tag="Down"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
-                              Style="{StaticResource Icon16Path}">
+                              Style="{StaticResource MoveButtonPath}">
                             <Path.LayoutTransform>
                                 <RotateTransform Angle="270"></RotateTransform>
                             </Path.LayoutTransform>
@@ -511,7 +541,7 @@
                             Tag="RightDown"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
-                              Style="{StaticResource Icon16Path}">
+                              Style="{StaticResource MoveButtonPath}">
                             <Path.LayoutTransform>
                                 <RotateTransform Angle="225"></RotateTransform>
                             </Path.LayoutTransform>
@@ -550,10 +580,10 @@
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource RoundedBorder}"
+            <Border Style="{StaticResource BaseBorder}"
                     Visibility="{Binding ZoomContainerVisible,
                                          Converter={StaticResource BoolToCollapsedConverter}}">
-                <Grid Margin="{StaticResource DefaultInnerMargin}">
+                <Grid Margin="{StaticResource DefaultMargin}">
                     <Grid.Resources>
                         <util:Triggers x:Key="ZoomTriggers" x:Shared="False">
                             <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
@@ -565,10 +595,18 @@
                         </util:Triggers>
                         
                         <Style x:Key="ZoomButton"
-                               TargetType="Button"
+                               TargetType="{x:Type Button}"
                                BasedOn="{StaticResource MarginedButton}">
                             <Setter Property="util:SupplementaryInteraction.Triggers"
                                     Value="{StaticResource ZoomTriggers}" />
+                        </Style>
+
+                        <Style x:Key="ZoomButtonPath"
+                               TargetType="{x:Type Path}"
+                               BasedOn="{StaticResource Icon16Path}">
+                            <Setter Property="Tag"
+                                    Value="{Binding (Button.Tag),
+                                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}" />
                         </Style>
                     </Grid.Resources>
                     
@@ -598,20 +636,16 @@
                             Grid.Row="1"
                             Tag="Out"
                             Style="{StaticResource ZoomButton}">
-                        <!-- TODO -->
-                        <Path Tag="Out"                               
-                              Data="{StaticResource ZoomOut}"
-                              Style="{StaticResource Icon16Path}" />
+                        <Path Data="{StaticResource ZoomOut}"
+                              Style="{StaticResource ZoomButtonPath}" />
                     </Button>
 
                     <Button Grid.Column="1"
                             Grid.Row="1"
                             Tag="In"
                             Style="{StaticResource ZoomButton}">
-                        <!-- TODO -->
-                        <Path Tag="In"    
-                              Data="{StaticResource ZoomIn}"
-                              Style="{StaticResource Icon16Path}" />
+                        <Path Data="{StaticResource ZoomIn}"
+                              Style="{StaticResource ZoomButtonPath}" />
                     </Button>
 
                     <!-- Speed Control -->

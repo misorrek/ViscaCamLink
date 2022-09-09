@@ -3,7 +3,7 @@
                     xmlns:system="clr-namespace:System;assembly=mscorlib"
                     xmlns:util="clr-namespace:ViscaCamLink.Util">
     
-    <!-- Constants -->    
+    <!--#region Constants-->    
 
     <system:Double x:Key="DefaultFontSize">12</system:Double>
     <system:Double x:Key="PrimaryHeaderFontSize">18</system:Double>
@@ -16,7 +16,7 @@
     <SolidColorBrush x:Key="PrimaryBackgroundBrush"
                      Color="#FFFFFF" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush"
-                     Color="#33214e" />
+                     Color="#33214E" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush"
                      Color="#51367B" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush"
@@ -24,19 +24,21 @@
     <SolidColorBrush x:Key="DefaultBorderBrush"
                      Color="#D3D3D3" />
     <SolidColorBrush x:Key="DefaultFontBrush"
-                     Color="#707070" />
-    <SolidColorBrush x:Key="HighlightBrush"
-                     Color="#6c4d99" />
+                     Color="#000000" />
+    <SolidColorBrush x:Key="PrimaryHighlightBrush"
+                     Color="#FFB78DF1" />
+    <SolidColorBrush x:Key="SecondaryHighlightBrush"
+                     Color="#FFDBC2FD" />
 
-    <Thickness x:Key="DefaultOuterMargin"
-               Left="4"
-               Top="0"
-               Right="4"
-               Bottom="4" />
-    
-    <Thickness x:Key="DefaultInnerMargin"
+    <Thickness x:Key="DefaultMargin"
                Left="4"
                Top="4"
+               Right="4"
+               Bottom="4" />
+
+    <Thickness x:Key="DefaultMarginTopless"
+               Left="4"
+               Top="0"
                Right="4"
                Bottom="4" />
 
@@ -46,7 +48,9 @@
                   TopLeft="4"
                   TopRight="4" />
 
-    <!-- Converter -->
+    <!--#endregion-->
+    
+    <!--#region Converter-->
 
     <util:BoolToVisibilityConverter x:Key="BoolToHiddenConverter"
                                     TrueValue="Visible"
@@ -56,12 +60,20 @@
                                     TrueValue="Visible"
                                     FalseValue="Collapsed" />
 
-    <!-- Control Styles -->
+    <util:StringToVisibilityConverter x:Key="StringEmptyToCollapsedConverter"
+                                      TrueValue="Visible"
+                                      FalseValue="Collapsed" />
 
-    <Style x:Key="RoundedBorder"
-           TargetType="Border">
+    <util:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+
+    <!--#endregion-->
+    
+    <!--#region Base Styles-->
+
+    <Style x:Key="BaseBorder"
+           TargetType="{x:Type Border}">
         <Setter Property="Margin" 
-                Value="{StaticResource DefaultOuterMargin}" />
+                Value="{StaticResource DefaultMarginTopless}" />
         <Setter Property="BorderThickness"
                 Value="1" />
         <Setter Property="BorderBrush"
@@ -69,9 +81,9 @@
         <Setter Property="CornerRadius"
                 Value="{StaticResource DefaultCornerRadius}" />
     </Style>
-
+    
     <Style x:Key="BaseLabel"
-           TargetType="Label"
+           TargetType="{x:Type Label}"
            BasedOn="{StaticResource {x:Type Label}}">
         <Setter Property="Padding"
                 Value="0" />
@@ -90,7 +102,7 @@
     </Style>
     
     <Style x:Key="BaseTextBlock"
-           TargetType="TextBlock"
+           TargetType="{x:Type TextBlock}"
            BasedOn="{StaticResource {x:Type TextBlock}}">
         <Setter Property="Background"
                 Value="Transparent" />
@@ -102,12 +114,136 @@
                 Value="{StaticResource DefaultFontFamily}" />
         <Setter Property="FontWeight"
                 Value="{StaticResource DefaultFontWeight}" />
-        <Setter Property="TextAlignment"
-                Value="Center" />
     </Style>
 
+    <Style x:Key="BaseTextBox"
+           TargetType="{x:Type TextBox}"
+           BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Background"
+                Value="Transparent" />
+        <Setter Property="Foreground"
+                Value="{StaticResource DefaultFontBrush}" />
+        <Setter Property="FontSize"
+                Value="{StaticResource DefaultFontSize}" />
+        <Setter Property="FontFamily"
+                Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="FontWeight"
+                Value="{StaticResource DefaultFontWeight}" />
+        <Setter Property="TextAlignment"
+                Value="Left" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBox}">
+                    <Border x:Name="Border" 
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            CornerRadius="{StaticResource DefaultCornerRadius}"
+                            SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="PART_ContentHost" 
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden" 
+                                      VerticalScrollBarVisibility="Hidden"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" 
+                                 Value="False">
+                            <Setter Property="Opacity" 
+                                    TargetName="Border" 
+                                    Value="0.5"/>
+                        </Trigger>
+                        
+                        <Trigger Property="IsMouseOver" 
+                                 Value="True">
+                            <Setter Property="BorderBrush" 
+                                    TargetName="Border" 
+                                    Value="{StaticResource SecondaryHighlightBrush}"/>
+                        </Trigger>
+                        
+                        <Trigger Property="IsFocused" 
+                                 Value="True">
+                            <Setter Property="BorderBrush"
+                                    TargetName="Border" 
+                                    Value="{StaticResource PrimaryHighlightBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="BaseButton"
+           TargetType="{x:Type Button}"
+           BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background"
+                Value="{StaticResource PrimaryBackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{StaticResource DefaultFontBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{StaticResource DefaultBorderBrush}" />
+        <Setter Property="FontSize"
+                Value="{StaticResource DefaultFontSize}" />
+        <Setter Property="FontFamily"
+                Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="FontWeight"
+                Value="{StaticResource DefaultFontWeight}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ButtonBase}">
+                    <Border x:Name="Border" 
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            CornerRadius="{StaticResource DefaultCornerRadius}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter x:Name="contentPresenter" 
+                                          Margin="{TemplateBinding Padding}" 
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"                                          
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          Content="{TemplateBinding Content}" 
+                                          ContentStringFormat="{TemplateBinding ContentStringFormat}" 
+                                          Focusable="False" 
+                                          RecognizesAccessKey="True" 
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" 
+                                 Value="False">
+                            <Setter Property="Opacity" 
+                                    TargetName="Border" 
+                                    Value="0.5"/>
+                        </Trigger>
+                        
+                        <Trigger Property="IsMouseOver" 
+                                 Value="True">
+                            <Setter Property="Background"
+                                    Value="{StaticResource SecondaryHighlightBrush}" />
+                            <Setter Property="BorderBrush" 
+                                    TargetName="Border" 
+                                    Value="{StaticResource PrimaryHighlightBrush}"/>
+                        </Trigger>
+                        
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter Property="Background"
+                                    Value="{StaticResource PrimaryHighlightBrush}" />
+                            <Setter Property="BorderBrush" 
+                                    TargetName="Border" 
+                                    Value="{StaticResource PrimaryForegroundBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--#endregion-->
+
+    <!--#region Extended Styles-->    
+
     <Style x:Key="HeaderTextBlock"
-           TargetType="TextBlock"
+           TargetType="{x:Type TextBlock}"
            BasedOn="{StaticResource BaseTextBlock}">
         <Setter Property="TextAlignment"
                 Value="Left" />
@@ -121,33 +257,74 @@
                 Value="{StaticResource HeaderFontWeight}" />
     </Style>
 
-    <Style x:Key="BaseButton"
-           TargetType="Button"
-           BasedOn="{StaticResource {x:Type Button}}">
+    <Style x:Key="HeaderTextBox"
+           TargetType="{x:Type TextBox}"
+           BasedOn="{StaticResource BaseTextBox}">
         <Setter Property="Background"
-                Value="{StaticResource PrimaryBackgroundBrush}" />
+                Value="Transparent" />
         <Setter Property="Foreground"
                 Value="{StaticResource PrimaryForegroundBrush}" />
-        <Setter Property="BorderBrush"
-                Value="{StaticResource DefaultBorderBrush}" />
         <Setter Property="FontSize"
                 Value="{StaticResource PrimaryHeaderFontSize}" />
-        <Setter Property="FontFamily"
-                Value="{StaticResource DefaultFontFamily}" />
         <Setter Property="FontWeight"
-                Value="{StaticResource DefaultFontWeight}" />
-        <Style.Resources>
-            <Style TargetType="Border">
-                <Setter Property="CornerRadius"
-                        Value="{StaticResource DefaultCornerRadius}" />
-            </Style>
-        </Style.Resources>
+                Value="{StaticResource HeaderFontWeight}" />
+        <Style.Triggers>
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter Property="BorderThickness"
+                        Value="0" />
+                <Setter Property="Padding"
+                        Value="1" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
-    <!-- Slider Style -->
+    <Style x:Key="LargeButton"
+           TargetType="{x:Type Button}"
+           BasedOn="{StaticResource BaseButton}">
+        <Setter Property="Foreground"
+                Value="{StaticResource PrimaryForegroundBrush}" />
+        <Setter Property="FontSize"
+                Value="{StaticResource PrimaryHeaderFontSize}" />
+    </Style>
+
+    <!--#endregion-->
+
+    <!--#region Path Styles-->
+
+    <Style x:Key="BaseIconPath"
+           TargetType="{x:Type Path}">
+        <Setter Property="Stretch"
+                Value="Uniform" />
+        <Setter Property="Fill"
+                Value="{StaticResource PrimaryForegroundBrush}" />
+    </Style>
+
+    <Style x:Key="Icon16Path"
+           TargetType="{x:Type Path}"
+           BasedOn="{StaticResource BaseIconPath}">
+        <Setter Property="Height"
+                Value="16" />
+        <Setter Property="Width"
+                Value="16" />
+    </Style>
+
+    <Style x:Key="IconSidebarPath"
+           TargetType="{x:Type Path}"
+           BasedOn="{StaticResource BaseIconPath}">
+        <Setter Property="Height"
+                Value="20" />
+        <Setter Property="Width"
+                Value="20" />
+        <Setter Property="Fill"
+                Value="{StaticResource PrimaryBackgroundBrush}" />
+    </Style>
+
+    <!--#endregion-->
+
+    <!--#region Slider Style-->
 
     <Style x:Key="SliderDecreaseRepeatButton" 
-           TargetType="RepeatButton">
+           TargetType="{x:Type RepeatButton}">
         <Setter Property="SnapsToDevicePixels" 
                 Value="true" />
         <Setter Property="OverridesDefaultStyle" 
@@ -158,7 +335,7 @@
                 Value="false" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="RepeatButton">
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
                     <Border Height="4"
                             BorderThickness="1,1,0,1"                            
                             CornerRadius="1"
@@ -170,7 +347,7 @@
     </Style>
 
     <Style x:Key="SliderIncreaseRepeatButton" 
-           TargetType="RepeatButton">
+           TargetType="{x:Type RepeatButton}">
         <Setter Property="SnapsToDevicePixels" 
                 Value="true" />
         <Setter Property="OverridesDefaultStyle" 
@@ -181,7 +358,7 @@
                 Value="false" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="RepeatButton">
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
                     <Border Height="4"
                             BorderThickness="0,1,1,1"
                             CornerRadius="1" 
@@ -193,7 +370,7 @@
     </Style>
 
     <Style x:Key="SliderThumb" 
-           TargetType="Thumb">
+           TargetType="{x:Type Thumb}">
         <Setter Property="SnapsToDevicePixels" 
                 Value="true" />
         <Setter Property="OverridesDefaultStyle" 
@@ -202,7 +379,7 @@
                 Value="{StaticResource PrimaryForegroundBrush}" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="Thumb">
+                <ControlTemplate TargetType="{x:Type Thumb}">
                     <Ellipse Height="12" 
                              Width="12" 
                              Fill="{TemplateBinding Foreground}" />
@@ -213,12 +390,12 @@
             <Trigger Property="IsMouseOver"
                      Value="True">
                 <Setter Property="Foreground"
-                        Value="{StaticResource HighlightBrush}" />
+                        Value="{StaticResource PrimaryHighlightBrush}" />
             </Trigger>
         </Style.Triggers>
     </Style>
 
-    <ControlTemplate x:Key="Slider"  TargetType="Slider">
+    <ControlTemplate x:Key="Slider"  TargetType="{x:Type Slider}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -244,7 +421,7 @@
     </ControlTemplate>
 
     <Style x:Key="HorizontalSlider" 
-           TargetType="Slider">
+           TargetType="{x:Type Slider}">
         <Setter Property="Focusable" 
                 Value="False"/>
         <Setter Property="SnapsToDevicePixels" 
@@ -263,35 +440,7 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-    
-    <!-- Path Styles -->
 
-    <Style x:Key="BaseIconPath"
-           TargetType="Path">
-        <Setter Property="Stretch"
-                Value="Uniform" />
-        <Setter Property="Fill"
-                Value="{StaticResource PrimaryForegroundBrush}" />
-    </Style>
-
-    <Style x:Key="Icon16Path"
-           TargetType="Path"
-           BasedOn="{StaticResource BaseIconPath}">
-        <Setter Property="Height"
-                Value="16" />
-        <Setter Property="Width"
-                Value="16" />
-    </Style>
-
-    <Style x:Key="IconSidebarPath"
-           TargetType="Path"
-           BasedOn="{StaticResource BaseIconPath}">
-        <Setter Property="Height"
-                Value="20" />
-        <Setter Property="Width"
-                Value="20" />
-        <Setter Property="Fill"
-                Value="{StaticResource PrimaryBackgroundBrush}" />
-    </Style>
+    <!--#endregion-->    
 
 </ResourceDictionary>
