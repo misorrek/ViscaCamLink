@@ -14,7 +14,7 @@ ViscaCamLink is a WPF desktop application that can control a [PTZ camera](https:
 ### Control
 
 * Free movement in any direction (via button)
-* 21-step adjustment of movement speed
+* 18-step adjustment of movement speed
 * Reset to initial position
 
 ### Zoom
