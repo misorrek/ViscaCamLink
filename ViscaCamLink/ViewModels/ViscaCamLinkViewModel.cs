@@ -22,6 +22,11 @@
             AppConfiguration = appConfiguration;
             ViscaController = ViscaController.ForTcp(AppConfiguration.Ip, AppConfiguration.Port);
 
+            var connected = ViscaController.Connected.GetValueOrDefault();
+
+            ConnectionStatus = connected ? Status.Ok : Status.Failed;
+            ConnectionInfo = connected ? "Verbunden" : "Keine Verbindung";
+
             SidebarCommand = new Command(ExecuteSidebar);
             OptionsCommand = new Command(OpenOptions);
             ConnectionEditCommand = new Command(ExecuteConnectionEdit);
@@ -153,6 +158,28 @@
             }
         }
 
+        public Status ConnectionStatus
+        {
+            get => _connectionStatus;
+
+            set
+            {
+                _connectionStatus = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public String ConnectionInfo
+        {
+            get => _connectionInfo;
+
+            set
+            {
+                _connectionInfo = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         public Boolean IsSettingMemory
         {
             get => _isSettingMemory;
@@ -178,6 +205,10 @@
         private CancellationTokenSource? MemoryInfoCancellationTokenSource { get; set; } 
 
         private Boolean _isEditingConnection = false;
+
+        private Status _connectionStatus = Status.Failed;
+
+        private String _connectionInfo = String.Empty;
 
         private Boolean _isSettingMemory = false;
 
@@ -214,7 +245,19 @@
 
         private void ExecuteReconnect()
         {
-            MessageBox.Show("Bald verfügbar!");
+            var source = new CancellationTokenSource();
+
+            ConnectionStatus = Status.Working;
+            ConnectionInfo = "Verbindungsversuch";
+
+            ViscaController.Reconnect(source.Token, AppConfiguration.Ip, AppConfiguration.Port)
+                .ContinueWith(task =>
+                {
+                    var connected = ViscaController.Connected.GetValueOrDefault();
+
+                    ConnectionStatus = connected ? Status.Ok : Status.Failed;
+                    ConnectionInfo = connected ? "Verbunden" : "Keine Verbindung";
+                });
         }
 
         private void ExecuteMemoryRename()
