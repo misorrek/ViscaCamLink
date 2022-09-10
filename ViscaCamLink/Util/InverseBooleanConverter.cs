@@ -4,7 +4,7 @@
     using System.Windows.Data;
 
     [ValueConversion(typeof(Boolean), typeof(Boolean))]
-    public class InverseBooleanConverter : IValueConverter
+    public sealed class InverseBooleanConverter : IValueConverter
     {
         #region IValueConverter Members
 

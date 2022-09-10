@@ -3,6 +3,7 @@
 // as found in the LICENSE.txt file.
 
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -102,5 +103,9 @@ namespace CameraControl.Visca
                 }
             }
         }
+
+        public abstract Boolean? IsConnected();
+
+        public abstract Task Reconnect(CancellationToken cancellationToken, System.String? host = null, System.Int32? port = null);
     }
 }

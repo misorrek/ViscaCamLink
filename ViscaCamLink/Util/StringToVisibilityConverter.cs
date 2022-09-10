@@ -6,7 +6,7 @@
     using System.Windows.Data;
 
     [ValueConversion(typeof(String), typeof(Visibility))]
-    public class StringToVisibilityConverter : IValueConverter
+    public sealed class StringToVisibilityConverter : IValueConverter
     {
         public StringToVisibilityConverter()
         {

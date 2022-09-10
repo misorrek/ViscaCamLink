@@ -10,6 +10,10 @@ namespace CameraControl.Visca
 {
     internal interface IViscaClient : IDisposable
     {
+        public Boolean? IsConnected();
+
+        public Task Reconnect(CancellationToken cancellationToken, String? host = null, Int32? port = null);
+
         /// <summary>
         /// Sends a single packet to the VISCA endpoint,
         /// returning the final "done" response packet.

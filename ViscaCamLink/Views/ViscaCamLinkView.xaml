@@ -21,6 +21,8 @@
                 <ResourceDictionary Source="/ViscaCamLink;component/Util/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <util:StatusToBrushConverter x:Key="ConnectionStatusToBrushConverter" />
+
             <Style x:Key="SidebarButton"
                    TargetType="{x:Type Button}">
                 <Setter Property="Background" 
@@ -192,10 +194,11 @@
                                 Height="16">
                         <Ellipse Height="12" 
                                  Width="12"
-                                 Fill="{StaticResource StatusGreen}" />
+                                 Fill="{Binding Path=ConnectionStatus,
+                                                Converter={StaticResource ConnectionStatusToBrushConverter}, Mode=Default}" />
 
                         <Label Margin="4,0,0,0"
-                               Content="Status"
+                               Content="{Binding ConnectionInfo}"
                                Style="{StaticResource BaseLabel}"/>
                     </StackPanel>
                 </StackPanel>

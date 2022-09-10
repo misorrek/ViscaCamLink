@@ -6,6 +6,7 @@
 
     using System;
     using System.Diagnostics;
+    using System.Net.Sockets;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
@@ -14,38 +15,52 @@
 
     public sealed class ViscaController : IDisposable
     {
+        internal static TimeSpan DefaultTimeout { get; } = TimeSpan.FromSeconds(15);
+
         private static readonly ViscaPacket PowerOnPacket = ViscaPacket.FromBytesWithPreformatting(0x81, 0x01, 0x04, 0x00, 0x02, 0xff);
         private static readonly ViscaPacket PowerOffPacket = ViscaPacket.FromBytesWithPreformatting(0x81, 0x01, 0x04, 0x00, 0x03, 0xff);
         private static readonly ViscaPacket GetPowerStatusPacket = ViscaPacket.FromBytesWithPreformatting(0x81, 0x09, 0x04, 0x00, 0xff);
         private static readonly ViscaPacket GetZoomPacket = ViscaPacket.FromBytesWithPreformatting(0x81, 0x09, 0x04, 0x47, 0xff);
-        private static readonly ViscaPacket GetPanTiltPacket = ViscaPacket.FromBytesWithPreformatting(0x81, 0x09, 0x06, 0x12, 0xff);
-        private static readonly ViscaPacket MemoryPacket = ViscaPacket.FromBytesWithPreformatting(0x81, 0x01, 0x04, 0x3f, 0x02, 0x00, 0xff);
+        private static readonly ViscaPacket GetPanTiltPacket = ViscaPacket.FromBytesWithPreformatting(0x81, 0x09, 0x06, 0x12, 0xff);        
 
-        internal static TimeSpan DefaultTimeout { get; } = TimeSpan.FromSeconds(15);
+        public const Byte MinSpeed = 0x01;
+        public const Byte MaxPanSpeed = 0x18;
+        public const Byte MaxTiltSpeed = 0x14;
+        public const Byte MaxZoomSpeed = 0x7;
 
-        public const byte MinSpeed = 0x01;
-        public const byte MaxPanSpeed = 0x18; //0x14 for Tilt
-        public const byte MaxTiltSpeed = 0x14;
-        public const byte MaxZoomSpeed = 0x7;
-
-        private TimeSpan CommandTimeout { get; }
-        private readonly ILogger? logger;
-        private readonly IViscaClient client;
-        private readonly Stopwatch stopwatch = Stopwatch.StartNew();
-
-        internal ViscaController(IViscaClient client, TimeSpan commandTimeout, ILogger? logger)
+        public static ViscaController ForTcp(String host, Int32 port, TimeSpan? commandTimeout = null, ILogger? logger = null, TcpSendLock? sendLock = null)
         {
-            this.client = client;
-            this.CommandTimeout = commandTimeout;
-            this.logger = logger;
+            var viscaClient = new TcpViscaClient(host, port, logger, sendLock);
+
+            return new ViscaController(viscaClient, commandTimeout ?? DefaultTimeout, logger);
         }
 
-        public void Dispose() => client.Dispose();
-
-        public static ViscaController ForTcp(string host, int port, TimeSpan? commandTimeout = null, ILogger? logger = null, TcpSendLock? sendLock = null)
+        internal ViscaController(IViscaClient viscaClient, TimeSpan commandTimeout, ILogger? logger)
         {
-            var client = new TcpViscaClient(host, port, logger, sendLock);
-            return new ViscaController(client, commandTimeout ?? DefaultTimeout, logger);
+            ViscaClient = viscaClient;
+            CommandTimeout = commandTimeout;
+            Logger = logger;
+            Stopwatch = Stopwatch.StartNew();
+        }
+
+        public Boolean? Connected => ViscaClient.IsConnected();
+
+        private IViscaClient ViscaClient { get; }
+
+        private TimeSpan CommandTimeout { get; }
+
+        private ILogger? Logger { get; }
+
+        private Stopwatch Stopwatch { get; }
+
+        public void Dispose()
+        {
+            ViscaClient.Dispose();
+        }
+
+        public Task Reconnect(CancellationToken cancellationToken, String? host = null, Int32? port = null)
+        {
+            return ViscaClient.Reconnect(cancellationToken, host, port);
         }
 
         // Power
@@ -60,7 +75,7 @@
             // Keep trying to get the power status until we can actually do so. This can take a few attempts.
             // Note that we don't actually try to validate that the power status is "on".
             var status = await RetryWithConstantBackoff(GetPowerStatus, attempts: 20, perOperationTimeout: TimeSpan.FromSeconds(1), delay: TimeSpan.FromSeconds(2));
-            logger?.LogDebug("Power cycle complete; power status: {status}", status);
+            Logger?.LogDebug("Power cycle complete; power status: {status}", status);
 
             async Task<T> RetryWithConstantBackoff<T>(Func<CancellationToken, Task<T>> operation, int attempts, TimeSpan perOperationTimeout, TimeSpan delay)
             {
@@ -184,11 +199,11 @@
         private async Task<ViscaPacket> SendAsync(ViscaPacket packet, CancellationToken cancellationToken, [CallerMemberName] string? command = null)
         {
             var effectiveToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, new CancellationTokenSource(CommandTimeout).Token).Token;
-            logger?.LogDebug("Sending VISCA command '{command}': {request}", command, packet);
-            long ticksBefore = stopwatch.ElapsedTicks;
-            var response = await client.SendAsync(packet, effectiveToken).ConfigureAwait(false);
-            long ticksAfter = stopwatch.ElapsedTicks;
-            logger?.LogDebug("VISCA command '{command}' completed in {millis}ms", command, (ticksAfter - ticksBefore) * 1000 / Stopwatch.Frequency);
+            Logger?.LogDebug("Sending VISCA command '{command}': {request}", command, packet);
+            long ticksBefore = Stopwatch.ElapsedTicks;
+            var response = await ViscaClient.SendAsync(packet, effectiveToken).ConfigureAwait(false);
+            long ticksAfter = Stopwatch.ElapsedTicks;
+            Logger?.LogDebug("VISCA command '{command}' completed in {millis}ms", command, (ticksAfter - ticksBefore) * 1000 / Stopwatch.Frequency);
             return response;
         }
 

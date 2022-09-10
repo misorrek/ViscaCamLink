@@ -127,6 +127,8 @@ namespace CameraControl.Visca
             // We only allow one command to execute at a time per controller. That makes life a lot simpler.
             private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1);
 
+            public Boolean? Connected => throw new NotImplementedException();
+
             async Task<ViscaPacket> IViscaClient.SendAsync(ViscaPacket request, CancellationToken cancellationToken)
             {
                 await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -340,6 +342,16 @@ namespace CameraControl.Visca
                 Buffer.BlockCopy(bytes, 0, buffer, 0, bytes.Length);
                 buffer[bytes.Length] = 0xff;
                 return ViscaPacket.FromBytes(buffer, 0, buffer.Length);
+            }
+
+            public Task Reconnect(CancellationToken cancellationToken, String? host = null, Int32? port = null)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Boolean? IsConnected()
+            {
+                throw new NotImplementedException();
             }
         }
     }
