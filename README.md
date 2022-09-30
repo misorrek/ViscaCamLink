@@ -31,7 +31,7 @@ ViscaCamLink is a WPF desktop application that can control a [PTZ camera](https:
 
 ### Portable 
 
-Place the execution file (.exe) in any location where the executing user has read permission. Then start it - e.g. by double-clicking or using the context menu.
+Place the execution file (.exe) in any location where the executing user has permissions. Then start it - e.g. by double-clicking or using the context menu.
 
 Since .NET 6 is required for the application, a prompt will appear if this is not yet pre-installed. Simply follow this prompt and restart the application if necessary ([Manual installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)).
 
