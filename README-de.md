@@ -29,7 +29,7 @@ ViscaCamLink ist eine WPF-Desktopanwendung, die eine [PTZ Kamera](https://de.m.w
 
 ### Portabel 
 
-Die Ausführungsdatei (.exe) an einen beliebigen Ort legen, an dem der auszuführende Benutzer Lese-Berechtigung hat. Danach starten - z.B. durch einen Doppelklick oder das Kontextmenü.
+Die Ausführungsdatei (.exe) an einen beliebigen Ort legen, an dem der auszuführende Benutzer Berechtigungen hat. Danach starten - z.B. durch einen Doppelklick oder das Kontextmenü.
 
 Da für die Anwendung .NET 6 benötigt wird, kommt wenn dies noch nicht vorinstalliert ist, nun eine Aufforderung dazu. Dieser einfach folgen und ggf. die Anwendung erneut starten ([Manuelle Installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)).
 
