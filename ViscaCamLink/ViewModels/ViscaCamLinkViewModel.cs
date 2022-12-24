@@ -10,17 +10,14 @@
 
     using CameraControl.Visca;
 
-    using ViscaCamLink.Configuration;
+    using ViscaCamLink.Properties;
     using ViscaCamLink.Util;
 
     public class ViscaCamLinkViewModel : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public ViscaCamLinkViewModel(AppConfiguration appConfiguration)
+        public ViscaCamLinkViewModel()
         {
-            AppConfiguration = appConfiguration;
-            ViscaController = ViscaController.ForTcp(AppConfiguration.Ip, AppConfiguration.Port);
+            ViscaController = ViscaController.ForTcp(Settings.Default.Ip, Settings.Default.Port);
 
             var connected = ViscaController.Connected.GetValueOrDefault();
 
@@ -51,9 +48,9 @@
             GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad9, () => ExecuteMemorySetOrRecall("9"));
         }
 
-        public ViscaController ViscaController { get; }
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        public AppConfiguration AppConfiguration { get; }
+        public ViscaController ViscaController { get; }
 
         public ICommand SidebarCommand { get; }
 
@@ -77,63 +74,63 @@
 
         public ICommand ZoomCommand { get; }
 
-        public Int32 MaximalPanTiltSpeed
+        public static Int32 MaximalPanTiltSpeed
         {
             get => ViscaController.MaxPanSpeed;
         }
 
-        public Int32 MaximalZoomSpeed
+        public static Int32 MaximalZoomSpeed
         {
             get => ViscaController.MaxZoomSpeed;
         }  
 
         public Boolean MemoryContainerVisible
         {
-            get => AppConfiguration.MemoryContainerVisible;
+            get => Settings.Default.MemoryContainerVisible;
 
             set
             {
-                AppConfiguration.MemoryContainerVisible = value;
+                Settings.Default.MemoryContainerVisible = value;
                 NotifyPropertyChanged();
             }
         }
 
         public Boolean MoveContainerVisible
         {
-            get => AppConfiguration.MoveContainerVisible;
+            get => Settings.Default.MoveContainerVisible;
 
             set
             {
-                AppConfiguration.MoveContainerVisible = value;
+                Settings.Default.MoveContainerVisible = value;
                 NotifyPropertyChanged();
             }
         }
 
         public Boolean ZoomContainerVisible
         {
-            get => AppConfiguration.ZoomContainerVisible;
+            get => Settings.Default.ZoomContainerVisible;
 
             set
             {
-                AppConfiguration.ZoomContainerVisible = value;
+                Settings.Default.ZoomContainerVisible = value;
                 NotifyPropertyChanged();
             }
         }
 
         public String Ip
         {
-            get => AppConfiguration.Ip;
+            get => Settings.Default.Ip;
 
             set
             {
-                AppConfiguration.Ip = value;
+                Settings.Default.Ip = value;
                 NotifyPropertyChanged();
             }
         }
 
         public String Port
         {
-            get => AppConfiguration.Port.ToString();
+            get => Settings.Default.Port.ToString();
 
             set
             {
@@ -141,7 +138,7 @@
 
                 if (!String.IsNullOrWhiteSpace(value) && Int32.TryParse(value, out port))
                 {
-                    AppConfiguration.Port = port;
+                    Settings.Default.Port = port;
                     NotifyPropertyChanged();
                 }
             }
@@ -250,7 +247,7 @@
             ConnectionStatus = Status.Working;
             ConnectionInfo = "Verbindungsversuch";
 
-            ViscaController.Reconnect(source.Token, AppConfiguration.Ip, AppConfiguration.Port)
+            ViscaController.Reconnect(source.Token, Settings.Default.Ip, Settings.Default.Port)
                 .ContinueWith(task =>
                 {
                     var connected = ViscaController.Connected.GetValueOrDefault();
@@ -342,7 +339,7 @@
                     pan = GetPan(tag);
                     tilt = GetTilt(tag);
                 }
-                ViscaController.ContinuousPanTilt(pan, tilt, (Byte)AppConfiguration.PanTiltSpeed, GetTiltSpeed());
+                ViscaController.ContinuousPanTilt(pan, tilt, (Byte)Settings.Default.PanTiltSpeed, GetTiltSpeed());
             }
         }
 
@@ -391,7 +388,7 @@
 
         private Byte GetTiltSpeed() //TODO
         {
-            var speedInPercent = (Double)AppConfiguration.PanTiltSpeed / ViscaController.MaxPanSpeed;
+            var speedInPercent = (Double)Settings.Default.PanTiltSpeed / ViscaController.MaxPanSpeed;
 
             return (Byte)Math.Ceiling(ViscaController.MaxTiltSpeed * speedInPercent);
         }
@@ -406,7 +403,7 @@
                 switch(eventArgs.LeftButton)
                 {
                     case MouseButtonState.Pressed:
-                        ViscaController.ContinuousZoom(zoomIn, (Byte)AppConfiguration.ZoomSpeed);
+                        ViscaController.ContinuousZoom(zoomIn, (Byte)Settings.Default.ZoomSpeed);
                         break;
                     case MouseButtonState.Released:
                         ViscaController.ContinuousZoom(default(bool?), 0);

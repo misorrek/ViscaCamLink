@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:util="clr-namespace:ViscaCamLink.Util"
+        xmlns:properties="clr-namespace:ViscaCamLink.Properties"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:ViscaCamLinkViewModel}"
@@ -572,7 +573,8 @@
                                 Minimum="1"
                                 Maximum="{Binding MaximalPanTiltSpeed}" 
                                 Orientation="Horizontal"
-                                Value="{Binding AppConfiguration.PanTiltSpeed}"
+                                Value="{Binding Source={x:Static properties:Settings.Default},
+                                                Path=PanTiltSpeed}"
                                 Style="{StaticResource HorizontalSlider}" />
 
                         <Path  Grid.Column="2"
@@ -673,7 +675,8 @@
                                 Maximum="{Binding MaximalZoomSpeed}"
                                 IsSnapToTickEnabled="True"
                                 Orientation="Horizontal"
-                                Value="{Binding AppConfiguration.ZoomSpeed}"
+                                Value="{Binding Source={x:Static properties:Settings.Default},
+                                                Path=ZoomSpeed}"
                                 Style="{StaticResource HorizontalSlider}" />
 
                         <Path  Grid.Column="2"

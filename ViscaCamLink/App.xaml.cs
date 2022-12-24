@@ -3,7 +3,7 @@
     using System;
     using System.Windows;
 
-    using ViscaCamLink.Configuration;
+    using ViscaCamLink.Properties;
     using ViscaCamLink.ViewModels;
     using ViscaCamLink.Views;
 
@@ -14,9 +14,10 @@
     {
         private void Application_Startup(Object sender, StartupEventArgs e)
         {
-            var appConfiguration = new AppConfiguration();
+            CheckSettingsUpgradeRequired();
+
             var viscaCamLinkView = new ViscaCamLinkView();
-            var viscaCamLinkViewModel = new ViscaCamLinkViewModel(appConfiguration);
+            var viscaCamLinkViewModel = new ViscaCamLinkViewModel();
 
             viscaCamLinkView.DataContext = viscaCamLinkViewModel;
             viscaCamLinkView.Closed += OnClosed;
@@ -25,7 +26,19 @@
 
         private void OnClosed(Object? sender, EventArgs e)
         {
+            Settings.Default.Save();
             Application.Current.Shutdown();
+        }
+
+        private static void CheckSettingsUpgradeRequired()
+        {
+            if (Settings.Default.UpgradeRequired)
+            {
+                Settings.Default.Upgrade();
+                Settings.Default.UpgradeRequired = false;
+                Settings.Default.LastUpgrade = DateTime.Now;
+                Settings.Default.Save();
+            }
         }
     }
 }
