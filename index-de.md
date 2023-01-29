@@ -1,4 +1,5 @@
 ---
+markdown: GFM
 permalink: /de/
 ---
 
