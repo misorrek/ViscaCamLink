@@ -1,5 +1,4 @@
 ---
-theme: minimal
 permalink: /changelog/
 ---
 
