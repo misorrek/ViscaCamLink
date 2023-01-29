@@ -1,5 +1,5 @@
 ---
-permalink: /de/changelog/
+permalink: /en/changelog/
 ---
 
 ## 0.1.3

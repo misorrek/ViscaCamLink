@@ -1,65 +1,64 @@
 # ![ViscaCamLink](assets/logo-banner.png)
 
-ViscaCamLink is a WPF desktop application that can control a [PTZ camera](https://de.m.wikipedia.org/wiki/PTZ-Kamera) on the same network using the VISCA protocol.
+ViscaCamLink ist eine WPF-Desktopanwendung, die eine [PTZ Kamera](https://de.m.wikipedia.org/wiki/PTZ-Kamera) im selben Netzwerk über das VISCA Protokoll steuern kann.
 
-🇩🇪 | 🇦🇹 | 🇨🇭 – [In Deutsch lesen](index-de.md)
+ [Read in english](index.md)
 
 ## Download
 
 [<img height="100" src="assets/button_download_windows.png">](https://github.com/FreakyTorial/ViscaCamLink/releases/latest/download/ViscaCamLink-Installer-x64.msi) [<img height="100" src="assets/button_download_portable.png">](https://github.com/FreakyTorial/ViscaCamLink/releases/latest/download/ViscaCamLink-Portable.zip)
 
-## Features
+## Funktionen
 
-### Presets
+### Voreinstellungen
 
-* Save and load up to ten positions (including zoom) as presets
-* Global hotkey for each preset (currently assigned to numpad 0-9)
+* Speichern und laden von bis zu zehn Positionen (inklusive Zoom) als Voreinstellung
+* Globale Tastenbelegung (Hotkeys) für jede Voreinstellung (derzeit festgelegt auf Numpad 0-9)
 
-### Control
+### Steuerung
 
-* Free movement in any direction (via button)
-* 18-step adjustment of movement speed
-* Reset to initial position
+* Freies Bewegen in jede Richtung (per Schalter)
+* 18-stufige Anpassung der Bewegungsgeschwindigkeit
+* Zurücksetzen in Ausgangsposition
 
 ### Zoom
 
-* Freely zooming in and out
-* 7-step adjustment of zoom speed
+* Freies rein- und rauszoomen
+* 7-stufige Anpassung der Zoom-Geschwindigkeit
 
-### More
+### Weitere
 
-* User-specific saving of layout settings
-* Full Windows scaling support
+* Benutzerspezifische Speicherung des Oberflächen-Layouts
+* Volle Unterstützung der Windows-Skalierung
 
 ## Installation
 
-### Portable 
+### Portabel 
 
-Place the execution file (.exe) in any location where the executing user has permissions. Then start it - e.g. by double-clicking or using the context menu.
+Die Ausführungsdatei (.exe) an einen beliebigen Ort legen, an dem der auszuführende Benutzer Berechtigungen hat. Danach starten - z.B. durch einen Doppelklick oder das Kontextmenü.
 
-Since .NET 6 is required for the application, a prompt will appear if this is not yet pre-installed. Simply follow this prompt and restart the application if necessary ([Manual installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)).
+Da für die Anwendung .NET 6 benötigt wird, kommt wenn dies noch nicht vorinstalliert ist, nun eine Aufforderung dazu. Dieser einfach folgen und ggf. die Anwendung erneut starten ([Manuelle Installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)).
 
-After that ViscaCamLink is ready for use.
+Danach ist ViscaCamLink bereit für die Benutzung.
 
-## Usage 
+## Benutzung 
 
-After the first start, the IP of the camera and the port for the VISCA protocol (if different from the default) must be typed in (How to get this information is described in the user manual of the camera).
+Nach dem ersten Start muss die IP der Kamera und der Port für das VISCA Protokoll (wenn vom Standard abweichend) hinterlegt werden. Wie Sie an diese Informationen herankommen, beschreibt das Benutzerhandbuch der Kamera.
 
-After that, the connection can be established using the corresponding button in the address bar. Whether this was successful is shown in the status display below.
+Danach kann die Verbindung über den entsprechenden Schalter in der Adresszeile aufgebaut werden. Ob dies erfolgreich war, zeigt die Status-Anzeige darunter.
 
 ## Roadmap 
 
-* Customizable key assignment
-* Customizable name of presets
-* Additional control with mouse
-* Installation via setup
-* Support of communication via serial port
+* Anpassbare Tastenbelegung
+* Anpassbare Bezeichnung von Voreinstellungen
+* Zusätzliche Steuerung mit Maus
+* Installation per Setup
+* Unterstützung der Kommunikation über seriellen Anschluss
 
-## License
+## Lizenz
 
 [Apache 2.0](LICENSE)
 
-This application is based on the demo code [CameraControl](https://github.com/jskeet/DemoCode/tree/main/CameraControl) (by jskeet)
+Diese Applikation basiert auf dem Demo-Quelltext [CameraControl](https://github.com/jskeet/DemoCode/tree/main/CameraControl) (von jskeet)
 
-Icons from flaticon.com/uicons
-
+Icons von flaticon.com/de/uicons
