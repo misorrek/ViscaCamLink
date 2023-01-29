@@ -62,5 +62,3 @@ Danach kann die Verbindung über den entsprechenden Schalter in der Adresszeile 
 Diese Applikation basiert auf dem Demo-Quelltext [CameraControl](https://github.com/jskeet/DemoCode/tree/main/CameraControl) (von jskeet)
 
 Icons von flaticon.com/de/uicons
-
-___
