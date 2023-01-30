@@ -3,7 +3,5 @@ author: "Max Groiser"
 
 theme: minima
 
-github_username: freakytorial
-
 exclude: 
     - .gitignore
