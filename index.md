@@ -6,8 +6,6 @@ layout: home
 
 ViscaCamLink ist eine WPF-Desktopanwendung, die eine [PTZ Kamera](https://de.m.wikipedia.org/wiki/PTZ-Kamera) im selben Netzwerk über das VISCA Protokoll steuern kann.
 
- [Read in english](index-en.md)
-
 ## Download
 
 [<img height="100" src="assets/button_download_windows.png">](https://github.com/FreakyTorial/ViscaCamLink/releases/latest/download/ViscaCamLink-Installer-x64.msi) [<img height="100" src="assets/button_download_portable.png">](https://github.com/FreakyTorial/ViscaCamLink/releases/latest/download/ViscaCamLink-Portable.zip)
