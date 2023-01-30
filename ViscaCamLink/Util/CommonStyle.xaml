@@ -52,11 +52,11 @@
     
     <!--#region Converter-->
 
-    <util:BoolToVisibilityConverter x:Key="BoolToHiddenConverter"
+    <util:BoolToVisibilityConverter x:Key="FalseToHiddenConverter"
                                     TrueValue="Visible"
                                     FalseValue="Hidden" />
 
-    <util:BoolToVisibilityConverter x:Key="BoolToCollapsedConverter"
+    <util:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter"
                                     TrueValue="Visible"
                                     FalseValue="Collapsed" />
 
@@ -278,6 +278,15 @@
         </Style.Triggers>
     </Style>
 
+    <Style x:Key="DialogButton"
+           TargetType="{x:Type Button}"
+           BasedOn="{StaticResource BaseButton}">
+        <Setter Property="Foreground"
+                Value="{StaticResource PrimaryForegroundBrush}" />
+        <Setter Property="FontSize"
+                Value="{StaticResource SecondaryHeaderFontSize}" />
+    </Style>
+    
     <Style x:Key="LargeButton"
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource BaseButton}">

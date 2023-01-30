@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"        
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:util="clr-namespace:ViscaCamLink.Util"
         xmlns:properties="clr-namespace:ViscaCamLink.Properties"
@@ -94,7 +95,7 @@
                         Command="{Binding SidebarCommand}"
                         CommandParameter="Memory"
                         util:SidebarButtonExtension.BorderVisibility="{Binding MemoryContainerVisible,
-                                                                               Converter={StaticResource BoolToHiddenConverter}}"
+                                                                               Converter={StaticResource FalseToHiddenConverter}}"
                         util:SidebarButtonExtension.PathData="{StaticResource Numpad}"
                         Style="{StaticResource SidebarButton}" />
 
@@ -105,7 +106,7 @@
                         Command="{Binding SidebarCommand}"
                         CommandParameter="Move"
                         util:SidebarButtonExtension.BorderVisibility="{Binding MoveContainerVisible,
-                                                                               Converter={StaticResource BoolToHiddenConverter}}"
+                                                                               Converter={StaticResource FalseToHiddenConverter}}"
                         util:SidebarButtonExtension.PathData="{StaticResource MoveArrows}"
                         Style="{StaticResource SidebarButton}" />
 
@@ -116,7 +117,7 @@
                         Command="{Binding SidebarCommand}"
                         CommandParameter="Zoom"
                         util:SidebarButtonExtension.BorderVisibility="{Binding ZoomContainerVisible,
-                                                                               Converter={StaticResource BoolToHiddenConverter}}"
+                                                                               Converter={StaticResource FalseToHiddenConverter}}"
                         util:SidebarButtonExtension.PathData="{StaticResource Zoom}"
                         Style="{StaticResource SidebarButton}" />
 
@@ -128,6 +129,35 @@
                         util:SidebarButtonExtension.BorderVisibility="Hidden"
                         util:SidebarButtonExtension.PathData="{StaticResource Options}"
                         Style="{StaticResource SidebarButton}" />
+
+                <Button DockPanel.Dock="Bottom"
+                        x:Name="UpdateButton"
+                        Width="40"
+                        Height="40"
+                        BorderThickness="0"
+                        Visibility="Hidden"
+                        Command="{Binding UpdateCommand}">
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}"
+                               BasedOn="{StaticResource SidebarButton}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type Button}">
+                                        <Border Background="{TemplateBinding Background}">
+                                            <Image x:Name="UpdateImage" 
+                                                   Width="24" 
+                                                   Height="24"
+                                                   HorizontalAlignment="Center" 
+                                                   VerticalAlignment="Center"
+                                                   gif:ImageBehavior.AnimatedSource="/Resources/update_available_sidebar.gif"
+                                                   gif:ImageBehavior.AutoStart="False" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </DockPanel>
         </Border>
 
@@ -207,7 +237,7 @@
 
             <Border Style="{StaticResource BaseBorder}"
                     Visibility="{Binding MemoryContainerVisible,
-                                         Converter={StaticResource BoolToCollapsedConverter}}">
+                                         Converter={StaticResource FalseToCollapsedConverter}}">
                 <Grid Margin="{StaticResource DefaultMargin}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -368,7 +398,7 @@
 
             <Border Style="{StaticResource BaseBorder}"
                     Visibility="{Binding MoveContainerVisible,
-                                         Converter={StaticResource BoolToCollapsedConverter}}">
+                                         Converter={StaticResource FalseToCollapsedConverter}}">
                 <Grid Margin="{StaticResource DefaultMargin}">
                     <Grid.Resources>
                         <util:Triggers x:Key="MoveTriggers" x:Shared="False">
@@ -587,7 +617,7 @@
 
             <Border Style="{StaticResource BaseBorder}"
                     Visibility="{Binding ZoomContainerVisible,
-                                         Converter={StaticResource BoolToCollapsedConverter}}">
+                                         Converter={StaticResource FalseToCollapsedConverter}}">
                 <Grid Margin="{StaticResource DefaultMargin}">
                     <Grid.Resources>
                         <util:Triggers x:Key="ZoomTriggers" x:Shared="False">

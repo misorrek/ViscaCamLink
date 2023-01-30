@@ -7,11 +7,12 @@
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Input;
-
+    using AutoUpdaterDotNET;
     using CameraControl.Visca;
-
+    using ViscaCamLink.Factories;
     using ViscaCamLink.Properties;
     using ViscaCamLink.Util;
+    using ViscaCamLink.Views;
 
     public class ViscaCamLinkViewModel : INotifyPropertyChanged
     {
@@ -25,6 +26,7 @@
             ConnectionInfo = connected ? "Verbunden" : "Keine Verbindung";
 
             SidebarCommand = new Command(ExecuteSidebar);
+            UpdateCommand = new Command(OpenUpdateDialog);
             OptionsCommand = new Command(OpenOptions);
             ConnectionEditCommand = new Command(ExecuteConnectionEdit);
             ReconnectCommand = new Command(ExecuteReconnect);
@@ -50,9 +52,13 @@
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        public event Action? UpdateAvailable;
+
         public ViscaController ViscaController { get; }
 
         public ICommand SidebarCommand { get; }
+
+        public ICommand UpdateCommand { get; }
 
         public ICommand OptionsCommand { get; }
 
@@ -228,6 +234,39 @@
                         break;
                 }
             }
+        }
+
+        public void AutoUpdaterOnCheckForUpdateEvent(UpdateInfoEventArgs args)
+        {
+            if (args.Error != null)
+            {
+                return;
+            }
+
+            if (args.IsUpdateAvailable)
+            {
+                lastArgs = args;
+
+                UpdateAvailable?.Invoke();
+            }
+        }
+
+        private UpdateInfoEventArgs? lastArgs;
+
+        public void UpdateAvailableMethod()
+        {
+            UpdateAvailable?.Invoke();
+        }
+
+        private void OpenUpdateDialog()
+        {
+            if (lastArgs == null)
+            {
+                return;
+            }
+
+            var updateView = UpdateViewFactory.CreateUpdateView(lastArgs);
+            var dialogResult = updateView.ShowDialog();
         }
 
         private void OpenOptions()

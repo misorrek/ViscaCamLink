@@ -3,7 +3,10 @@
     using System;
     using System.Text.RegularExpressions;
     using System.Windows;
+    using System.Windows.Controls;
     using System.Windows.Input;
+
+    using WpfAnimatedGif;
 
     /// <summary>
     /// Interaction logic for ViscaCamLinkView.xaml
@@ -69,6 +72,18 @@
             Regex numericRegex = new Regex("[0-9.]+");
 
             return numericRegex.IsMatch(text);
+        }
+
+        public void ShowUpdateButton()
+        {
+            var updateButtonTemplate = UpdateButton.Template;
+            var updateImageControl = (Image)updateButtonTemplate.FindName("UpdateImage", UpdateButton);
+            var animationController = ImageBehavior.GetAnimationController(updateImageControl);
+
+            UpdateButton.Visibility = Visibility.Visible;
+
+            animationController.GotoFrame(0);
+            animationController.Play();
         }
     }
 }
