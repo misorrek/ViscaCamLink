@@ -10,7 +10,7 @@ ViscaCamLink ist eine WPF-Desktopanwendung, die eine [PTZ Kamera](https://de.m.w
 ## Download
 
 <p align="center" width="100%">
-[<img width="20%" src="{{ 'assets/button_download_windows.png' | relative_url }}">](https://github.com/FreakyTorial/ViscaCamLink/releases/latest/download/ViscaCamLink-Installer-x64.msi) [<img width="20%" src="{{ 'assets/button_download_portable.png' | relative_url }}">](https://github.com/FreakyTorial/ViscaCamLink/releases/latest/download/ViscaCamLink-Portable.zip)
+<a href="https://github.com/FreakyTorial/ViscaCamLink/releases/latest/download/ViscaCamLink-Installer-x64.msi"><img width="30%" src="{{ 'assets/button_download_windows.png' | relative_url }}"></a> <a href="https://github.com/FreakyTorial/ViscaCamLink/releases/latest/download/ViscaCamLink-Portable.zip)"><img width="30%" src="{{ 'assets/button_download_portable.png' | relative_url }}"></a>
 </p>
 
 ## Funktionen
