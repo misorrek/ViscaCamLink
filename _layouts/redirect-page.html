@@ -3,9 +3,18 @@ layout: default
 ---
 
 <script type="text/javascript">
-  var userLang = navigator.language || navigator.userLanguage; 
+  function getLanguage() 
+  {
+    if (navigator.languages != undefined)
+    {
+      return navigator.languages[0]; 
+    }
+    return navigator.language || navigator.userLanguage;
+  }
+  
+  var userLang = getLanguage().toUpperCase(); 
 
-  if (userLang == 'de')
+  if (userLang.startsWith('DE'))
   {
       window.location.replace("https://www.viscacamlink.de/de/");
   }
