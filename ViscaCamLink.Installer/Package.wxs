@@ -1,0 +1,65 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <?define UpgradeCode="{D25EF3A6-AA25-4A2F-8105-B5A8ED2DB97C}" ?>
+  
+  <!-- Product and Package informations -->
+  <Package Name="!(loc.ProductName)"
+           Manufacturer="Max Groiser"
+           Version="$(var.BuildVersion)"
+           UpgradeCode="$(var.UpgradeCode)"
+           Language="!(loc.Language)"
+           Compressed="true"
+           Scope="perMachine">
+
+    <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)"/>
+
+    <MediaTemplate EmbedCab="true" />
+
+    <Icon Id="MainIcon"
+          SourceFile="$(var.ViscaCamLink.ProjectDir)\Resources\program.ico" />
+
+    <Property Id="ARPPRODUCTICON"
+              Value="MainIcon" />
+    <Property Id="ARPURLINFOABOUT"
+              Value="https://github.com/FreakyTorial/ViscaCamLink" />
+    <Property Id="ARPURLUPDATEINFO"
+              Value="https://github.com/FreakyTorial/ViscaCamLink/releases" />
+    <Property Id="ARPHELPLINK"
+              Value="https://github.com/FreakyTorial/ViscaCamLink/issues" />
+
+    <UI>
+      <UIRef Id="WixUI_Minimal_Custom" />
+      <Publish Dialog="ExitDialog"
+               Control="Finish"
+               Event="DoAction"
+               Value="LaunchApplication"
+               Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed" />
+    </UI>
+
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" 
+              Value="Launch !(loc.ProductName)" />
+    
+    <CustomAction Id="LaunchApplication"
+                  Execute="immediate"
+                  Return="asyncNoWait"
+                  FileRef="MainExe"
+                  ExeCommand=""
+                  Impersonate="yes" />
+
+    <WixVariable Id="WixUIInfoIco"
+                 Value="$(var.ProjectDir)\Resources\info.ico" />
+    <WixVariable Id="WixUIExclamationIco"
+                 Value="$(var.ProjectDir)\Resources\exclamation.ico" />
+    <WixVariable Id="WixUIDialogBmp"
+                 Value="$(var.ProjectDir)\Resources\background.bmp" />
+    <WixVariable Id="WixUIBannerBmp"
+                 Value="$(var.ProjectDir)\Resources\banner.bmp" />
+    <WixVariable Id="WixUILicenseRtf"
+                 Value="$(var.ProjectDir)\Resources\license.rtf" />
+
+    <Feature Id="Main" Title="!(loc.ProductName)">
+      <ComponentGroupRef Id="HarvestedComponents" />
+      <ComponentGroupRef Id="AdditionalComponents" />
+    </Feature>
+  </Package>
+</Wix>

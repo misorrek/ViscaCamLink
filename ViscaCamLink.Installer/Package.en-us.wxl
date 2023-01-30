@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization xmlns="http://wixtoolset.org/schemas/v4/wxl" Culture="en-US">
+
+  <String Id="Language" Value="1033" />
+  <String Id="ProductName" Value="ViscaCamLink" />
+  <String Id="DowngradeError" Value="A newer version of ViscaCamLink is already installed." />
+  <String Id="LaunchCheckbox" Value="Launch !(loc.ProductName)"/>
+
+</WixLocalization>

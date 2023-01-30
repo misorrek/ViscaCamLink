@@ -1,0 +1,37 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  
+  <Fragment>
+    <ComponentGroup Id="AdditionalComponents">
+      <ComponentRef Id="MainAppShortcut" />
+      <ComponentRef Id="MainExe" />
+    </ComponentGroup>
+
+    <DirectoryRef Id="INSTALLFOLDER" FileSource="..\ViscaCamLink\bin\Release\net6.0-windows\win-x64\publish\">
+
+      <!-- Main executable - not via harvesting for a needed file reference -->
+      <Component Id="MainExe" Guid="{378A05F0-C521-4350-9C16-15329E4B462B}">
+        <File Id="MainExe" KeyPath="yes" Source="$(var.ExePath)\ViscaCamLink.exe"  />
+      </Component>
+
+      <!-- Shortcut to main application -->
+      <Component Id="MainAppShortcut" Guid="{DA8B6229-E00D-4310-BB5F-F1C553876413}">
+
+        <Shortcut Id="MainAppShortcut"
+                  Name="!(loc.ProductName)"
+                  Target="[INSTALLFOLDER]ViscaCamLink.exe"
+                  Directory="ProgramMenuFolder"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="MainIcon" />
+
+        <!-- Unique key for this component (shortcut) -->
+        <RegistryValue Id="RegShortcutKey" Root="HKCU" Key="SOFTWARE\!(loc.ProductName)" Name="Shortcut" Value="1" Type="integer" KeyPath="true" />
+
+        <!-- Remove start menu item -->
+        <RemoveFile Id="RemoveMainAppShortcut" Directory="ProgramMenuFolder" Name="!(loc.ProductName)" On="uninstall" />
+
+        <!-- Remove unique key for this component (shortcut) -->
+        <RemoveRegistryValue Id="RegShortcutKeyRemove" Root="HKCU" Key="SOFTWARE\!(loc.ProductName)" Name="Shortcut" />                    
+      </Component>      
+    </DirectoryRef>
+  </Fragment>
+</Wix>

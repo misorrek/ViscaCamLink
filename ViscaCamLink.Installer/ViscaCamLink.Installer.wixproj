@@ -1,0 +1,47 @@
+﻿<Project Sdk="WixToolset.Sdk/4.0.0-rc.1">
+  <PropertyGroup>
+    <OutputName>ViscaCamLink-Installer-x64</OutputName>
+    <Cultures>;</Cultures>
+    <HarvestDirectoryAutogenerateGuids>false</HarvestDirectoryAutogenerateGuids>
+    <HarvestDirectoryGenerateGuidsNow>true</HarvestDirectoryGenerateGuidsNow>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ViscaCamLink\ViscaCamLink.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.0-rc.1" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="4.0.0-rc.1" />
+    <PackageReference Include="WixToolset.Heat" Version="4.0.0-rc.1" />
+  </ItemGroup>
+  <Target Name="BeforeBuildActions" BeforeTargets="BeforeBuild">
+    <!-- Clean publish target location -->
+    <Exec Command="rd /s /q $(SolutionDir)\ViscaCamLink\bin\Release\net6.0-windows\win-x64" />
+    <!-- Publish -->
+    <Exec Command="dotnet publish $(SolutionDir)\ViscaCamLink\ViscaCamLink.csproj -c Release -r win-x64 --no-self-contained" />
+    <!-- Move main executable for a needed file reference -->
+    <Exec Command="move /Y ..\ViscaCamLink\bin\Release\net6.0-windows\win-x64\publish\ViscaCamLink.exe ..\ViscaCamLink\bin\Release\net6.0-windows\win-x64\" />
+    <!-- Extract assembly identity for build version -->
+    <GetAssemblyIdentity AssemblyFiles="..\ViscaCamLink\bin\Release\net6.0-windows\win-x64\ViscaCamLink.dll">
+      <Output TaskParameter="Assemblies" ItemName="AssemblyIdentity" />
+    </GetAssemblyIdentity>
+    <PropertyGroup>
+      <DefineConstants>
+        BuildVersion=%(AssemblyIdentity.Version);
+        HarvestPath=..\ViscaCamLink\bin\Release\net6.0-windows\win-x64\publish;
+        ExePath=..\ViscaCamLink\bin\Release\net6.0-windows\win-x64
+      </DefineConstants>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Harvest all remaining files -->
+      <HarvestDirectory Include="..\ViscaCamLink\bin\Release\net6.0-windows\win-x64\publish">
+        <ComponentGroupName>HarvestedComponents</ComponentGroupName>
+        <DirectoryRefId>INSTALLFOLDER</DirectoryRefId>
+        <SupressCom>true</SupressCom>
+        <SupressRegistry>true</SupressRegistry>
+        <SuppressRootDirectory>true</SuppressRootDirectory>
+        <PreprocessorVariable>var.HarvestPath</PreprocessorVariable>
+      </HarvestDirectory>
+    </ItemGroup>
+  </Target>
+</Project>
