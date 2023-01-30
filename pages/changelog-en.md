@@ -4,8 +4,8 @@ lang: en
 permalink: /en/changelog/
 ---
 
-## 0.1.3
+## 0.2.0
 
-- Update-Info 1
-- Update-Info 2
-- Update-Info 3
+- Integrated an auto updater
+- Served an installer version
+- Minor UI changes
