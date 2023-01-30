@@ -58,7 +58,6 @@ After that, the connection can be established using the corresponding button in 
 * Customizable key assignment
 * Customizable name of presets
 * Additional control with mouse
-* Installation via setup
 * Support of communication via serial port
 
 ## License

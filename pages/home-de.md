@@ -58,7 +58,6 @@ Danach kann die Verbindung über den entsprechenden Schalter in der Adresszeile 
 * Anpassbare Tastenbelegung
 * Anpassbare Bezeichnung von Voreinstellungen
 * Zusätzliche Steuerung mit Maus
-* Installation per Setup
 * Unterstützung der Kommunikation über seriellen Anschluss
 
 ## Lizenz
