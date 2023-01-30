@@ -1,6 +1,7 @@
 ---
 layout: home
 permalink: /en/
+lang: en
 ---
 
 # ![ViscaCamLink](assets/banner.png)
