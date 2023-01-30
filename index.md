@@ -1,5 +1,6 @@
 ---
 layout: home
+lang: de
 ---
 
 # ![ViscaCamLink](assets/banner.png)
