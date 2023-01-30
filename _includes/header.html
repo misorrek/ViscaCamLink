@@ -16,7 +16,11 @@
         </label>
 
         <div class="trigger">
-          <a class="page-link" href="en/">English</a>
+          {%- if page.lang == "en" -%}
+            <a class="page-link" href="en/">English</a>
+          {%- elsif page.lang == "de" -%}
+            <a class="page-link" href="">Deutsch</a>
+          {%- endif -%}
         </div>
       </nav>
     {%- endif -%}
