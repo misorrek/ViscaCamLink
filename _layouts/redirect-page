@@ -1,0 +1,28 @@
+---
+layout: default
+---
+
+<script type="text/javascript">
+  var userLang = navigator.language || navigator.userLanguage; 
+
+  if (userLang == 'de')
+  {
+      window.location.replace("https://www.viscacamlink.de/de/");
+  }
+  else
+  {
+      window.location.replace("https://www.viscacamlink.de/en/");
+  }
+</script>
+
+<article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">{{ page.title | escape }}</h1>
+  </header>
+
+  <div class="post-content">
+    {{ content }}
+  </div>
+
+</article>
