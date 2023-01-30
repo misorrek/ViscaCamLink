@@ -1,6 +1,6 @@
 ---
 layout: only-content
-permalink: /changelog/
+permalink: /de/changelog/
 ---
 
 ## 0.1.3

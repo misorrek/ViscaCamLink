@@ -2,25 +2,14 @@
 layout: default
 ---
 
-<script type="text/javascript">
-  function getLanguage() 
+<script src="{{ '/scripts/languages.js' | relative_url }}">  
+  if (isLanguage('DE'))
   {
-    if (navigator.languages != undefined)
-    {
-      return navigator.languages[0]; 
-    }
-    return navigator.language || navigator.userLanguage;
-  }
-  
-  var userLang = getLanguage().toUpperCase(); 
-
-  if (userLang.startsWith('DE'))
-  {
-      window.location.replace("https://www.viscacamlink.de/de/");
+      window.location.replace("{{ page.redirect_de }}");
   }
   else
   {
-      window.location.replace("https://www.viscacamlink.de/en/");
+      window.location.replace("{{ page.redirect_en }}");
   }
 </script>
 

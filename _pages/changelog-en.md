@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: only-content
 permalink: /en/changelog/
 ---
 
