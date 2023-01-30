@@ -1,1 +1,7 @@
-name: ViscaCamLink
+title: ViscaCamLink
+author: "Max Groiser"
+
+theme: minima
+
+exclude: 
+    - .gitignore
