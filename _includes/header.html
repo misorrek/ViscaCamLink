@@ -16,10 +16,10 @@
         </label>
 
         <div class="trigger">
-          {%- if page.lang == "de" -%}
-            <a class="page-link" href="{{ "/en/" | relative_url }}">English</a>
-          {%- elsif page.lang == "en" -%}
-            <a class="page-link" href="{{ "/de/" | relative_url }}">Deutsch</a>
+          {%- if page.lang == 'de' -%}
+            <a class="page-link" href="{{ '/en/' | relative_url }}">English</a>
+          {%- elsif page.lang == 'en' -%}
+            <a class="page-link" href="{{ '/de/' | relative_url }}">Deutsch</a>
           {%- endif -%}
         </div>
       </nav>
