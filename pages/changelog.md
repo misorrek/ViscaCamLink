@@ -1,5 +1,6 @@
 ---
 permalink: /changelog/
+layout: only-content
 ---
 
 ## 0.1.3
