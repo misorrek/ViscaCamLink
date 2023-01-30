@@ -1,5 +1,6 @@
 ---
 layout: only-content
+lang: en
 permalink: /en/changelog/
 ---
 
