@@ -1,6 +1,8 @@
 title: ViscaCamLink
 author: "Max Groiser"
 
+base_url: /ViscaCamLink/de
+
 theme: minima
 
 exclude: 
