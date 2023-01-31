@@ -39,15 +39,19 @@ ViscaCamLink ist eine WPF-Desktopanwendung, die eine [PTZ Kamera](https://de.m.w
 
 ## Installation
 
-### Portabel 
+### Windows-Installer
 
-Die Ausführungsdatei (.exe) an einen beliebigen Ort legen, an dem der auszuführende Benutzer Berechtigungen hat. Danach starten - z.B. durch einen Doppelklick oder das Kontextmenü.
+Die Setup-Datei (.msi) ausführen (z. B. durch einen Doppelklick oder das Kontextmenü) und dem Assistenten folgen. Danach das Programm starten (optional automatisch oder manuell über das Windows-Startmenü) und mit [Erster Start](#erster-start) fortfahren.
 
-Da für die Anwendung .NET 6 benötigt wird, kommt wenn dies noch nicht vorinstalliert ist, nun eine Aufforderung dazu. Dieser einfach folgen und ggf. die Anwendung erneut starten ([Manuelle Installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)).
+### Portabel
 
-Danach ist ViscaCamLink bereit für die Benutzung.
+Die im Archiv (.zip) enthaltene Ausführungsdatei (.exe) an einen beliebigen Ort entpacken, an dem der auszuführende Benutzer Berechtigungen hat. Danach starten (z. B. durch einen Doppelklick oder das Kontextmenü) und mit [Erster Start](#erster-start) fortfahren.
 
-## Benutzung 
+## Erster Start
+
+Da für die Anwendung .NET 6 benötigt wird, kommt, wenn dies noch nicht vorinstalliert ist, nun eine Aufforderung dazu. Dieser einfach folgen und ggf. die Anwendung erneut starten ([Manuelle Installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)). Danach ist ViscaCamLink bereit für die Benutzung.
+
+## Benutzung
 
 Nach dem ersten Start muss die IP der Kamera und der Port für das VISCA Protokoll (wenn vom Standard abweichend) hinterlegt werden. Wie Sie an diese Informationen herankommen, beschreibt das Benutzerhandbuch der Kamera.
 
