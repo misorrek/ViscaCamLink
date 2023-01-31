@@ -49,7 +49,9 @@ Unpack the execution file (.exe) contained in the archive (.zip) to any location
 
 ## First start
 
-Since .NET 6 is required for the application, a prompt will appear if this is not yet pre-installed. Simply follow this prompt and restart the application if necessary ([Manual installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)). After that ViscaCamLink is ready for use.
+Since .NET 6 is required for the application, a prompt will appear if this is not yet pre-installed. Simply follow this prompt and restart the application if necessary ([Manual installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)). 
+
+After that ViscaCamLink is ready for use.
 
 ## Usage 
 
