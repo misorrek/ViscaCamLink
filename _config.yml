@@ -1,8 +1,8 @@
 title: ViscaCamLink
-description: Kamerasteuerung
+description: Home
 author: "Max Groiser"
 
-base_url: /ViscaCamLink/de
+base_url: /ViscaCamLink
 
 theme: minima
 
