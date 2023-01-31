@@ -1,5 +1,6 @@
 ---
 layout: home
+title: ViscaCamLink
 description: Camera control
 lang: en
 permalink: /en/
