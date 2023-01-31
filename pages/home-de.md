@@ -1,7 +1,5 @@
 ---
 layout: home
-title: ViscaCamLink
-description: Kamerasteuerung
 lang: de
 permalink: /de/
 ---
