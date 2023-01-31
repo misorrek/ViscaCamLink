@@ -8,3 +8,4 @@ theme: minima
 
 exclude: 
     - .gitignore
+    - README.md
