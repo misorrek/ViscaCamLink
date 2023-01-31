@@ -1,5 +1,6 @@
 ---
 layout: home
+description: Camera control
 lang: en
 permalink: /en/
 ---
