@@ -1,5 +1,6 @@
 ---
 layout: home
+description: Kamerasteuerung
 lang: de
 permalink: /de/
 ---
