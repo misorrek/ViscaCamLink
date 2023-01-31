@@ -49,7 +49,9 @@ Die im Archiv (.zip) enthaltene Ausführungsdatei (.exe) an einen beliebigen Ort
 
 ## Erster Start
 
-Da für die Anwendung .NET 6 benötigt wird, kommt, wenn dies noch nicht vorinstalliert ist, nun eine Aufforderung dazu. Dieser einfach folgen und ggf. die Anwendung erneut starten ([Manuelle Installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)). Danach ist ViscaCamLink bereit für die Benutzung.
+Da für die Anwendung .NET 6 benötigt wird, kommt, wenn dies noch nicht vorinstalliert ist, nun eine Aufforderung dazu. Dieser einfach folgen und ggf. die Anwendung erneut starten ([Manuelle Installation - .NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)). 
+
+Danach ist ViscaCamLink bereit für die Benutzung.
 
 ## Benutzung
 
