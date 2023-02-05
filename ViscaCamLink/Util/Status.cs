@@ -1,9 +1,8 @@
-﻿namespace ViscaCamLink.Util
+﻿namespace ViscaCamLink.Util;
+
+public enum Status
 {
-    public enum Status
-    {
-        Failed,
-        Working,
-        Ok
-    }
+    Failed,
+    Working,
+    Ok
 }

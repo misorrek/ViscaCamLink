@@ -1,89 +1,88 @@
-﻿namespace ViscaCamLink.Views
+﻿namespace ViscaCamLink.Views;
+
+using System;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+
+using WpfAnimatedGif;
+
+/// <summary>
+/// Interaction logic for ViscaCamLinkView.xaml
+/// </summary>
+public partial class ViscaCamLinkView : Window
 {
-    using System;
-    using System.Text.RegularExpressions;
-    using System.Windows;
-    using System.Windows.Controls;
-    using System.Windows.Input;
+    public ViscaCamLinkView()
+    {            
+        InitializeComponent();
+    }
 
-    using WpfAnimatedGif;
-
-    /// <summary>
-    /// Interaction logic for ViscaCamLinkView.xaml
-    /// </summary>
-    public partial class ViscaCamLinkView : Window
+    private void Window_LayoutUpdated(Object sender, EventArgs e)
     {
-        public ViscaCamLinkView()
-        {            
-            InitializeComponent();
-        }
+        SizeToContent = SizeToContent.Height; // To only allow horizontal resize
+    }
 
-        private void Window_LayoutUpdated(Object sender, EventArgs e)
+    private void TextBox_PreviewTextInput_Numeric(Object sender, TextCompositionEventArgs e)
+    {
+        e.Handled = !IsTextNumeric(e.Text);
+    }
+
+    private void TextBox_PreviewTextInput_NumericDot(Object sender, TextCompositionEventArgs e)
+    {
+        e.Handled = !IsTextNumericDot(e.Text);
+    }
+
+    private void TextBox_PastingHandler_Numeric(Object sender, DataObjectPastingEventArgs e)
+    {
+        PastingHandler(e, IsTextNumeric);
+    }
+
+    private void TextBox_PastingHandler_NumericDot(Object sender, DataObjectPastingEventArgs e)
+    {
+        PastingHandler(e, IsTextNumericDot);
+    }
+
+    private void PastingHandler(DataObjectPastingEventArgs e, Func<String, Boolean> pastedTextTester)
+    {
+        if (e.DataObject.GetDataPresent(typeof(String)))
         {
-            SizeToContent = SizeToContent.Height; // To only allow horizontal resize
-        }
+            String text = (String)e.DataObject.GetData(typeof(String));
 
-        private void TextBox_PreviewTextInput_Numeric(Object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !IsTextNumeric(e.Text);
-        }
-
-        private void TextBox_PreviewTextInput_NumericDot(Object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !IsTextNumericDot(e.Text);
-        }
-
-        private void TextBox_PastingHandler_Numeric(Object sender, DataObjectPastingEventArgs e)
-        {
-            PastingHandler(e, IsTextNumeric);
-        }
-
-        private void TextBox_PastingHandler_NumericDot(Object sender, DataObjectPastingEventArgs e)
-        {
-            PastingHandler(e, IsTextNumericDot);
-        }
-
-        private void PastingHandler(DataObjectPastingEventArgs e, Func<String, Boolean> pastedTextTester)
-        {
-            if (e.DataObject.GetDataPresent(typeof(String)))
-            {
-                String text = (String)e.DataObject.GetData(typeof(String));
-
-                if (!pastedTextTester(text))
-                {
-                    e.CancelCommand();
-                }
-            }
-            else
+            if (!pastedTextTester(text))
             {
                 e.CancelCommand();
             }
         }
-
-        private Boolean IsTextNumeric(String text)
+        else
         {
-            Regex numericRegex = new Regex("[0-9]+");
-
-            return numericRegex.IsMatch(text);
+            e.CancelCommand();
         }
+    }
 
-        private Boolean IsTextNumericDot(String text)
-        {
-            Regex numericRegex = new Regex("[0-9.]+");
+    private Boolean IsTextNumeric(String text)
+    {
+        Regex numericRegex = new Regex("[0-9]+");
 
-            return numericRegex.IsMatch(text);
-        }
+        return numericRegex.IsMatch(text);
+    }
 
-        public void ShowUpdateButton()
-        {
-            var updateButtonTemplate = UpdateButton.Template;
-            var updateImageControl = (Image)updateButtonTemplate.FindName("UpdateImage", UpdateButton);
-            var animationController = ImageBehavior.GetAnimationController(updateImageControl);
+    private Boolean IsTextNumericDot(String text)
+    {
+        Regex numericRegex = new Regex("[0-9.]+");
 
-            UpdateButton.Visibility = Visibility.Visible;
+        return numericRegex.IsMatch(text);
+    }
 
-            animationController.GotoFrame(0);
-            animationController.Play();
-        }
+    public void ShowUpdateButton()
+    {
+        var updateButtonTemplate = UpdateButton.Template;
+        var updateImageControl = (Image)updateButtonTemplate.FindName("UpdateImage", UpdateButton);
+        var animationController = ImageBehavior.GetAnimationController(updateImageControl);
+
+        UpdateButton.Visibility = Visibility.Visible;
+
+        animationController.GotoFrame(0);
+        animationController.Play();
     }
 }

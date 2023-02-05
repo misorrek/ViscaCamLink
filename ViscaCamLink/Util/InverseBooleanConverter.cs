@@ -1,27 +1,26 @@
-﻿namespace ViscaCamLink.Util
+﻿namespace ViscaCamLink.Util;
+
+using System;
+using System.Windows.Data;
+
+[ValueConversion(typeof(Boolean), typeof(Boolean))]
+public sealed class InverseBooleanConverter : IValueConverter
 {
-    using System;
-    using System.Windows.Data;
+    #region IValueConverter Members
 
-    [ValueConversion(typeof(Boolean), typeof(Boolean))]
-    public sealed class InverseBooleanConverter : IValueConverter
+    public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
-        #region IValueConverter Members
-
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        if (targetType != typeof(Boolean))
         {
-            if (targetType != typeof(Boolean))
-            {
-                throw new InvalidOperationException("The target must be a boolean");
-            }
-            return !(Boolean)value;
+            throw new InvalidOperationException("The target must be a boolean");
         }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotSupportedException();
-        }
-
-        #endregion
+        return !(Boolean)value;
     }
+
+    public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+
+    #endregion
 }
