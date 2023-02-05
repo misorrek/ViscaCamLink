@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
     <Nullable>Enable</Nullable>
-    <LangVersion>9</LangVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\ViscaCamLink.snk</AssemblyOriginatorKeyFile>
     <Configurations>Debug;Release;Release-Portable</Configurations>
