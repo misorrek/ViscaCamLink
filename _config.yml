@@ -6,6 +6,8 @@ base_url: /ViscaCamLink
 
 theme: minima
 
+google_analytics: UA-258204112-1
+
 exclude: 
     - .gitignore
     - README.md
