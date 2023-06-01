@@ -68,7 +68,7 @@ Danach kann die Verbindung über den entsprechenden Schalter in der Adresszeile 
 
 ## Lizenz
 
-[Apache 2.0](LICENSE)
+[Apache 2.0](license)
 
 Diese Applikation basiert auf dem Demo-Quelltext [CameraControl](https://github.com/jskeet/DemoCode/tree/main/CameraControl) (von jskeet)
 
