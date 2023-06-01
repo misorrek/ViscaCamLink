@@ -68,7 +68,7 @@ After that, the connection can be established using the corresponding button in 
 
 ## License
 
-[Apache 2.0](license.md)
+[Apache 2.0](license)
 
 This application is based on the demo code [CameraControl](https://github.com/jskeet/DemoCode/tree/main/CameraControl) (by jskeet)
 
