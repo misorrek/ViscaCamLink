@@ -1,3 +1,9 @@
+---
+layout: page
+lang: en
+permalink: /en/license
+---
+
 Apache License
 ==============
 
