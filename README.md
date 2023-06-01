@@ -59,7 +59,7 @@ After that, the connection can be established using the corresponding button in 
 
 ## License
 
-[Apache 2.0](www.viscacamlink.de/en/license)
+[Apache 2.0](https://www.viscacamlink.de/en/license)
 
 This application is based on the demo code [CameraControl](https://github.com/jskeet/DemoCode/tree/main/CameraControl) (by jskeet)
 
