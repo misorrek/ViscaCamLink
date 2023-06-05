@@ -61,7 +61,7 @@ After that, the connection can be established using the corresponding button in 
 
 [Apache 2.0](https://www.viscacamlink.de/en/license)
 
-This application is based on the demo code [CameraControl](https://github.com/jskeet/DemoCode/tree/main/CameraControl) (by jskeet)
+This application is based on the demo code "CameraControl" and uses fragments of the project "AutoUpdater.NET". For further information see the [third party notices](THIRD-PARTY-NOTICES).
 
 Icons from flaticon.com/uicons
 
