@@ -192,8 +192,8 @@
                                  Text="{Binding Ip}"                       
                                  IsReadOnly="{Binding IsEditingConnection, 
                                                       Converter={StaticResource InverseBooleanConverter}}"
-                                 PreviewTextInput="TextBox_PreviewTextInput_NumericDot"
-                                 DataObject.Pasting="TextBox_PastingHandler_NumericDot"
+                                 PreviewTextInput="TextBox_PreviewTextInput_Ip"
+                                 DataObject.Pasting="TextBox_PastingHandler_Ip"
                                  Style="{StaticResource HeaderTextBox}" />
 
                         <TextBlock DockPanel.Dock="Left"
@@ -206,8 +206,8 @@
                                  Text="{Binding Port}"     
                                  IsReadOnly="{Binding IsEditingConnection,
                                                       Converter={StaticResource InverseBooleanConverter}}"
-                                 PreviewTextInput="TextBox_PreviewTextInput_Numeric"
-                                 DataObject.Pasting="TextBox_PastingHandler_Numeric"
+                                 PreviewTextInput="TextBox_PreviewTextInput_Port"
+                                 DataObject.Pasting="TextBox_PastingHandler_Port"
                                  Style="{StaticResource HeaderTextBox}" />
 
                         <Button DockPanel.Dock="Right"
