@@ -24,6 +24,8 @@
             </ResourceDictionary.MergedDictionaries>
 
             <util:StatusToBrushConverter x:Key="ConnectionStatusToBrushConverter" />
+            <util:StatusOkToBoolConverter x:Key="ConnectionStatusOkToBoolConverter" />
+            <util:PowerStatusToBrushConverter x:Key="PowerStatusToBrushConverter" />
 
             <Style x:Key="SidebarButton"
                    TargetType="{x:Type Button}">
@@ -173,63 +175,55 @@
             
             <Border Margin="{StaticResource DefaultMargin}"
                     Style="{StaticResource BaseBorder}">
-                <StackPanel Margin="{StaticResource DefaultMargin}"
-                            Orientation="Vertical">
-                    <Grid Height="24">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="4" />
-                            <ColumnDefinition Width="24" />
-                            <ColumnDefinition Width="4" />
-                            <ColumnDefinition Width="24" />
-                        </Grid.ColumnDefinitions>
+                <Grid Margin="{StaticResource DefaultMargin}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                        <DockPanel Grid.Column="0"
-                                   LastChildFill="False">
-                            <TextBox DockPanel.Dock="Left"
-                                     BorderBrush="{StaticResource DefaultBorderBrush}"
-                                     Text="{Binding Ip}"                       
-                                     IsReadOnly="{Binding IsEditingConnection, 
-                                                          Converter={StaticResource InverseBooleanConverter}}"
-                                     PreviewTextInput="TextBox_PreviewTextInput_NumericDot"
-                                     DataObject.Pasting="TextBox_PastingHandler_NumericDot"
-                                     Style="{StaticResource HeaderTextBox}" />
+                    <!-- App Sperre bei IP Anpassung; Max Länge für Ip/Port -->
+                    
+                    <DockPanel Grid.Row="0"
+                               Height="24"
+                               LastChildFill="False">
+                        <TextBox DockPanel.Dock="Left"
+                                 BorderBrush="{StaticResource DefaultBorderBrush}"
+                                 Text="{Binding Ip}"                       
+                                 IsReadOnly="{Binding IsEditingConnection, 
+                                                      Converter={StaticResource InverseBooleanConverter}}"
+                                 PreviewTextInput="TextBox_PreviewTextInput_NumericDot"
+                                 DataObject.Pasting="TextBox_PastingHandler_NumericDot"
+                                 Style="{StaticResource HeaderTextBox}" />
 
-                            <TextBlock DockPanel.Dock="Left"
-                                       HorizontalAlignment="Center"
-                                       Text=":"                                           
-                                       Style="{StaticResource HeaderTextBlock}" />
+                        <TextBlock DockPanel.Dock="Left"
+                                   HorizontalAlignment="Center"
+                                   Text=":"                                           
+                                   Style="{StaticResource HeaderTextBlock}" />
 
-                            <TextBox DockPanel.Dock="Left"      
-                                     BorderBrush="{StaticResource DefaultBorderBrush}"                                 
-                                     Text="{Binding Port}"     
-                                     IsReadOnly="{Binding IsEditingConnection,
-                                                          Converter={StaticResource InverseBooleanConverter}}"
-                                     PreviewTextInput="TextBox_PreviewTextInput_Numeric"
-                                     DataObject.Pasting="TextBox_PastingHandler_Numeric"
-                                     Style="{StaticResource HeaderTextBox}" />
-                        </DockPanel>
+                        <TextBox DockPanel.Dock="Left"      
+                                 BorderBrush="{StaticResource DefaultBorderBrush}"                                 
+                                 Text="{Binding Port}"     
+                                 IsReadOnly="{Binding IsEditingConnection,
+                                                      Converter={StaticResource InverseBooleanConverter}}"
+                                 PreviewTextInput="TextBox_PreviewTextInput_Numeric"
+                                 DataObject.Pasting="TextBox_PastingHandler_Numeric"
+                                 Style="{StaticResource HeaderTextBox}" />
 
-                        <Button Grid.Column="2"    
+                        <Button DockPanel.Dock="Right"
+                                Width="24"
                                 VerticalAlignment="Stretch"
                                 Command="{Binding ConnectionEditCommand}"
                                 Style="{StaticResource BorderlessButton}">
                             <Path Data="{StaticResource Pencil}"
                                   Style="{StaticResource Icon16Path}" />
                         </Button>
+                    </DockPanel>
 
-                        <Button Grid.Column="4"   
-                                VerticalAlignment="Stretch"
-                                Command="{Binding ReconnectCommand}"
-                                Style="{StaticResource BorderlessButton}">
-                            <Path Data="{StaticResource Refresh}"
-                                  Style="{StaticResource Icon16Path}" />
-                        </Button>
-                    </Grid>
-
-                    <StackPanel Orientation="Horizontal"
-                                Margin="0,4,0,0"
-                                Height="16">
+                    <DockPanel Grid.Row="1"
+                               Height="24"
+                               Margin="0,4,0,0"
+                               LastChildFill="False">
                         <Ellipse Height="12" 
                                  Width="12"
                                  Fill="{Binding Path=ConnectionStatus,
@@ -238,8 +232,44 @@
                         <Label Margin="4,0,0,0"
                                Content="{Binding ConnectionInfo}"
                                Style="{StaticResource BaseLabel}"/>
-                    </StackPanel>
-                </StackPanel>
+
+                        <Button DockPanel.Dock="Right"
+                                Width="24"
+                                VerticalAlignment="Stretch"
+                                Command="{Binding ReconnectCommand}"
+                                IsEnabled="{Binding IsEditingConnection,
+                                                    Converter={StaticResource InverseBooleanConverter}}"
+                                Style="{StaticResource BorderlessButton}">
+                            <Path Data="{StaticResource Refresh}"
+                                  Style="{StaticResource Icon16Path}" />
+                        </Button>
+                    </DockPanel>
+
+                    <DockPanel Grid.Row="2"
+                               Height="24"
+                               Margin="0,4,0,0"
+                               LastChildFill="False">
+                        <Ellipse Height="12" 
+                                 Width="12"
+                                 Fill="{Binding Path=PowerStatus,
+                                                Converter={StaticResource PowerStatusToBrushConverter}, Mode=Default}" />
+
+                        <Label Margin="4,0,0,0"
+                               Content="{Binding PowerInfo}"
+                               Style="{StaticResource BaseLabel}"/>
+
+                        <Button DockPanel.Dock="Right"
+                                Width="24"
+                                VerticalAlignment="Stretch"
+                                Command="{Binding PowerSwitchCommand}"
+                                IsEnabled="{Binding ConnectionStatus, 
+                                                    Converter={StaticResource ConnectionStatusOkToBoolConverter}}"
+                                Style="{StaticResource BorderlessButton}">
+                            <Path Data="{StaticResource Power}"
+                                  Style="{StaticResource Icon16Path}" />
+                        </Button>
+                    </DockPanel>
+                </Grid>
             </Border>
             
             <!-- Memory container -->

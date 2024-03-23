@@ -25,13 +25,13 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         var connected = ViscaController.Connected.GetValueOrDefault();
 
         ConnectionStatus = connected ? Status.Ok : Status.Failed;
-        ConnectionInfo = connected ? "Verbunden" : "Keine Verbindung";
 
         SidebarCommand = new Command(ExecuteSidebar);
         UpdateCommand = new Command(OpenUpdateDialog);
         OptionsCommand = new Command(OpenOptions);
         ConnectionEditCommand = new Command(ExecuteConnectionEdit);
         ReconnectCommand = new Command(ExecuteReconnect);
+        PowerSwitchCommand = new Command(ExecutePowerSwitch);
         MemoryRenameCommand = new Command(ExecuteMemoryRename);
         MemorySetCommand = new Command(ExecuteMemorySet);
         MemoryCommand = new Command(ExecuteMemorySetOrRecall);            
@@ -71,6 +71,8 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
     public ICommand ConnectionEditCommand { get; }
 
     public ICommand ReconnectCommand { get; }
+
+    public ICommand PowerSwitchCommand { get; }
 
     public ICommand MemoryRenameCommand { get; }
 
@@ -182,6 +184,8 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         set
         {
             _connectionStatus = value;
+            UpdateConnectionInfo();
+            UpdatePowerStatus();
             NotifyPropertyChanged();
         }
     }
@@ -193,6 +197,29 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         set
         {
             _connectionInfo = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public PowerStatus PowerStatus
+    {
+        get => _powerStatus;
+
+        set
+        {
+            _powerStatus = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public String PowerInfo
+    {
+        get => _powerInfo;
+
+        set
+        {
+            _powerInfo = value;
+            UpdatePowerInfo();
             NotifyPropertyChanged();
         }
     }
@@ -226,6 +253,10 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
     private Status _connectionStatus = Status.Failed;
 
     private String _connectionInfo = String.Empty;
+
+    private PowerStatus _powerStatus = PowerStatus.Unknown;
+
+    private String _powerInfo = String.Empty;
 
     private Boolean _isSettingMemory = false;
 
@@ -288,6 +319,53 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         MessageBox.Show("Bald verfügbar!");
     }
 
+    private void UpdateConnectionInfo()
+    {
+        switch(ConnectionStatus)
+        {
+            case Status.Failed:
+                ConnectionInfo = "Keine Verbindung";
+                break;
+            case Status.Working:
+                ConnectionInfo = "Verbindungsversuch";
+                break;
+            case Status.Ok:
+                ConnectionInfo = "Verbunden";
+                break;
+        }
+    }
+
+    private void UpdatePowerStatus()
+    {
+        if (ConnectionStatus == Status.Ok)
+        {
+            PowerStatus = ViscaController.GetPowerStatus().Result;
+        }
+        else
+        {
+            PowerStatus = PowerStatus.Unknown;
+        }
+    }
+
+    private void UpdatePowerInfo()
+    {
+        switch(PowerStatus)
+        {
+            case PowerStatus.Unknown:
+                PowerInfo = "Unbekannter Kamerastatus";
+                break;
+            case PowerStatus.On:
+                PowerInfo = "Kamera aktiv";
+                break;
+            case PowerStatus.Standby:
+                PowerInfo = "Kamera inaktiv";
+                break;
+            case PowerStatus.InternalPowerCircuitError:
+                PowerInfo = "Fehlerhafter Kamerastatus";
+                break;
+        }
+    }
+
     private void ExecuteConnectionEdit()
     {
         IsEditingConnection = !IsEditingConnection;
@@ -298,16 +376,36 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         var source = new CancellationTokenSource();
 
         ConnectionStatus = Status.Working;
-        ConnectionInfo = "Verbindungsversuch";
 
-        ViscaController.Reconnect(source.Token, Settings.Default.Ip, Settings.Default.Port)
+        ViscaController
+            .Reconnect(source.Token, Settings.Default.Ip, Settings.Default.Port)
             .ContinueWith(task =>
             {
                 var connected = ViscaController.Connected.GetValueOrDefault();
 
                 ConnectionStatus = connected ? Status.Ok : Status.Failed;
-                ConnectionInfo = connected ? "Verbunden" : "Keine Verbindung";
             });
+    }
+
+    private void ExecutePowerSwitch()
+    {
+        PowerStatus = ViscaController.GetPowerStatus().Result;
+
+        switch(PowerStatus)
+        {
+            case PowerStatus.On:
+                ViscaController.PowerOff().ContinueWith(task =>
+                {
+                    PowerStatus = PowerStatus.Standby;
+                });
+                break;
+            case PowerStatus.Standby:
+                ViscaController.PowerOn().ContinueWith(task =>
+                {
+                    PowerStatus = PowerStatus.On;
+                });
+                break;
+        }
     }
 
     private void ExecuteMemoryRename()
