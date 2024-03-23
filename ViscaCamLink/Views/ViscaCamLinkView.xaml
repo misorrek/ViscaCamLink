@@ -80,6 +80,8 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
+        <!-- Side pane -->
+        
         <Border Grid.Column="0"
                 Grid.Row="0"
                 BorderThickness="0,0,1,0"
@@ -160,10 +162,15 @@
                 </Button>
             </DockPanel>
         </Border>
+        
+        <!-- Container -->
 
         <StackPanel Grid.Column="1"
                     Grid.Row="0"
                     Orientation="Vertical">
+            
+            <!-- Connection Container -->
+            
             <Border Margin="{StaticResource DefaultMargin}"
                     Style="{StaticResource BaseBorder}">
                 <StackPanel Margin="{StaticResource DefaultMargin}"
@@ -234,6 +241,8 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
+            
+            <!-- Memory container -->
 
             <Border Style="{StaticResource BaseBorder}"
                     Visibility="{Binding MemoryContainerVisible,
@@ -396,6 +405,8 @@
                 </Grid>
             </Border>
 
+            <!-- Move container -->
+            
             <Border Style="{StaticResource BaseBorder}"
                     Visibility="{Binding MoveContainerVisible,
                                          Converter={StaticResource FalseToCollapsedConverter}}">
@@ -405,6 +416,7 @@
                             <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                 <behaviors:InvokeCommandAction Command="{Binding MoveBeginCommand}" PassEventArgsToCommand="True" />
                             </behaviors:EventTrigger>
+                            
                             <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
                                 <behaviors:InvokeCommandAction Command="{Binding MoveEndCommand}" PassEventArgsToCommand="True" />
                             </behaviors:EventTrigger>
@@ -625,6 +637,8 @@
                 </Grid>
             </Border>
 
+            <!-- Zoom container -->
+
             <Border Style="{StaticResource BaseBorder}"
                     Visibility="{Binding ZoomContainerVisible,
                                          Converter={StaticResource FalseToCollapsedConverter}}">
@@ -634,11 +648,12 @@
                             <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                 <behaviors:InvokeCommandAction Command="{Binding ZoomCommand}" PassEventArgsToCommand="True" />
                             </behaviors:EventTrigger>
+                            
                             <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
                                 <behaviors:InvokeCommandAction Command="{Binding ZoomCommand}" PassEventArgsToCommand="True" />
                             </behaviors:EventTrigger>
                         </util:Triggers>
-                        
+
                         <Style x:Key="ZoomButton"
                                TargetType="{x:Type Button}"
                                BasedOn="{StaticResource MarginedButton}">
