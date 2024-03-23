@@ -59,7 +59,7 @@ After that, the connection can be established using the corresponding button in 
 
 ## License
 
-[Apache 2.0](https://www.viscacamlink.de/en/license)
+[Apache 2.0](https://www.viscacamlink.info/en/license)
 
 This application is based on the demo code "CameraControl" and uses fragments of the project "AutoUpdater.NET". For further information see the [third party notices](THIRD-PARTY-NOTICES).
 

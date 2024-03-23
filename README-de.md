@@ -57,7 +57,7 @@ Danach kann die Verbindung über den entsprechenden Schalter in der Adresszeile 
 
 ## Lizenz
 
-[Apache 2.0](https://www.viscacamlink.de/en/license)
+[Apache 2.0](https://www.viscacamlink.info/en/license)
 
 Diese Applikation basiert auf dem Demo-Quelltext "CameraControl" und nutzt Teile des Projektes "AutoUpdater.NET". Für weitere Informationen siehe [Hinweise zu Drittanbieter-Software](THIRD-PARTY-NOTICES).
 
