@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 using AutoUpdaterDotNET;
@@ -37,9 +38,9 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         HomeCommand = new Command(ExecuteHome);
         MoveBeginCommand = new Command(ExecuteMoveBegin);
         MoveEndCommand = new Command(ExecuteMoveEnd);
-        ZoomCommand = new Command(ExecuteZoom);                                   
         MoveSpeedDecreaseCommand = new Command(ExecuteMoveSpeedDecreaseCommand);
         MoveSpeedIncreaseCommand = new Command(ExecuteMoveSpeedIncreaseCommand);
+        ZoomCommand = new Command(ExecuteZoom);
         ZoomSpeedDecreaseCommand = new Command(ExecuteZoomSpeedDecrease);
         ZoomSpeedIncreaseCommand = new Command(ExecuteZoomSpeedIncrease);
 
@@ -355,42 +356,34 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         ViscaController.GoHome();
     }
 
-    private void ExecuteMoveBegin(Object? parameter) //TODO
+    private void ExecuteMoveBegin(Object? parameter)
+    {
+        if (parameter is MouseButtonEventArgs eventArgs &&
+            eventArgs.LeftButton == MouseButtonState.Pressed &&
+            eventArgs.Source is Button button &&
+            button.CommandParameter is MoveDirection direction)
+        {         
+             ViscaController.ContinuousPanTilt(
+                GetPan(direction), 
+                GetTilt(direction), 
+                (Byte)Settings.Default.PanTiltSpeed, 
+                GetTiltSpeed());
+        }
+    }
+
+    private void ExeuteMoveMouse(Object? parameter)
     {
         if (parameter != null && parameter is MouseEventArgs eventArgs &&
             eventArgs.Source != null && eventArgs.Source is FrameworkElement element &&
             eventArgs.LeftButton == MouseButtonState.Pressed)
         {
-            if (element.Tag == null)
-            {
-                return;
-            }
-            var tag = element.Tag.ToString();
+            var position = eventArgs.GetPosition(element); //TODO
+            var panSpeed = NormalizeSpeed(position.X, element.ActualWidth, ViscaController.MaxPanSpeed);
+            // Tilt has "up is positive" in camera coordinates, but "up is negative" in screen coordinates
+            var tiltSpeed = -NormalizeSpeed(position.Y, element.ActualHeight, ViscaController.MaxTiltSpeed);
+            var pan = panSpeed == 0 ? default(bool?) : panSpeed > 0;
+            var tilt = tiltSpeed == 0 ? default(bool?) : tiltSpeed > 0;
 
-            if (tag == null)
-            {
-                return;
-            }
-
-            bool? pan;
-            bool? tilt;
-
-            if (tag == "Mouse")
-            {
-                var position = eventArgs.GetPosition(element); //TODO
-
-                var panSpeed = NormalizeSpeed(position.X, element.ActualWidth, ViscaController.MaxPanSpeed);
-                // Tilt has "up is positive" in camera coordinates, but "up is negative" in screen coordinates
-                var tiltSpeed = -NormalizeSpeed(position.Y, element.ActualHeight, ViscaController.MaxTiltSpeed);
-
-                pan = panSpeed == 0 ? default(bool?) : panSpeed > 0;
-                tilt = tiltSpeed == 0 ? default(bool?) : tiltSpeed > 0;
-            }
-            else
-            {
-                pan = GetPan(tag);
-                tilt = GetTilt(tag);
-            }
             ViscaController.ContinuousPanTilt(pan, tilt, (Byte)Settings.Default.PanTiltSpeed, GetTiltSpeed());
         }
     }
@@ -412,26 +405,26 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         return speed;
     }
 
-    private static Boolean? GetPan(String tag) //TODO
+    private static Boolean? GetPan(MoveDirection direction)
     {
-        if (tag.ToLower().Contains("right"))
+        if (direction.HasFlag(MoveDirection.Right))
         {
             return true;
         }
-        if (tag.ToLower().Contains("left"))
+        if (direction.HasFlag(MoveDirection.Left))
         {
             return false;
         }
         return null;
     }
 
-    private static Boolean? GetTilt(String tag) //TODO
+    private static Boolean? GetTilt(MoveDirection direction)
     {
-        if (tag.ToLower().Contains("up"))
+        if (direction.HasFlag(MoveDirection.Up))
         {
             return true;
         }
-        if (tag.ToLower().Contains("down"))
+        if (direction.HasFlag(MoveDirection.Down))
         {
             return false;
         }
@@ -445,7 +438,6 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         return (Byte)Math.Ceiling(ViscaController.MaxTiltSpeed * speedInPercent);
     }
 
-    private void ExecuteZoom(Object? parameter)
     private void ExecuteMoveSpeedDecreaseCommand()
     {
         if (Settings.Default.PanTiltSpeed > 1)
@@ -463,16 +455,17 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
             NotifyPropertyChanged();
         }
     }
+
+    private void ExecuteZoom(Object? parameter)
     {
-        if (parameter != null && parameter is MouseButtonEventArgs eventArgs && 
-            eventArgs.Source != null && eventArgs.Source is FrameworkElement element)
+        if (parameter is MouseButtonEventArgs eventArgs && 
+            eventArgs.Source is Button button &&
+            button.CommandParameter is ZoomDirection direction)
         {
-            var zoomIn = element.Tag.ToString() == "In";
-            
             switch(eventArgs.LeftButton)
             {
                 case MouseButtonState.Pressed:
-                    ViscaController.ContinuousZoom(zoomIn, (Byte)Settings.Default.ZoomSpeed);
+                    ViscaController.ContinuousZoom(direction == ZoomDirection.In, (Byte)Settings.Default.ZoomSpeed);
                     break;
                 case MouseButtonState.Released:
                     ViscaController.ContinuousZoom(default(bool?), 0);

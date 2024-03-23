@@ -477,7 +477,7 @@
 
                     <Button Grid.Column="0"
                             Grid.Row="1"
-                            Tag="LeftUp"
+                            CommandParameter="{x:Static util:MoveDirection.LeftUp}"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
                               Style="{StaticResource MoveButtonPath}">
@@ -489,7 +489,7 @@
                     
                     <Button Grid.Column="1"
                             Grid.Row="1"
-                            Tag="Up"
+                            CommandParameter="{x:Static util:MoveDirection.Up}"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
                               Style="{StaticResource MoveButtonPath}">
@@ -501,7 +501,7 @@
 
                     <Button Grid.Column="2"
                             Grid.Row="1"
-                            Tag="RightUp"
+                            CommandParameter="{x:Static util:MoveDirection.RightUp}"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
                               Style="{StaticResource MoveButtonPath}">
@@ -513,7 +513,7 @@
 
                     <Button Grid.Column="0"
                             Grid.Row="2"
-                            Tag="Left"
+                            CommandParameter="{x:Static util:MoveDirection.Left}"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
                               Style="{StaticResource MoveButtonPath}">
@@ -548,7 +548,7 @@
 
                     <Button Grid.Column="2"
                             Grid.Row="2"
-                            Tag="Right"
+                            CommandParameter="{x:Static util:MoveDirection.Right}"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
                               Style="{StaticResource MoveButtonPath}">
@@ -560,7 +560,7 @@
 
                     <Button Grid.Column="0"
                             Grid.Row="3"
-                            Tag="LeftDown"
+                            CommandParameter="{x:Static util:MoveDirection.LeftDown}"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
                               Style="{StaticResource MoveButtonPath}">
@@ -572,7 +572,7 @@
 
                     <Button Grid.Column="1"
                             Grid.Row="3"
-                            Tag="Down"
+                            CommandParameter="{x:Static util:MoveDirection.Down}"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
                               Style="{StaticResource MoveButtonPath}">
@@ -584,7 +584,7 @@
 
                     <Button Grid.Column="2"
                             Grid.Row="3"
-                            Tag="RightDown"
+                            CommandParameter="{x:Static util:MoveDirection.RightDown}"
                             Style="{StaticResource MoveButton}">
                         <Path Data="{StaticResource Angle}"                              
                               Style="{StaticResource MoveButtonPath}">
@@ -660,14 +660,6 @@
                             <Setter Property="util:SupplementaryInteraction.Triggers"
                                     Value="{StaticResource ZoomTriggers}" />
                         </Style>
-
-                        <Style x:Key="ZoomButtonPath"
-                               TargetType="{x:Type Path}"
-                               BasedOn="{StaticResource Icon16Path}">
-                            <Setter Property="Tag"
-                                    Value="{Binding (Button.Tag),
-                                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}" />
-                        </Style>
                     </Grid.Resources>
                     
                     <Grid.ColumnDefinitions>
@@ -694,18 +686,18 @@
                     <Button x:Name="ButtonZoomOut"
                             Grid.Column="0"
                             Grid.Row="1"
-                            Tag="Out"
+                            CommandParameter="{x:Static util:ZoomDirection.Out}"
                             Style="{StaticResource ZoomButton}">
                         <Path Data="{StaticResource ZoomOut}"
-                              Style="{StaticResource ZoomButtonPath}" />
+                              Style="{StaticResource Icon16Path}" />
                     </Button>
 
                     <Button Grid.Column="1"
                             Grid.Row="1"
-                            Tag="In"
+                            CommandParameter="{x:Static util:ZoomDirection.In}"
                             Style="{StaticResource ZoomButton}">
                         <Path Data="{StaticResource ZoomIn}"
-                              Style="{StaticResource ZoomButtonPath}" />
+                              Style="{StaticResource Icon16Path}" />
                     </Button>
 
                     <!-- Speed Control -->
