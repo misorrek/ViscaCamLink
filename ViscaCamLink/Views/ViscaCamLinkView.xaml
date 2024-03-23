@@ -206,7 +206,7 @@
                         <Button Grid.Column="2"    
                                 VerticalAlignment="Stretch"
                                 Command="{Binding ConnectionEditCommand}"
-                                Style="{StaticResource BaseButton}">
+                                Style="{StaticResource BorderlessButton}">
                             <Path Data="{StaticResource Pencil}"
                                   Style="{StaticResource Icon16Path}" />
                         </Button>
@@ -214,7 +214,7 @@
                         <Button Grid.Column="4"   
                                 VerticalAlignment="Stretch"
                                 Command="{Binding ReconnectCommand}"
-                                Style="{StaticResource BaseButton}">
+                                Style="{StaticResource BorderlessButton}">
                             <Path Data="{StaticResource Refresh}"
                                   Style="{StaticResource Icon16Path}" />
                         </Button>
@@ -269,7 +269,7 @@
                                 Width="24"   
                                 VerticalAlignment="Stretch"
                                 Command="{Binding MemorySetCommand}"
-                                Style="{StaticResource BaseButton}">
+                                Style="{StaticResource BorderlessButton}">
                             <Path>
                                 <Path.Style>
                                     <Style TargetType="{x:Type Path}"
@@ -455,7 +455,7 @@
                                 Width="24"   
                                 VerticalAlignment="Stretch"
                                 Command="{Binding HomeCommand}"
-                                Style="{StaticResource BaseButton}">
+                                Style="{StaticResource BorderlessButton}">
                             <Path Data="{StaticResource Home}"
                                   Style="{StaticResource Icon16Path}" />
                         </Button>

@@ -279,6 +279,13 @@
         </Style.Triggers>
     </Style>
 
+    <Style x:Key="BorderlessButton"
+           TargetType="{x:Type Button}"
+           BasedOn="{StaticResource BaseButton}">
+        <Setter Property="BorderThickness"
+                Value="0" />
+    </Style>
+
     <Style x:Key="DialogButton"
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource BaseButton}">
