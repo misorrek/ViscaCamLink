@@ -208,6 +208,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         set
         {
             _powerStatus = value;
+            UpdatePowerInfo();
             NotifyPropertyChanged();
         }
     }
@@ -219,7 +220,6 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         set
         {
             _powerInfo = value;
-            UpdatePowerInfo();
             NotifyPropertyChanged();
         }
     }
