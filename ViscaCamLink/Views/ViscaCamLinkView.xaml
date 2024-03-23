@@ -587,30 +587,40 @@
                     <Grid Grid.Column="0"
                           Grid.ColumnSpan="3"
                           Grid.Row="4"
-                          Margin="0,12,0,8">
+                          Height="24"
+                          Margin="0,12,0,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="32" />
                         </Grid.ColumnDefinitions>
 
-                        <Path  Grid.Column="0"
-                               Margin="0,0,8,0"
-                               Data="{StaticResource TachometerSlow}"
-                               Style="{StaticResource Icon16Path}" />
+                        <Button Grid.Column="0"
+                                Margin="0,0,8,0"
+                                Width="24"
+                                Command="{Binding MoveSpeedDecreaseCommand}"
+                                Style="{StaticResource BorderlessButton}">
+                            <Path Data="{StaticResource TachometerSlow}"
+                                  Style="{StaticResource Icon16Path}" />
+                        </Button>
 
                         <Slider Grid.Column="1" 
                                 Minimum="1"
                                 Maximum="{Binding MaximalPanTiltSpeed}" 
                                 Orientation="Horizontal"
+                                VerticalAlignment="Center"
                                 Value="{Binding Source={x:Static properties:Settings.Default},
                                                 Path=PanTiltSpeed}"
                                 Style="{StaticResource HorizontalSlider}" />
 
-                        <Path  Grid.Column="2"
-                               Margin="8,0,0,0"
-                               Data="{StaticResource TachometerFast}"
-                               Style="{StaticResource Icon16Path}" />
+                        <Button Grid.Column="2"
+                                Margin="8,0,0,0"
+                                Width="24"
+                                Command="{Binding MoveSpeedIncreaseCommand}"
+                                Style="{StaticResource BorderlessButton}">
+                            <Path Data="{StaticResource TachometerFast}"
+                                  Style="{StaticResource Icon16Path}" />
+                        </Button>
                     </Grid>
                 </Grid>
             </Border>
@@ -688,31 +698,41 @@
                     <Grid Grid.Column="0"
                           Grid.ColumnSpan="2"
                           Grid.Row="2"
-                          Margin="0,12,0,8">
+                          Height="24"
+                          Margin="0,12,0,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="32" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="32" />
                         </Grid.ColumnDefinitions>
 
-                        <Path  Grid.Column="0"
-                               Margin="0,0,8,0"
-                               Data="{StaticResource TachometerSlow}"
-                               Style="{StaticResource Icon16Path}" />
+                        <Button Grid.Column="0"
+                                Margin="0,0,8,0"
+                                Width="24"
+                                Command="{Binding ZoomSpeedDecreaseCommand}"
+                                Style="{StaticResource BorderlessButton}">
+                            <Path Data="{StaticResource TachometerSlow}"
+                                  Style="{StaticResource Icon16Path}" />
+                        </Button>
 
                         <Slider Grid.Column="1"
                                 Minimum="1"
                                 Maximum="{Binding MaximalZoomSpeed}"
                                 IsSnapToTickEnabled="True"
                                 Orientation="Horizontal"
+                                VerticalAlignment="Center"
                                 Value="{Binding Source={x:Static properties:Settings.Default},
                                                 Path=ZoomSpeed}"
                                 Style="{StaticResource HorizontalSlider}" />
 
-                        <Path  Grid.Column="2"
-                               Margin="8,0,0,0"
-                               Data="{StaticResource TachometerFast}"
-                               Style="{StaticResource Icon16Path}" />
+                        <Button Grid.Column="2"
+                                Margin="8,0,0,0"
+                                Width="24"
+                                Command="{Binding ZoomSpeedIncreaseCommand}"
+                                Style="{StaticResource BorderlessButton}">
+                            <Path Data="{StaticResource TachometerFast}"
+                                  Style="{StaticResource Icon16Path}" />
+                        </Button>
                     </Grid>
                 </Grid>
             </Border>

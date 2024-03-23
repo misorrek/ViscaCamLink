@@ -38,6 +38,10 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         MoveBeginCommand = new Command(ExecuteMoveBegin);
         MoveEndCommand = new Command(ExecuteMoveEnd);
         ZoomCommand = new Command(ExecuteZoom);                                   
+        MoveSpeedDecreaseCommand = new Command(ExecuteMoveSpeedDecreaseCommand);
+        MoveSpeedIncreaseCommand = new Command(ExecuteMoveSpeedIncreaseCommand);
+        ZoomSpeedDecreaseCommand = new Command(ExecuteZoomSpeedDecrease);
+        ZoomSpeedIncreaseCommand = new Command(ExecuteZoomSpeedIncrease);
 
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad0, () => ExecuteMemorySetOrRecall("0"));
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad1, () => ExecuteMemorySetOrRecall("1"));
@@ -79,7 +83,15 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     public ICommand MoveEndCommand { get; }
 
+    public ICommand MoveSpeedDecreaseCommand { get; }
+
+    public ICommand MoveSpeedIncreaseCommand { get; }
+
     public ICommand ZoomCommand { get; }
+
+    public ICommand ZoomSpeedIncreaseCommand { get; }
+
+    public ICommand ZoomSpeedDecreaseCommand { get; }
 
     public static Int32 MaximalPanTiltSpeed
     {
@@ -434,6 +446,23 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
     }
 
     private void ExecuteZoom(Object? parameter)
+    private void ExecuteMoveSpeedDecreaseCommand()
+    {
+        if (Settings.Default.PanTiltSpeed > 1)
+        {
+            Settings.Default.PanTiltSpeed--;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private void ExecuteMoveSpeedIncreaseCommand()
+    {
+        if (Settings.Default.PanTiltSpeed < MaximalPanTiltSpeed)
+        {
+            Settings.Default.PanTiltSpeed++;
+            NotifyPropertyChanged();
+        }
+    }
     {
         if (parameter != null && parameter is MouseButtonEventArgs eventArgs && 
             eventArgs.Source != null && eventArgs.Source is FrameworkElement element)
@@ -449,6 +478,24 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
                     ViscaController.ContinuousZoom(default(bool?), 0);
                     break;
             }
+        }
+    }
+
+    private void ExecuteZoomSpeedDecrease()
+    {
+        if (Settings.Default.ZoomSpeed > 1)
+        {
+            Settings.Default.ZoomSpeed--;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private void ExecuteZoomSpeedIncrease()
+    {
+        if (Settings.Default.ZoomSpeed < MaximalZoomSpeed)
+        {
+            Settings.Default.ZoomSpeed++;
+            NotifyPropertyChanged();
         }
     }
 
