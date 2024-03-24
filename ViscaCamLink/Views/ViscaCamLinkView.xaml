@@ -26,6 +26,7 @@
             <util:StatusToBrushConverter x:Key="ConnectionStatusToBrushConverter" />
             <util:StatusOkToBoolConverter x:Key="ConnectionStatusOkToBoolConverter" />
             <util:PowerStatusToBrushConverter x:Key="PowerStatusToBrushConverter" />
+            <util:BoolAndConverter x:Key="BoolAndConverter" />
 
             <Style x:Key="SidebarButton"
                    TargetType="{x:Type Button}">
@@ -60,7 +61,7 @@
                 </Style.Triggers>
             </Style>
 
-            <Style x:Key="MarginedButton"
+            <Style x:Key="MarginedDisableableButton"
                    TargetType="{x:Type Button}"
                    BasedOn="{StaticResource LargeButton}">
                 <Setter Property="Margin"
@@ -71,7 +72,25 @@
                         <Setter Property="Margin"
                                 Value="0,4,0,0" />
                     </Trigger>
+
+                    <DataTrigger Binding="{Binding IsEditingConnection}"
+                                 Value="True">
+                        <Setter Property="IsEnabled"
+                                Value="False" />
+                    </DataTrigger>
                 </Style.Triggers>
+            </Style>
+
+            <Style x:Key="BorderlessDisableableButton"
+                   TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource BorderlessButton}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsEditingConnection}"
+                                 Value="True">
+                        <Setter Property="IsEnabled"
+                                Value="False" />
+                    </DataTrigger>    
+                </Style.Triggers>  
             </Style>
         </ResourceDictionary>
     </Window.Resources>
@@ -182,8 +201,6 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <!-- App Sperre bei IP Anpassung; Max Länge für Ip/Port -->
-                    
                     <DockPanel Grid.Row="0"
                                Height="24"
                                LastChildFill="False">
@@ -237,9 +254,7 @@
                                 Width="24"
                                 VerticalAlignment="Stretch"
                                 Command="{Binding ReconnectCommand}"
-                                IsEnabled="{Binding IsEditingConnection,
-                                                    Converter={StaticResource InverseBooleanConverter}}"
-                                Style="{StaticResource BorderlessButton}">
+                                Style="{StaticResource BorderlessDisableableButton}">
                             <Path Data="{StaticResource Refresh}"
                                   Style="{StaticResource Icon16Path}" />
                         </Button>
@@ -262,9 +277,15 @@
                                 Width="24"
                                 VerticalAlignment="Stretch"
                                 Command="{Binding PowerSwitchCommand}"
-                                IsEnabled="{Binding ConnectionStatus, 
-                                                    Converter={StaticResource ConnectionStatusOkToBoolConverter}}"
                                 Style="{StaticResource BorderlessButton}">
+                            <Button.IsEnabled>
+                                <MultiBinding Converter="{StaticResource BoolAndConverter}">
+                                    <Binding Path="IsEditingConnection"
+                                             Converter="{StaticResource InverseBooleanConverter}" />
+                                    <Binding Path="ConnectionStatus"
+                                             Converter="{StaticResource ConnectionStatusOkToBoolConverter}" />
+                                </MultiBinding>
+                            </Button.IsEnabled>
                             <Path Data="{StaticResource Power}"
                                   Style="{StaticResource Icon16Path}" />
                         </Button>
@@ -308,7 +329,7 @@
                                 Width="24"   
                                 VerticalAlignment="Stretch"
                                 Command="{Binding MemorySetCommand}"
-                                Style="{StaticResource BorderlessButton}">
+                                Style="{StaticResource BorderlessDisableableButton}">
                             <Path>
                                 <Path.Style>
                                     <Style TargetType="{x:Type Path}"
@@ -325,16 +346,6 @@
                                     </Style>
                                 </Path.Style>
                             </Path>
-                        </Button>
-
-                        <Button DockPanel.Dock="Right"
-                                Margin="0,0,4,0"
-                                Width="24"   
-                                VerticalAlignment="Stretch"
-                                Visibility="Collapsed"
-                                Style="{StaticResource BaseButton}">
-                            <Path Data="{StaticResource Pencil}"
-                                  Style="{StaticResource Icon16Path}" />
                         </Button>
                     </DockPanel>
 
@@ -356,7 +367,7 @@
                             Content="0" 
                             Command="{Binding MemoryCommand}"
                             CommandParameter="0"
-                            Style="{StaticResource MarginedButton}">
+                            Style="{StaticResource MarginedDisableableButton}">
                         <behaviors:Interaction.Triggers>
                             <behaviors:EventTrigger EventName="MouseDoubleClick">
                                 <behaviors:InvokeCommandAction Command="{Binding MemoryRenameCommand}" />
@@ -371,21 +382,21 @@
                             Content="1"
                             Command="{Binding MemoryCommand}"
                             CommandParameter="1"
-                            Style="{StaticResource MarginedButton}" />
+                            Style="{StaticResource MarginedDisableableButton}" />
 
                     <Button Grid.Column="1"
                             Grid.Row="3"
                             Content="2" 
                             Command="{Binding MemoryCommand}"
                             CommandParameter="2"
-                            Style="{StaticResource MarginedButton}" />
+                            Style="{StaticResource MarginedDisableableButton}" />
 
                     <Button Grid.Column="2"
                             Grid.Row="3"
                             Content="3" 
                             Command="{Binding MemoryCommand}"
                             CommandParameter="3"
-                            Style="{StaticResource MarginedButton}" />
+                            Style="{StaticResource MarginedDisableableButton}" />
 
                     <!-- Third Row -->
 
@@ -394,21 +405,21 @@
                             Content="4" 
                             Command="{Binding MemoryCommand}"
                             CommandParameter="4"
-                            Style="{StaticResource MarginedButton}" />
+                            Style="{StaticResource MarginedDisableableButton}" />
 
                     <Button Grid.Column="1"
                             Grid.Row="4"
                             Content="5"     
                             Command="{Binding MemoryCommand}"
                             CommandParameter="5"
-                            Style="{StaticResource MarginedButton}" />
+                            Style="{StaticResource MarginedDisableableButton}" />
 
                     <Button Grid.Column="2"
                             Grid.Row="4"
                             Content="6" 
                             Command="{Binding MemoryCommand}"
                             CommandParameter="6"
-                            Style="{StaticResource MarginedButton}" />
+                            Style="{StaticResource MarginedDisableableButton}" />
 
                     <!-- Forth Row -->
 
@@ -417,21 +428,21 @@
                             Content="7" 
                             Command="{Binding MemoryCommand}"
                             CommandParameter="7"
-                            Style="{StaticResource MarginedButton}" />
+                            Style="{StaticResource MarginedDisableableButton}" />
 
                     <Button Grid.Column="1"
                             Grid.Row="5"
                             Content="8" 
                             Command="{Binding MemoryCommand}"
                             CommandParameter="8"
-                            Style="{StaticResource MarginedButton}" />
+                            Style="{StaticResource MarginedDisableableButton}" />
 
                     <Button Grid.Column="2"
                             Grid.Row="5"
                             Content="9" 
                             Command="{Binding MemoryCommand}"
                             CommandParameter="9"
-                            Style="{StaticResource MarginedButton}" />
+                            Style="{StaticResource MarginedDisableableButton}" />
                 </Grid>
             </Border>
 
@@ -454,7 +465,7 @@
 
                         <Style x:Key="MoveButton"
                                TargetType="{x:Type Button}"
-                               BasedOn="{StaticResource MarginedButton}">
+                               BasedOn="{StaticResource MarginedDisableableButton}">
                             <Setter Property="util:SupplementaryInteraction.Triggers"
                                     Value="{StaticResource MoveTriggers}" />
                         </Style>
@@ -497,7 +508,7 @@
                                 Width="24"   
                                 VerticalAlignment="Stretch"
                                 Command="{Binding HomeCommand}"
-                                Style="{StaticResource BorderlessButton}">
+                                Style="{StaticResource BorderlessDisableableButton}">
                             <Path Data="{StaticResource Home}"
                                   Style="{StaticResource Icon16Path}" />
                         </Button>
@@ -686,7 +697,7 @@
 
                         <Style x:Key="ZoomButton"
                                TargetType="{x:Type Button}"
-                               BasedOn="{StaticResource MarginedButton}">
+                               BasedOn="{StaticResource MarginedDisableableButton}">
                             <Setter Property="util:SupplementaryInteraction.Triggers"
                                     Value="{StaticResource ZoomTriggers}" />
                         </Style>
