@@ -60,6 +60,10 @@
                                     TrueValue="Visible"
                                     FalseValue="Collapsed" />
 
+    <util:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter"
+                                    TrueValue="Collapsed"
+                                    FalseValue="Visible" />
+
     <util:StringToVisibilityConverter x:Key="StringEmptyToCollapsedConverter"
                                       TrueValue="Visible"
                                       FalseValue="Collapsed" />

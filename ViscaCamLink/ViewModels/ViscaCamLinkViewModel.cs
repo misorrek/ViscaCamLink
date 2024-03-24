@@ -141,28 +141,23 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     public String Ip
     {
-        get => Settings.Default.Ip;
+        get => _ip;
 
         set
         {
-            Settings.Default.Ip = value;
+            _ip = value;
             NotifyPropertyChanged();
         }
     }
 
     public String Port
     {
-        get => Settings.Default.Port.ToString();
+        get => _port;
 
         set
-        {
-            Int32 port;
-
-            if (!String.IsNullOrWhiteSpace(value) && Int32.TryParse(value, out port))
-            {
-                Settings.Default.Port = port;
-                NotifyPropertyChanged();
-            }
+        {       
+            _port = value;
+            NotifyPropertyChanged();
         }
     }               
 
@@ -246,7 +241,11 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         }
     }
 
-    private CancellationTokenSource? MemoryInfoCancellationTokenSource { get; set; } 
+    private CancellationTokenSource? MemoryInfoCancellationTokenSource { get; set; }
+
+    private String _ip = Settings.Default.Ip;
+
+    private String _port = Settings.Default.Port.ToString();
 
     private Boolean _isEditingConnection = false;
 
@@ -366,9 +365,32 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ExecuteConnectionEdit()
+    private void ExecuteConnectionEdit(Object parameter)
     {
-        IsEditingConnection = !IsEditingConnection;
+        if (IsEditingConnection)
+        {
+            if (parameter is Boolean editingCancled && editingCancled)
+            {
+                Ip = Settings.Default.Ip;
+                Port = Settings.Default.Port.ToString();
+            }
+            else
+            {
+                Settings.Default.Ip = Ip;
+
+                Int32 port;
+
+                if (!String.IsNullOrWhiteSpace(Port) && Int32.TryParse(Port, out port))
+                {
+                    Settings.Default.Port = port;
+                }
+            }
+            IsEditingConnection = false;
+        }
+        else
+        {
+            IsEditingConnection = true;
+        }
     }
 
     private void ExecuteReconnect()
