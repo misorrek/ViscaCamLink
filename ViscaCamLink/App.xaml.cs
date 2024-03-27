@@ -1,12 +1,14 @@
 ﻿namespace ViscaCamLink
 {
     using System;
+    using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
     using AutoUpdaterDotNET;
 
     using ViscaCamLink.Properties;
+    using ViscaCamLink.Util;
     using ViscaCamLink.ViewModels;
     using ViscaCamLink.Views;
 
@@ -17,6 +19,7 @@
     {
         private void Application_Startup(Object sender, StartupEventArgs startupEventArgs)
         {
+            InitializeLocalization();
             CheckSettingsUpgradeRequired();
 
             var viscaCamLinkView = new ViscaCamLinkView();
@@ -62,6 +65,14 @@
                 Settings.Default.LastUpgrade = DateTime.Now;
                 Settings.Default.Save();
             }
+        }
+
+        private static void InitializeLocalization()
+        {
+            CultureInfo systemCulture = CultureInfo.CurrentCulture;
+
+            Thread.CurrentThread.CurrentCulture = systemCulture;
+            Thread.CurrentThread.CurrentUICulture = systemCulture;
         }
     }
 }
