@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Common_Saved" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="ConnectionStatus_Failed" xml:space="preserve">
+    <value>Failed to connect</value>
+  </data>
+  <data name="ConnectionStatus_Ok" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="ConnectionStatus_Working" xml:space="preserve">
+    <value>Trying to connect...</value>
+  </data>
+  <data name="Connection_Edit" xml:space="preserve">
+    <value>Edit address</value>
+  </data>
+  <data name="Connection_Reconnect" xml:space="preserve">
+    <value>Reconnect</value>
+  </data>
+  <data name="Control_ContainerTitle" xml:space="preserve">
+    <value>Control</value>
+  </data>
+  <data name="Control_DecreaseSpeed" xml:space="preserve">
+    <value>Decrease move speed</value>
+  </data>
+  <data name="Control_Home" xml:space="preserve">
+    <value>Return to home position</value>
+  </data>
+  <data name="Control_IncreaseSpeed" xml:space="preserve">
+    <value>Increase move speed</value>
+  </data>
+  <data name="Options_Availability" xml:space="preserve">
+    <value>Available soon!</value>
+  </data>
+  <data name="PowerStatus_Error" xml:space="preserve">
+    <value>Faulty camera status</value>
+  </data>
+  <data name="PowerStatus_Off" xml:space="preserve">
+    <value>Camera in standby</value>
+  </data>
+  <data name="PowerStatus_On" xml:space="preserve">
+    <value>Camera active</value>
+  </data>
+  <data name="PowerStatus_Unknown" xml:space="preserve">
+    <value>Unknown camera status</value>
+  </data>
+  <data name="Presets_ChooseSlot" xml:space="preserve">
+    <value>Choose a slot</value>
+  </data>
+  <data name="Presets_ContainerTitle" xml:space="preserve">
+    <value>Presets</value>
+  </data>
+  <data name="Presets_Save" xml:space="preserve">
+    <value>Save current position as preset</value>
+  </data>
+  <data name="Sidebar_ControlPanel" xml:space="preserve">
+    <value>Control panel</value>
+  </data>
+  <data name="Sidebar_Options" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="Sidebar_PresetsPanel" xml:space="preserve">
+    <value>Presets panel</value>
+  </data>
+  <data name="Sidebar_ZoomPanel" xml:space="preserve">
+    <value>Zoom panel</value>
+  </data>
+  <data name="Updater_Changelog" xml:space="preserve">
+    <value>Changelog</value>
+  </data>
+  <data name="Updater_NewVersion" xml:space="preserve">
+    <value>New version available!</value>
+  </data>
+  <data name="Updater_Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="Zoom_ContainerTitle" xml:space="preserve">
+    <value>Zoom</value>
+  </data>
+  <data name="Zoom_DecreaseSpeed" xml:space="preserve">
+    <value>Decrease zoom speed</value>
+  </data>
+  <data name="Zoom_IncreaseSpeed" xml:space="preserve">
+    <value>Increase zoom speed</value>
+  </data>
+</root>

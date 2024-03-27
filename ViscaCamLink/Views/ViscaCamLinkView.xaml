@@ -7,6 +7,7 @@
         xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:util="clr-namespace:ViscaCamLink.Util"
         xmlns:properties="clr-namespace:ViscaCamLink.Properties"
+        xmlns:resources="clr-namespace:ViscaCamLink.Resources"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:ViscaCamLinkViewModel}"
@@ -205,6 +206,7 @@
 
                         <Button Grid.Column="2"    
                                 VerticalAlignment="Stretch"
+                                ToolTip="{x:Static resources:Strings.Connection_Edit}"
                                 Command="{Binding ConnectionEditCommand}"
                                 Style="{StaticResource BaseButton}">
                             <Path Data="{StaticResource Pencil}"
@@ -213,6 +215,7 @@
 
                         <Button Grid.Column="4"   
                                 VerticalAlignment="Stretch"
+                                ToolTip="{x:Static resources:Strings.Connection_Reconnect}"
                                 Command="{Binding ReconnectCommand}"
                                 Style="{StaticResource BaseButton}">
                             <Path Data="{StaticResource Refresh}"
@@ -262,13 +265,14 @@
                                Height="24"
                                LastChildFill="False">
                         <TextBlock VerticalAlignment="Stretch" 
-                                   Text="Voreinstellungen" 
+                                   Text="{x:Static resources:Strings.Presets_ContainerTitle}" 
                                    Style="{StaticResource HeaderTextBlock}" />
 
                         <Button DockPanel.Dock="Right"
                                 Width="24"   
                                 VerticalAlignment="Stretch"
                                 Command="{Binding MemorySetCommand}"
+                                ToolTip="{x:Static resources:Strings.Presets_Save}"
                                 Style="{StaticResource BaseButton}">
                             <Path>
                                 <Path.Style>
@@ -448,13 +452,14 @@
                                Height="24"
                                LastChildFill="False">
                         <TextBlock VerticalAlignment="Stretch" 
-                                   Text="Steuerung" 
+                                   Text="{x:Static resources:Strings.Control_ContainerTitle}" 
                                    Style="{StaticResource HeaderTextBlock}" />
 
                         <Button DockPanel.Dock="Right"
                                 Width="24"   
                                 VerticalAlignment="Stretch"
                                 Command="{Binding HomeCommand}"
+                                ToolTip="{x:Static resources:Strings.Control_Home}"
                                 Style="{StaticResource BaseButton}">
                             <Path Data="{StaticResource Home}"
                                   Style="{StaticResource Icon16Path}" />
@@ -661,7 +666,7 @@
                     <TextBlock Grid.Column="0"
                                Grid.ColumnSpan="2"
                                Grid.Row="0"
-                               Text="Zoom"
+                               Text="{x:Static resources:Strings.Zoom_ContainerTitle}"
                                Style="{StaticResource HeaderTextBlock}" />
 
                     <!-- Zoom Control -->

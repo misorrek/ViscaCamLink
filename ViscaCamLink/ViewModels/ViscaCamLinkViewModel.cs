@@ -13,6 +13,7 @@ using AutoUpdaterDotNET;
 using CameraControl.Visca;
 using ViscaCamLink.Factories;
 using ViscaCamLink.Properties;
+using ViscaCamLink.Resources;
 using ViscaCamLink.Util;
 
 public class ViscaCamLinkViewModel : INotifyPropertyChanged
@@ -24,7 +25,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         var connected = ViscaController.Connected.GetValueOrDefault();
 
         ConnectionStatus = connected ? Status.Ok : Status.Failed;
-        ConnectionInfo = connected ? "Verbunden" : "Keine Verbindung";
+        ConnectionInfo = connected ? Strings.ConnectionStatus_Ok : Strings.ConnectionStatus_Failed;
 
         SidebarCommand = new Command(ExecuteSidebar);
         UpdateCommand = new Command(OpenUpdateDialog);
@@ -272,7 +273,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     private void OpenOptions()
     {
-        MessageBox.Show("Bald verfügbar!");
+        MessageBox.Show(Strings.Options_Availability);
     }
 
     private void ExecuteConnectionEdit()
@@ -285,7 +286,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         var source = new CancellationTokenSource();
 
         ConnectionStatus = Status.Working;
-        ConnectionInfo = "Verbindungsversuch";
+        ConnectionInfo = Strings.ConnectionStatus_Working;
 
         ViscaController.Reconnect(source.Token, Settings.Default.Ip, Settings.Default.Port)
             .ContinueWith(task =>
@@ -293,7 +294,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
                 var connected = ViscaController.Connected.GetValueOrDefault();
 
                 ConnectionStatus = connected ? Status.Ok : Status.Failed;
-                ConnectionInfo = connected ? "Verbunden" : "Keine Verbindung";
+                ConnectionInfo = connected ? Strings.ConnectionStatus_Ok : Strings.ConnectionStatus_Failed;
             });
     }
 
@@ -308,12 +309,12 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
         if (IsSettingMemory)
         {
-            MemoryInfo = "Wähle einen Slot";
+            MemoryInfo = Strings.Presets_ChooseSlot;
             MemoryInfoCancellationTokenSource?.Cancel();
         }
         else
         {
-            MemoryInfo = "Abgebrochen";
+            MemoryInfo = Strings.Common_Cancel;
             ResetMemorySetInfo();
         }
     }
@@ -328,7 +329,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
             {
                 ViscaController.MemorySet(slot);
                 IsSettingMemory = false;
-                MemoryInfo = "Gespeichert";
+                MemoryInfo = Strings.Common_Saved;
                 ResetMemorySetInfo();
             }
             else
