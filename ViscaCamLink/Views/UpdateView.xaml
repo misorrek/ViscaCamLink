@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:resources="clr-namespace:ViscaCamLink.Resources"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:UpdateViewModel}"
@@ -67,7 +68,7 @@
                     Grid.Row="0"
                     Margin="0,44,0,0"
                     Orientation="Vertical">
-            <TextBlock Text="Neue Version verfügbar!"
+            <TextBlock Text="{x:Static resources:Strings.Updater_NewVersion}"
                        Style="{StaticResource HeaderTextBlock}" />
 
             <TextBlock Text="{Binding VersionText}" 
@@ -78,7 +79,7 @@
         <TextBlock Grid.Column="1"
                    Grid.Row="1"
                    Margin="0,0,4,0"
-                   Text="Versionshinweise"
+                   Text="{x:Static resources:Strings.Updater_Changelog}"
                    FontSize="{StaticResource SecondaryHeaderFontSize}"
                    Style="{StaticResource BaseTextBlock}" />
 
@@ -97,7 +98,7 @@
                     Orientation="Horizontal">
 
             <Button Width="140"
-                    Content="Aktualisieren"
+                    Content="{x:Static resources:Strings.Updater_Update}"
                     Background="{StaticResource PrimaryForegroundBrush}"
                     Foreground="{StaticResource PrimaryBackgroundBrush}"
                     Command="{Binding UpdateCommand}"
@@ -105,7 +106,7 @@
 
             <Button Width="120"
                     Margin="4,0,0,0"
-                    Content="Abbrechen" 
+                    Content="{x:Static resources:Strings.Common_Cancel}" 
                     Command="{Binding CancelCommand}"
                     Style="{StaticResource DialogButton}" />
         </StackPanel>

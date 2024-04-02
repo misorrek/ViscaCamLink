@@ -286,11 +286,20 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current:.
+        /// </summary>
+        public static string Updater_CurrentVersion {
+            get {
+                return ResourceManager.GetString("Updater_CurrentVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to New version available!.
         /// </summary>
-        public static string Updater_NewVersion {
+        public static string Updater_NewVersionAvailable {
             get {
-                return ResourceManager.GetString("Updater_NewVersion", resourceCulture);
+                return ResourceManager.GetString("Updater_NewVersionAvailable", resourceCulture);
             }
         }
         
