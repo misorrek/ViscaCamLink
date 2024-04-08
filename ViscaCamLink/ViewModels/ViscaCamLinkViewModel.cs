@@ -22,10 +22,6 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
     {
         ViscaController = ViscaController.ForTcp(Settings.Default.Ip, Settings.Default.Port);
 
-        var connected = ViscaController.Connected.GetValueOrDefault();
-
-        ConnectionStatus = connected ? Status.Ok : Status.Failed;
-
         SidebarCommand = new Command(ExecuteSidebar);
         UpdateCommand = new Command(OpenUpdateDialog);
         OptionsCommand = new Command(OpenOptions);
@@ -54,6 +50,8 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad7, () => ExecuteMemorySetOrRecall("7"));
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad8, () => ExecuteMemorySetOrRecall("8"));
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad9, () => ExecuteMemorySetOrRecall("9"));
+
+        ExecuteReconnect(); //Inital connection attempt 
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
