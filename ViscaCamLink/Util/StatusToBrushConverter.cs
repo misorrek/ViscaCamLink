@@ -5,33 +5,14 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 
-[ValueConversion(typeof(Status), typeof(SolidColorBrush))]
-public sealed class StatusToBrushConverter : IValueConverter
+using CameraControl.Visca;
+
+public static class StatusBrushConstants
 {
-    private static readonly SolidColorBrush StatusRed = SolidColorBrushFromRgb(255, 68, 68);
-    private static readonly SolidColorBrush StatusYellow = SolidColorBrushFromRgb(252, 253, 100);
-    private static readonly SolidColorBrush StatusGreen = SolidColorBrushFromRgb(80, 220, 72);
-
-    public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
-    {
-        if (value is not Status status)
-        {
-            return StatusRed;
-        }
-        
-        return status switch
-        {
-            Status.Failed => StatusRed,
-            Status.Working => StatusYellow,
-            Status.Ok => StatusGreen,
-            _ => StatusRed
-        };
-    }
-
-    public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture)
-    {
-        throw new NotSupportedException();
-    }
+    public static readonly SolidColorBrush StatusGray = SolidColorBrushFromRgb(200, 200, 200);
+    public static readonly SolidColorBrush StatusRed = SolidColorBrushFromRgb(255, 80, 80);
+    public static readonly SolidColorBrush StatusYellow = SolidColorBrushFromRgb(255, 235, 80);
+    public static readonly SolidColorBrush StatusGreen = SolidColorBrushFromRgb(80, 255, 80);
 
     private static SolidColorBrush SolidColorBrushFromRgb(Byte r, Byte g, Byte b)
     {
@@ -43,5 +24,56 @@ public sealed class StatusToBrushConverter : IValueConverter
             B = b,
         };
         return new SolidColorBrush(color);
+    }
+}
+
+[ValueConversion(typeof(ConnectionStatus), typeof(SolidColorBrush))]
+public sealed class ConnectionStatusToBrushConverter : IValueConverter
+{
+    public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
+    {
+        if (value is not ConnectionStatus status)
+        {
+            return StatusBrushConstants.StatusGray;
+        }
+        
+        return status switch
+        {
+            ConnectionStatus.Failed => StatusBrushConstants.StatusRed,
+            ConnectionStatus.Working => StatusBrushConstants.StatusYellow,
+            ConnectionStatus.Ok => StatusBrushConstants.StatusGreen,
+            _ => StatusBrushConstants.StatusGray
+        };
+    }
+
+    public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+[ValueConversion(typeof(PowerStatus), typeof(SolidColorBrush))]
+public sealed class PowerStatusToBrushConverter : IValueConverter
+{
+    public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
+    {
+        if (value is not PowerStatus status)
+        {
+            return StatusBrushConstants.StatusGray;
+        }
+
+        return status switch
+        {
+            PowerStatus.Unknown => StatusBrushConstants.StatusGray,
+            PowerStatus.On => StatusBrushConstants.StatusGreen,
+            PowerStatus.Standby => StatusBrushConstants.StatusYellow,
+            PowerStatus.InternalPowerCircuitError => StatusBrushConstants.StatusRed,
+            _ => StatusBrushConstants.StatusGray
+        };
+    }
+
+    public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
     }
 }

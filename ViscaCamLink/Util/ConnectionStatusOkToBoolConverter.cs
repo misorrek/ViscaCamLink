@@ -4,13 +4,13 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 
-public class StatusOkToBoolConverter : IValueConverter
+public class ConnectionStatusOkToBoolConverter : IValueConverter
 {
     public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
     {
-        if (value is Status status)
+        if (value is ConnectionStatus status)
         {
-            return status == Status.Ok;
+            return status == ConnectionStatus.Ok;
         }
         return false;
     }

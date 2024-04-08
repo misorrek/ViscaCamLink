@@ -170,7 +170,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         }
     }
 
-    public Status ConnectionStatus
+    public ConnectionStatus ConnectionStatus
     {
         get => _connectionStatus;
 
@@ -260,7 +260,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     private Boolean _isEditingConnection = false;
 
-    private Status _connectionStatus = Status.Failed;
+    private ConnectionStatus _connectionStatus = ConnectionStatus.Failed;
 
     private String _connectionInfo = String.Empty;
 
@@ -335,13 +335,13 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
     {
         switch(ConnectionStatus)
         {
-            case Status.Failed:
+            case ConnectionStatus.Failed:
                 ConnectionInfo = "Keine Verbindung";
                 break;
-            case Status.Working:
+            case ConnectionStatus.Working:
                 ConnectionInfo = "Verbindungsversuch";
                 break;
-            case Status.Ok:
+            case ConnectionStatus.Ok:
                 ConnectionInfo = "Verbunden";
                 break;
         }
@@ -349,7 +349,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     private void UpdatePowerStatus()
     {
-        if (ConnectionStatus == Status.Ok)
+        if (ConnectionStatus == ConnectionStatus.Ok)
         {
             PowerStatus = ViscaController.GetPowerStatus().Result;
         }
@@ -424,7 +424,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
     {
         var source = new CancellationTokenSource();
 
-        ConnectionStatus = Status.Working;
+        ConnectionStatus = ConnectionStatus.Working;
 
         ViscaController
             .Reconnect(source.Token, Settings.Default.Ip, Settings.Default.Port)
@@ -432,7 +432,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
             {
                 var connected = ViscaController.Connected.GetValueOrDefault();
 
-                ConnectionStatus = connected ? Status.Ok : Status.Failed;
+                ConnectionStatus = connected ? ConnectionStatus.Ok : ConnectionStatus.Failed;
             });
     }
 

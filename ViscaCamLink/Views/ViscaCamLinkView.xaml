@@ -24,8 +24,8 @@
                 <ResourceDictionary Source="/ViscaCamLink;component/Util/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <util:StatusToBrushConverter x:Key="ConnectionStatusToBrushConverter" />
-            <util:StatusOkToBoolConverter x:Key="ConnectionStatusOkToBoolConverter" />
+            <util:ConnectionStatusToBrushConverter x:Key="ConnectionStatusToBrushConverter" />
+            <util:ConnectionStatusOkToBoolConverter x:Key="ConnectionStatusOkToBoolConverter" />
             <util:PowerStatusToBrushConverter x:Key="PowerStatusToBrushConverter" />
             <util:BoolAndConverter x:Key="BoolAndConverter" />
 
@@ -291,7 +291,7 @@
                                 <Style TargetType="{x:Type Ellipse}">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding ConnectionStatus}"
-                                                     Value="{x:Static util:Status.Working}">
+                                                     Value="{x:Static util:ConnectionStatus.Working}">
                                             <DataTrigger.EnterActions>
                                                 <BeginStoryboard x:Name="FadeAnimationStoryboard" Storyboard="{StaticResource FadeAnimation}"/>
                                             </DataTrigger.EnterActions>
