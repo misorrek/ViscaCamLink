@@ -394,7 +394,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ExecuteConnectionEdit(Object parameter)
+    private void ExecuteConnectionEdit(Object? parameter)
     {
         if (IsEditingConnection)
         {
