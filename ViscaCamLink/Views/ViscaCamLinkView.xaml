@@ -95,6 +95,20 @@
             </Style>
 
             <s:Boolean x:Key="True">True</s:Boolean>
+
+            <Storyboard x:Key="FadeAnimation" 
+                        RepeatBehavior="Forever">
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                 From="1"
+                                 To="0"
+                                 Duration="0:0:0.5"/>
+
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                 From="0"
+                                 To="1"
+                                 Duration="0:0:0.5"
+                                 BeginTime="0:0:0.5"/>
+            </Storyboard>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -272,7 +286,24 @@
                         <Ellipse Height="12" 
                                  Width="12"
                                  Fill="{Binding Path=ConnectionStatus,
-                                                Converter={StaticResource ConnectionStatusToBrushConverter}, Mode=Default}" />
+                                                Converter={StaticResource ConnectionStatusToBrushConverter}, Mode=Default}">
+                            <Ellipse.Style>
+                                <Style TargetType="{x:Type Ellipse}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ConnectionStatus}"
+                                                     Value="{x:Static util:Status.Working}">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard x:Name="FadeAnimationStoryboard" Storyboard="{StaticResource FadeAnimation}"/>
+                                            </DataTrigger.EnterActions>
+
+                                            <DataTrigger.ExitActions>
+                                                <StopStoryboard BeginStoryboardName="FadeAnimationStoryboard" />
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
 
                         <Label Margin="4,0,0,0"
                                Content="{Binding ConnectionInfo}"
