@@ -326,7 +326,24 @@
                         <Ellipse Height="12" 
                                  Width="12"
                                  Fill="{Binding Path=PowerStatus,
-                                                Converter={StaticResource PowerStatusToBrushConverter}, Mode=Default}" />
+                                                Converter={StaticResource PowerStatusToBrushConverter}, Mode=Default}">
+                            <Ellipse.Style>
+                                <Style TargetType="{x:Type Ellipse}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ChangingPowerStatus}"
+                                                     Value="True">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard x:Name="FadeAnimationStoryboard" Storyboard="{StaticResource FadeAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                            
+                                            <DataTrigger.ExitActions>
+                                                <StopStoryboard BeginStoryboardName="FadeAnimationStoryboard"/>
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
 
                         <Label Margin="4,0,0,0"
                                Content="{Binding PowerInfo}"

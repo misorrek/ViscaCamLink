@@ -203,6 +203,19 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         set
         {
             _powerStatus = value;
+            ChangingPowerStatus = false;
+            UpdatePowerInfo();
+            NotifyPropertyChanged();
+        }
+    }
+
+    public Boolean ChangingPowerStatus
+    {
+        get => _changingPowerStatus;
+
+        set
+        {
+            _changingPowerStatus = value;
             UpdatePowerInfo();
             NotifyPropertyChanged();
         }
@@ -254,6 +267,8 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
     private String _connectionInfo = String.Empty;
 
     private PowerStatus _powerStatus = PowerStatus.Unknown;
+
+    private Boolean _changingPowerStatus = false;
 
     private String _powerInfo = String.Empty;
 
@@ -348,20 +363,34 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     private void UpdatePowerInfo()
     {
-        switch(PowerStatus)
+        if (ChangingPowerStatus)
         {
-            case PowerStatus.Unknown:
-                PowerInfo = "Unbekannter Kamerastatus";
-                break;
-            case PowerStatus.On:
-                PowerInfo = "Kamera aktiv";
-                break;
-            case PowerStatus.Standby:
-                PowerInfo = "Kamera inaktiv";
-                break;
-            case PowerStatus.InternalPowerCircuitError:
-                PowerInfo = "Fehlerhafter Kamerastatus";
-                break;
+            if (PowerStatus == PowerStatus.On)
+            {
+                PowerInfo = "Kamera schaltet ab...";
+            }
+            else if (PowerStatus == PowerStatus.Standby)
+            {
+                PowerInfo = "Kamera schaltet an...";
+            }
+        }
+        else
+        {
+            switch (PowerStatus)
+            {
+                case PowerStatus.Unknown:
+                    PowerInfo = "Unbekannter Kamerastatus";
+                    break;
+                case PowerStatus.On:
+                    PowerInfo = "Kamera aktiv";
+                    break;
+                case PowerStatus.Standby:
+                    PowerInfo = "Kamera inaktiv";
+                    break;
+                case PowerStatus.InternalPowerCircuitError:
+                    PowerInfo = "Fehlerhafter Kamerastatus";
+                    break;
+            }
         }
     }
 
@@ -418,13 +447,15 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
             case PowerStatus.On:
                 ViscaController.PowerOff().ContinueWith(task =>
                 {
-                    PowerStatus = PowerStatus.Standby;
+                    ChangingPowerStatus = true;
+                    PowerStatus = ViscaController.GetUpdatedPowerStatus(PowerStatus).Result;
                 });
                 break;
             case PowerStatus.Standby:
                 ViscaController.PowerOn().ContinueWith(task =>
                 {
-                    PowerStatus = PowerStatus.On;
+                    ChangingPowerStatus = true;
+                    PowerStatus = ViscaController.GetUpdatedPowerStatus(PowerStatus).Result;
                 });
                 break;
         }
