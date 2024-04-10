@@ -15,6 +15,7 @@ using ViscaCamLink.Factories;
 using ViscaCamLink.Properties;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Util;
+using ViscaCamLink.Views;
 
 public class ViscaCamLinkViewModel : INotifyPropertyChanged
 {
@@ -273,7 +274,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     private void OpenOptions()
     {
-        MessageBox.Show(Strings.Options_Availability);
+        OptionsViewFactory.CreateOptionsView().ShowDialog();
     }
 
     private void ExecuteConnectionEdit()

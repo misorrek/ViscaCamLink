@@ -123,6 +123,9 @@
   <data name="Common_Cancel" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
   <data name="Common_Save" xml:space="preserve">
     <value>Speichern</value>
   </data>
@@ -156,8 +159,26 @@
   <data name="Control_IncreaseSpeed" xml:space="preserve">
     <value>Steuerungsgeschwindigkeit erhöhen</value>
   </data>
+  <data name="Language_English" xml:space="preserve">
+    <value>English (Englisch)</value>
+  </data>
+  <data name="Language_German" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="Language_System" xml:space="preserve">
+    <value>Systembasiert</value>
+  </data>
   <data name="Options_Availability" xml:space="preserve">
     <value>Bald verfügbar!</value>
+  </data>
+  <data name="Options_General" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="Options_LanguageSelection" xml:space="preserve">
+    <value>Wähle die Anzeigesprache</value>
+  </data>
+  <data name="Options_RestartNeeded" xml:space="preserve">
+    <value>Neustart notwendig</value>
   </data>
   <data name="PowerStatus_Error" xml:space="preserve">
     <value>Fehlerhafter Kamerastatus</value>

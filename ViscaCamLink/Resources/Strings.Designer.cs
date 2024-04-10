@@ -79,6 +79,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string Common_OK {
+            get {
+                return ResourceManager.GetString("Common_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save.
         /// </summary>
         public static string Common_Save {
@@ -178,11 +187,65 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to English.
+        /// </summary>
+        public static string Language_English {
+            get {
+                return ResourceManager.GetString("Language_English", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deutsch (German).
+        /// </summary>
+        public static string Language_German {
+            get {
+                return ResourceManager.GetString("Language_German", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to System based.
+        /// </summary>
+        public static string Language_System {
+            get {
+                return ResourceManager.GetString("Language_System", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Available soon!.
         /// </summary>
         public static string Options_Availability {
             get {
                 return ResourceManager.GetString("Options_Availability", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to General.
+        /// </summary>
+        public static string Options_General {
+            get {
+                return ResourceManager.GetString("Options_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose the display language .
+        /// </summary>
+        public static string Options_LanguageSelection {
+            get {
+                return ResourceManager.GetString("Options_LanguageSelection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restart needed.
+        /// </summary>
+        public static string Options_RestartNeeded {
+            get {
+                return ResourceManager.GetString("Options_RestartNeeded", resourceCulture);
             }
         }
         

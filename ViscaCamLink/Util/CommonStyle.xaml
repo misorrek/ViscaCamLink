@@ -2,6 +2,10 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib"
                     xmlns:util="clr-namespace:ViscaCamLink.Util">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/ViscaCamLink;component/Util/Icons.xaml" />
+    </ResourceDictionary.MergedDictionaries>
     
     <!--#region Constants-->    
 
@@ -13,22 +17,39 @@
     <FontWeight x:Key="DefaultFontWeight">Normal</FontWeight>
     <FontWeight x:Key="HeaderFontWeight">SemiBold</FontWeight>
 
+    <Color x:Key="PrimaryBackgroundColor">#FFFFFF</Color>
+    <Color x:Key="SecondaryBackgroundColor">#33214E</Color>
+    <Color x:Key="PrimaryForegroundColor">#51367B</Color>
+    <Color x:Key="SecondaryForegroundColor">#FFFFFF</Color>
+    <Color x:Key="PrimaryHighlightColor">#BAADF4</Color>
+    <Color x:Key="SecondaryHighlightColor">#D3CCF9</Color>
+    <Color x:Key="PrimaryPressedColor">#9770E4</Color>
+    <Color x:Key="SecondaryPressedColor">#A58CED</Color>
+    <Color x:Key="PrimaryDisabledColor">#E6E3FC</Color>
+    <Color x:Key="SecondaryDisabledColor">#F2F0FD</Color>
+    <Color x:Key="DefaultBorderColor">#D3D3D3</Color>
+    <Color x:Key="DefaultFontColor">#000000</Color>
+
     <SolidColorBrush x:Key="PrimaryBackgroundBrush"
-                     Color="#FFFFFF" />
+                     Color="{StaticResource PrimaryBackgroundColor}" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush"
-                     Color="#33214E" />
+                     Color="{StaticResource SecondaryBackgroundColor}" />
     <SolidColorBrush x:Key="PrimaryForegroundBrush"
-                     Color="#51367B" />
+                     Color="{StaticResource PrimaryForegroundColor}" />
     <SolidColorBrush x:Key="SecondaryForegroundBrush"
-                     Color="#FFFFFF" />
-    <SolidColorBrush x:Key="DefaultBorderBrush"
-                     Color="#D3D3D3" />
-    <SolidColorBrush x:Key="DefaultFontBrush"
-                     Color="#000000" />
+                     Color="{StaticResource SecondaryForegroundColor}" />
     <SolidColorBrush x:Key="PrimaryHighlightBrush"
-                     Color="#FFB78DF1" />
+                     Color="{StaticResource PrimaryHighlightColor}" />
     <SolidColorBrush x:Key="SecondaryHighlightBrush"
-                     Color="#FFDBC2FD" />
+                     Color="{StaticResource SecondaryHighlightColor}" />
+    <SolidColorBrush x:Key="PrimaryPressedBrush"
+                     Color="{StaticResource PrimaryPressedColor}" />
+    <SolidColorBrush x:Key="SecondaryPressedBrush"
+                     Color="{StaticResource SecondaryPressedColor}" />
+    <SolidColorBrush x:Key="DefaultBorderBrush"
+                     Color="{StaticResource DefaultBorderColor}" />
+    <SolidColorBrush x:Key="DefaultFontBrush"
+                     Color="{StaticResource DefaultFontColor}" />
 
     <Thickness x:Key="DefaultMargin"
                Left="4"
@@ -41,6 +62,18 @@
                Top="0"
                Right="4"
                Bottom="4" />
+
+    <Thickness x:Key="ExtendedMargin"
+               Left="8"
+               Top="8"
+               Right="8"
+               Bottom="8" />
+
+    <Thickness x:Key="DefaultBorderThickness"
+               Left="1"
+               Top="1"
+               Right="1"
+               Bottom="1" />
 
     <CornerRadius x:Key="DefaultCornerRadius"
                   BottomLeft="4"
@@ -75,7 +108,7 @@
         <Setter Property="Margin" 
                 Value="{StaticResource DefaultMarginTopless}" />
         <Setter Property="BorderThickness"
-                Value="1" />
+                Value="{StaticResource DefaultBorderThickness}" />
         <Setter Property="BorderBrush"
                 Value="{StaticResource DefaultBorderBrush}" />
         <Setter Property="CornerRadius"
@@ -145,6 +178,7 @@
                                       HorizontalScrollBarVisibility="Hidden" 
                                       VerticalScrollBarVisibility="Hidden"/>
                     </Border>
+                    
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsEnabled" 
                                  Value="False">
@@ -207,6 +241,7 @@
                                           RecognizesAccessKey="True" 
                                           SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                     </Border>
+                    
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsEnabled" 
                                  Value="False">
@@ -214,7 +249,7 @@
                                     TargetName="Border" 
                                     Value="0.5"/>
                         </Trigger>
-                        
+
                         <Trigger Property="IsMouseOver" 
                                  Value="True">
                             <Setter Property="Background"
@@ -223,7 +258,7 @@
                                     TargetName="Border" 
                                     Value="{StaticResource PrimaryHighlightBrush}"/>
                         </Trigger>
-                        
+
                         <Trigger Property="IsPressed"
                                  Value="True">
                             <Setter Property="Background"
@@ -306,6 +341,15 @@
                 Value="Uniform" />
         <Setter Property="Fill"
                 Value="{StaticResource PrimaryForegroundBrush}" />
+    </Style>
+
+    <Style x:Key="Icon12Path"
+           TargetType="{x:Type Path}"
+           BasedOn="{StaticResource BaseIconPath}">
+        <Setter Property="Height"
+                Value="12" />
+        <Setter Property="Width"
+                Value="12" />
     </Style>
 
     <Style x:Key="Icon16Path"
@@ -450,6 +494,189 @@
         </Style.Triggers>
     </Style>
 
-    <!--#endregion-->    
+    <!--#endregion-->
+    
+    <!--#region ComboBox Templates -->
+
+    <ControlTemplate x:Key="ComboBoxToggleButton"
+                     TargetType="{x:Type ToggleButton}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="CheckStates">
+                    <VisualState x:Name="Checked">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                             Storyboard.TargetName="Arrow"
+                                             From="0"
+                                             To="180"
+                                             Duration="0:0:0.1"/>
+                        </Storyboard>
+                    </VisualState>
+
+                    <VisualState x:Name="Unchecked">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                             Storyboard.TargetName="Arrow"
+                                             From="180"
+                                             To="0"
+                                             Duration="0:0:0.1"/>
+                        </Storyboard>
+                    </VisualState>
+
+                    <VisualState x:Name="Indeterminate" />
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+
+            <Border x:Name="Border"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Background="{StaticResource PrimaryBackgroundBrush}"
+                    BorderThickness="{StaticResource DefaultBorderThickness}"
+                    BorderBrush="{StaticResource DefaultBorderBrush}"
+                    CornerRadius="{StaticResource DefaultCornerRadius}" />
+
+            <Path x:Name="Arrow"
+                  Grid.Column="1"
+                  Margin="0,0,8,0"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  RenderTransformOrigin="0.5,0.5"
+                  Data="{StaticResource CaretDown}"
+                  Style="{StaticResource Icon12Path}">
+                <Path.RenderTransform>
+                    <RotateTransform Angle="0" />
+                </Path.RenderTransform>
+            </Path>
+        </Grid>
+
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver"
+                     Value="True">
+                <Setter TargetName="Border"
+                        Property="Background"
+                        Value="{StaticResource SecondaryHighlightBrush}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="BaseComboBox"
+           TargetType="{x:Type ComboBox}"
+           BasedOn="{StaticResource {x:Type ComboBox}}">
+        <Setter Property="MinWidth"
+          Value="120" />
+        <Setter Property="MinHeight"
+          Value="20" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBox}">
+                    <Grid>
+                        <ToggleButton x:Name="ToggleButton"
+                                      Grid.Column="2"
+                                      Template="{StaticResource ComboBoxToggleButton}"                                     
+                                      Focusable="False"
+                                      ClickMode="Press"
+                                      IsChecked="{Binding IsDropDownOpen, 
+                                                          Mode=TwoWay, 
+                                                          RelativeSource={RelativeSource TemplatedParent}}"/>
+
+                        <ContentPresenter x:Name="ContentSite"
+                                          Margin="8,4,24,4"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Left"
+                                          IsHitTestVisible="False"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}">
+                        </ContentPresenter>
+
+                        <Popup x:Name="Popup"
+                               Placement="Bottom"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               PopupAnimation="Slide">
+                            <Grid x:Name="DropDown"
+                                  SnapsToDevicePixels="True"
+                                  MinWidth="{TemplateBinding ActualWidth}"
+                                  MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                <Border x:Name="DropDownBorder"
+                                       Background="{StaticResource PrimaryBackgroundBrush}"
+                                       BorderThickness="{StaticResource DefaultBorderThickness}"
+                                       BorderBrush="{StaticResource DefaultBorderBrush}"
+                                       CornerRadius="{StaticResource DefaultCornerRadius}" />
+                                <ScrollViewer Margin="4,6,4,6"
+                                              SnapsToDevicePixels="True">
+                                    <StackPanel IsItemsHost="True"
+                                                KeyboardNavigation.DirectionalNavigation="Contained" />
+                                </ScrollViewer>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems"
+                                 Value="false">
+                            <Setter TargetName="DropDownBorder"
+                                    Property="MinHeight"
+                                    Value="95" />
+                        </Trigger>
+
+                        <Trigger Property="IsGrouping"
+                                 Value="true">
+                            <Setter Property="ScrollViewer.CanContentScroll"
+                                    Value="false" />
+                        </Trigger>
+
+                        <Trigger SourceName="Popup"
+                                 Property="AllowsTransparency"
+                                 Value="true">
+                            <Setter TargetName="DropDownBorder"
+                                    Property="CornerRadius"
+                                    Value="4" />
+
+                            <Setter TargetName="DropDownBorder"
+                                    Property="Margin"
+                                    Value="0,2,0,0" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="BaseComboBoxItem"
+           TargetType="{x:Type ComboBoxItem}"
+           BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+        <Setter Property="Background"
+                Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Border x:Name="Border"
+                            Padding="2"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{StaticResource DefaultCornerRadius}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver"
+                     Value="True">
+                <Setter Property="Background"
+                        Value="{StaticResource SecondaryHighlightBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--#endregion-->
 
 </ResourceDictionary>

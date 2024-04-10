@@ -123,6 +123,9 @@
   <data name="Common_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
   <data name="Common_Save" xml:space="preserve">
     <value>Save</value>
   </data>
@@ -156,8 +159,26 @@
   <data name="Control_IncreaseSpeed" xml:space="preserve">
     <value>Increase move speed</value>
   </data>
+  <data name="Language_English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Language_German" xml:space="preserve">
+    <value>Deutsch (German)</value>
+  </data>
+  <data name="Language_System" xml:space="preserve">
+    <value>System based</value>
+  </data>
   <data name="Options_Availability" xml:space="preserve">
     <value>Available soon!</value>
+  </data>
+  <data name="Options_General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Options_LanguageSelection" xml:space="preserve">
+    <value>Choose the display language </value>
+  </data>
+  <data name="Options_RestartNeeded" xml:space="preserve">
+    <value>Restart needed</value>
   </data>
   <data name="PowerStatus_Error" xml:space="preserve">
     <value>Faulty camera status</value>
