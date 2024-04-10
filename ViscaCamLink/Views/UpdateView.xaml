@@ -9,7 +9,7 @@
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:UpdateViewModel}"
-        Title="ViscaCamLink"          
+        Title="{x:Static resources:Strings.Common_AppTitle}"          
         Width="700"
         Height="500"
         Loaded="Window_Loaded"
@@ -19,22 +19,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
-            <Style x:Key="MarginedButton"
-                   TargetType="{x:Type Button}"
-                   BasedOn="{StaticResource LargeButton}">
-                <Setter Property="Margin"
-                        Value="4,4,0,0" />
-                <Style.Triggers>
-                    <Trigger Property="Grid.Column"
-                             Value="0">
-                        <Setter Property="Margin"
-                                Value="0,4,0,0" />
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -68,7 +53,7 @@
                     Grid.Row="0"
                     Margin="0,44,0,0"
                     Orientation="Vertical">
-            <TextBlock Text="{x:Static resources:Strings.Updater_NewVersion}"
+            <TextBlock Text="{x:Static resources:Strings.Updater_NewVersionAvailable}"
                        Style="{StaticResource HeaderTextBlock}" />
 
             <TextBlock Text="{Binding VersionText}" 

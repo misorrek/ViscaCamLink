@@ -11,7 +11,7 @@
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:ViscaCamLinkViewModel}"
-        Title="ViscaCamLink"          
+        Title="{x:Static resources:Strings.Common_AppTitle}"          
         Width="350"
         SizeToContent="Height"
         ResizeMode="CanResize"        
@@ -21,7 +21,6 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/Icons.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <util:StatusToBrushConverter x:Key="ConnectionStatusToBrushConverter" />

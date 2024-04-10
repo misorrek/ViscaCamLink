@@ -61,6 +61,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ViscaCamLink.
+        /// </summary>
+        public static string Common_AppTitle {
+            get {
+                return ResourceManager.GetString("Common_AppTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         public static string Common_Cancel {
