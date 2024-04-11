@@ -338,13 +338,13 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         switch(ConnectionStatus)
         {
             case ConnectionStatus.Failed:
-                ConnectionInfo = "Keine Verbindung";
+                ConnectionInfo = Strings.ConnectionStatus_Failed;
                 break;
             case ConnectionStatus.Working:
-                ConnectionInfo = "Verbindungsversuch";
+                ConnectionInfo = Strings.ConnectionStatus_Working;
                 break;
             case ConnectionStatus.Ok:
-                ConnectionInfo = "Verbunden";
+                ConnectionInfo = Strings.ConnectionStatus_Ok;
                 break;
         }
     }
@@ -367,11 +367,11 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         {
             if (PowerStatus == PowerStatus.On)
             {
-                PowerInfo = "Kamera schaltet ab...";
+                PowerInfo = Strings.PowerStatus_SwitchingToStandby;
             }
             else if (PowerStatus == PowerStatus.Standby)
             {
-                PowerInfo = "Kamera schaltet an...";
+                PowerInfo = Strings.PowerStatus_SwitchingOn;
             }
         }
         else
@@ -379,16 +379,16 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
             switch (PowerStatus)
             {
                 case PowerStatus.Unknown:
-                    PowerInfo = "Unbekannter Kamerastatus";
+                    PowerInfo = Strings.PowerStatus_Unknown;
                     break;
                 case PowerStatus.On:
-                    PowerInfo = "Kamera aktiv";
+                    PowerInfo = Strings.PowerStatus_On;
                     break;
                 case PowerStatus.Standby:
-                    PowerInfo = "Kamera inaktiv";
+                    PowerInfo = Strings.PowerStatus_Standby;
                     break;
                 case PowerStatus.InternalPowerCircuitError:
-                    PowerInfo = "Fehlerhafter Kamerastatus";
+                    PowerInfo = Strings.PowerStatus_Error;
                     break;
             }
         }

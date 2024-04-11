@@ -259,20 +259,38 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Camera in standby.
-        /// </summary>
-        public static string PowerStatus_Off {
-            get {
-                return ResourceManager.GetString("PowerStatus_Off", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Camera active.
         /// </summary>
         public static string PowerStatus_On {
             get {
                 return ResourceManager.GetString("PowerStatus_On", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Camera on standby.
+        /// </summary>
+        public static string PowerStatus_Standby {
+            get {
+                return ResourceManager.GetString("PowerStatus_Standby", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Camera is switching on....
+        /// </summary>
+        public static string PowerStatus_SwitchingOn {
+            get {
+                return ResourceManager.GetString("PowerStatus_SwitchingOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Camera is switching into standby....
+        /// </summary>
+        public static string PowerStatus_SwitchingToStandby {
+            get {
+                return ResourceManager.GetString("PowerStatus_SwitchingToStandby", resourceCulture);
             }
         }
         

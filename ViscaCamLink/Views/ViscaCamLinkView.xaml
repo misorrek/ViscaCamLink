@@ -246,11 +246,11 @@
 
                         <Button DockPanel.Dock="Right"
                                 Width="24"
-                                VerticalAlignment="Stretch"
-                                ToolTip="{x:Static resources:Strings.Connection_Edit}"
+                                VerticalAlignment="Stretch"                                
                                 Command="{Binding ConnectionEditCommand}"
                                 Visibility="{Binding IsEditingConnection,
                                                      Converter={StaticResource TrueToCollapsedConverter}}"
+                                ToolTip="{x:Static resources:Strings.Connection_Edit}"
                                 Style="{StaticResource BorderlessButton}">
                             <Path Data="{StaticResource Pencil}"
                                   Style="{StaticResource Icon16Path}" />
@@ -263,6 +263,7 @@
                                 CommandParameter="{StaticResource True}"
                                 Visibility="{Binding IsEditingConnection,
                                                      Converter={StaticResource FalseToCollapsedConverter}}"
+                                ToolTip="{x:Static resources:Strings.Common_Cancel}"
                                 Style="{StaticResource BorderlessButton}">
                             <Path Data="{StaticResource Cross}" 
                                   Style="{StaticResource Icon16Path}" />
@@ -274,6 +275,7 @@
                                 Command="{Binding ConnectionEditCommand}"
                                 Visibility="{Binding IsEditingConnection,
                                                      Converter={StaticResource FalseToCollapsedConverter}}"
+                                ToolTip="{x:Static resources:Strings.Common_Save}"
                                 Style="{StaticResource BorderlessButton}">
                             <Path Data="{StaticResource Disk}" 
                                   Style="{StaticResource Icon16Path}" />

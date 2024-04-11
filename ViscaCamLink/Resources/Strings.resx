@@ -183,11 +183,17 @@
   <data name="PowerStatus_Error" xml:space="preserve">
     <value>Faulty camera status</value>
   </data>
-  <data name="PowerStatus_Off" xml:space="preserve">
-    <value>Camera in standby</value>
-  </data>
   <data name="PowerStatus_On" xml:space="preserve">
     <value>Camera active</value>
+  </data>
+  <data name="PowerStatus_Standby" xml:space="preserve">
+    <value>Camera on standby</value>
+  </data>
+  <data name="PowerStatus_SwitchingOn" xml:space="preserve">
+    <value>Camera is switching on...</value>
+  </data>
+  <data name="PowerStatus_SwitchingToStandby" xml:space="preserve">
+    <value>Camera is switching into standby...</value>
   </data>
   <data name="PowerStatus_Unknown" xml:space="preserve">
     <value>Unknown camera status</value>
