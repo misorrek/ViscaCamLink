@@ -6,21 +6,17 @@ using System.Windows.Data;
 [ValueConversion(typeof(Boolean), typeof(Boolean))]
 public sealed class InverseBooleanConverter : IValueConverter
 {
-    #region IValueConverter Members
-
-    public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    public Object Convert(Object value, Type targetType, Object parameter, System.Globalization.CultureInfo culture)
     {
-        if (targetType != typeof(Boolean))
+        if (value is Boolean boolValue)
         {
-            throw new InvalidOperationException("The target must be a boolean");
+            return !boolValue;
         }
-        return !(Boolean)value;
+        throw new InvalidOperationException("The target must be a boolean");
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    public Object ConvertBack(Object value, Type targetType, Object parameter, System.Globalization.CultureInfo culture)
     {
         throw new NotSupportedException();
     }
-
-    #endregion
 }

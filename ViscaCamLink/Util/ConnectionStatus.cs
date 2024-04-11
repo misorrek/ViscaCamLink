@@ -1,6 +1,6 @@
 ﻿namespace ViscaCamLink.Util;
 
-public enum Status
+public enum ConnectionStatus
 {
     Failed,
     Working,

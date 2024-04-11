@@ -109,6 +109,37 @@ public sealed class ViscaController : IDisposable
         return (PowerStatus) response.GetByte(2);
     }
 
+    public async Task<PowerStatus> GetUpdatedPowerStatus(PowerStatus lastPowerStatus, CancellationToken cancellationToken = default)
+    {
+        const Int32 perOperationTimeout = 1;
+        const Int32 perOperationDelay = 2;
+
+        var attemptsLeft = 20;
+
+        while (attemptsLeft > 0)
+        {           
+            try
+            {
+                var shortCancellationToken = new CancellationTokenSource(perOperationTimeout).Token;
+                var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, shortCancellationToken).Token;
+                var powerStatus = await GetPowerStatus(linkedToken).ConfigureAwait(false);
+
+                if (powerStatus != PowerStatus.Unknown && powerStatus != lastPowerStatus)
+                {
+                    return powerStatus;
+                }                
+            }
+            catch (Exception) when (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(perOperationDelay, cancellationToken).ConfigureAwait(false);
+
+                attemptsLeft--;
+            }
+        }
+
+        return PowerStatus.Unknown;
+    }
+
     // Main Commands
 
     public async Task MemorySet(byte slot, CancellationToken cancellationToken = default)

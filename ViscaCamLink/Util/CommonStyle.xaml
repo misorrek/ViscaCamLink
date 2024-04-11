@@ -60,6 +60,10 @@
                                     TrueValue="Visible"
                                     FalseValue="Collapsed" />
 
+    <util:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter"
+                                    TrueValue="Collapsed"
+                                    FalseValue="Visible" />
+
     <util:StringToVisibilityConverter x:Key="StringEmptyToCollapsedConverter"
                                       TrueValue="Visible"
                                       FalseValue="Collapsed" />
@@ -137,10 +141,11 @@
                     <Border x:Name="Border" 
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}" 
-                            BorderThickness="{TemplateBinding BorderThickness}" 
-                            CornerRadius="{StaticResource DefaultCornerRadius}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="0"
                             SnapsToDevicePixels="True">
-                        <ScrollViewer x:Name="PART_ContentHost" 
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Margin="-2,0,-2,-2"
                                       Focusable="False"
                                       HorizontalScrollBarVisibility="Hidden" 
                                       VerticalScrollBarVisibility="Hidden"/>
@@ -260,10 +265,10 @@
     <Style x:Key="HeaderTextBox"
            TargetType="{x:Type TextBox}"
            BasedOn="{StaticResource BaseTextBox}">
-        <Setter Property="Background"
-                Value="Transparent" />
         <Setter Property="Foreground"
                 Value="{StaticResource PrimaryForegroundBrush}" />
+        <Setter Property="BorderThickness"
+                Value="0,0,0,2" />
         <Setter Property="FontSize"
                 Value="{StaticResource PrimaryHeaderFontSize}" />
         <Setter Property="FontWeight"
@@ -272,10 +277,15 @@
             <Trigger Property="IsReadOnly" Value="True">
                 <Setter Property="BorderThickness"
                         Value="0" />
-                <Setter Property="Padding"
-                        Value="1" />
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <Style x:Key="BorderlessButton"
+           TargetType="{x:Type Button}"
+           BasedOn="{StaticResource BaseButton}">
+        <Setter Property="BorderThickness"
+                Value="0" />
     </Style>
 
     <Style x:Key="DialogButton"
