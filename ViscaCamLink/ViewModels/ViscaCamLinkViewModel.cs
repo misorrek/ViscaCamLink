@@ -14,7 +14,9 @@ using AutoUpdaterDotNET;
 using CameraControl.Visca;
 using ViscaCamLink.Factories;
 using ViscaCamLink.Properties;
+using ViscaCamLink.Resources;
 using ViscaCamLink.Util;
+using ViscaCamLink.Views;
 
 public class ViscaCamLinkViewModel : INotifyPropertyChanged
 {
@@ -328,7 +330,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     private void OpenOptions()
     {
-        MessageBox.Show("Bald verfügbar!");
+        OptionsViewFactory.CreateOptionsView().ShowDialog();
     }
 
     private void UpdateConnectionInfo()
@@ -470,12 +472,12 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
         if (IsSettingMemory)
         {
-            MemoryInfo = "Wähle einen Slot";
+            MemoryInfo = Strings.Presets_ChooseSlot;
             MemoryInfoCancellationTokenSource?.Cancel();
         }
         else
         {
-            MemoryInfo = "Abgebrochen";
+            MemoryInfo = Strings.Common_Cancel;
             ResetMemorySetInfo();
         }
     }
@@ -490,7 +492,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
             {
                 ViscaController.MemorySet(slot);
                 IsSettingMemory = false;
-                MemoryInfo = "Gespeichert";
+                MemoryInfo = Strings.Common_Saved;
                 ResetMemorySetInfo();
             }
             else

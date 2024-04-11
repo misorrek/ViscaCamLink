@@ -7,6 +7,7 @@
     using AutoUpdaterDotNET;
 
     using ViscaCamLink.Properties;
+    using ViscaCamLink.Util;
     using ViscaCamLink.ViewModels;
     using ViscaCamLink.Views;
 
@@ -17,6 +18,7 @@
     {
         private void Application_Startup(Object sender, StartupEventArgs startupEventArgs)
         {
+            LocalizationHelper.ApplyLocalization();
             CheckSettingsUpgradeRequired();
 
             var viscaCamLinkView = new ViscaCamLinkView();

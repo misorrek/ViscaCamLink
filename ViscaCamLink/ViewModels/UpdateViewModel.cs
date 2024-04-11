@@ -8,6 +8,7 @@ using System.Windows.Input;
 
 using AutoUpdaterDotNET;
 
+using ViscaCamLink.Resources;
 using ViscaCamLink.Util;
 
 public class UpdateViewModel : INotifyPropertyChanged
@@ -27,7 +28,7 @@ public class UpdateViewModel : INotifyPropertyChanged
 
     public ICommand CancelCommand { get; }
 
-    public String VersionText => $"{UpdateInfoEventArgs.CurrentVersion} (Aktuell: {UpdateInfoEventArgs.InstalledVersion})";
+    public String VersionText => $"{UpdateInfoEventArgs.CurrentVersion} ({Strings.Updater_CurrentVersion} {UpdateInfoEventArgs.InstalledVersion})";
 
     public String ChangelogUrl => UpdateInfoEventArgs.ChangelogURL;
 
