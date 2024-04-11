@@ -111,8 +111,8 @@ public sealed class ViscaController : IDisposable
 
     public async Task<PowerStatus> GetUpdatedPowerStatus(PowerStatus lastPowerStatus, CancellationToken cancellationToken = default)
     {
-        const Int32 perOperationTimeout = 1;
-        const Int32 perOperationDelay = 2;
+        const Int32 perOperationTimeoutInMilliseconds = 1000;
+        const Int32 perOperationDelayInMilliseconds = 2000;
 
         var attemptsLeft = 20;
 
@@ -120,7 +120,7 @@ public sealed class ViscaController : IDisposable
         {           
             try
             {
-                var shortCancellationToken = new CancellationTokenSource(perOperationTimeout).Token;
+                var shortCancellationToken = new CancellationTokenSource(perOperationTimeoutInMilliseconds).Token;
                 var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, shortCancellationToken).Token;
                 var powerStatus = await GetPowerStatus(linkedToken).ConfigureAwait(false);
 
@@ -131,7 +131,7 @@ public sealed class ViscaController : IDisposable
             }
             catch (Exception) when (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(perOperationDelay, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(perOperationDelayInMilliseconds, cancellationToken).ConfigureAwait(false);
 
                 attemptsLeft--;
             }
