@@ -1,13 +1,16 @@
-# ![ViscaCamLink](banner.png)
+# ![ViscaCamLink](Assets/banner.png)
 
-ViscaCamLink ist eine WPF-Desktopanwendung, die eine [PTZ Kamera](https://de.m.wikipedia.org/wiki/PTZ-Kamera) im selben Netzwerk über das VISCA Protokoll steuern kann.
+ViscaCamLink ist eine Kamerasteuerung für [PTZ-Kameras](https://de.m.wikipedia.org/wiki/PTZ-Kamera), die über eine Netzwerkverbindung mit dem VISCA Protokoll ansprechbar sind.
 
 ## Funktionen
 
 ### Voreinstellungen
 
 * Speichern und laden von bis zu zehn Positionen (inklusive Zoom) als Voreinstellung
-* Globale Tastenbelegung (Hotkeys) für jede Voreinstellung (derzeit festgelegt auf Numpad 0-9)
+* Globale Tastenbelegung (Hotkeys) für jede Voreinstellung (derzeit festgelegt auf die Numpad-Tasten 0-9)
+
+    <br/>
+    <img src="Assets/presets-de.png" alt="Bild der Voreinstellungspanele" width="250"/>
 
 ### Steuerung
 
@@ -15,14 +18,21 @@ ViscaCamLink ist eine WPF-Desktopanwendung, die eine [PTZ Kamera](https://de.m.w
 * 18-stufige Anpassung der Bewegungsgeschwindigkeit
 * Zurücksetzen in Ausgangsposition
 
+    <br/>
+    <img src="Assets/control-de.png" alt="Bild der Steuerungspanele" width="250"/>
+
 ### Zoom
 
-* Freies rein- und rauszoomen
+* Freies herein- und herauszoomen
 * 7-stufige Anpassung der Zoom-Geschwindigkeit
+
+    <br/>
+    <img src="Assets/zoom-de.png" alt="Bild der Zoom-Panele" width="250"/>
 
 ### Weitere
 
 * Benutzerspezifische Speicherung des Oberflächen-Layouts
+* Oberfläche verfügbar in Deutsch und Englisch
 * Volle Unterstützung der Windows-Skalierung
 
 ## Installation
@@ -43,17 +53,18 @@ Danach ist ViscaCamLink bereit für die Benutzung.
 
 ## Benutzung 
 
-Nach dem ersten Start muss die IP der Kamera und der Port für das VISCA Protokoll (wenn vom Standard abweichend) hinterlegt werden. Wie Sie an diese Informationen herankommen, beschreibt das Benutzerhandbuch der Kamera.
+Nach dem ersten Start muss die IP-Adresse der Kamera und der Port für das VISCA Protokoll (wenn vom Standard abweichend) hinterlegt werden. (Wie Sie an diese Informationen herankommen, beschreibt das Benutzerhandbuch der Kamera)
 
-Danach kann die Verbindung über den entsprechenden Schalter in der Adresszeile aufgebaut werden. Ob dies erfolgreich war, zeigt die Status-Anzeige darunter.
+Danach kann die Verbindung über den entsprechenden Schalter in der Adresszeile aufgebaut werden. Ob dies erfolgreich war, zeigt die Status-Anzeige darunter. Ebenfalls wird angezeigt, ob die Kamera angeschaltet ist oder sich im Standby-Modus befindet.
+
+<br/>
+<img src="Assets/connection-de.png" alt="Bild der Verbindungspanele" width="250"/>
 
 ## Roadmap 
 
 * Anpassbare Tastenbelegung
 * Anpassbare Bezeichnung von Voreinstellungen
-* Zusätzliche Steuerung mit Maus
-* Installation per Setup
-* Unterstützung der Kommunikation über seriellen Anschluss
+* Weitere Voreinstellungen
 
 ## Lizenz
 
