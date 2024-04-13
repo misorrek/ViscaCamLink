@@ -9,8 +9,8 @@ ViscaCamLink ist eine Kamerasteuerung für [PTZ-Kameras](https://de.m.wikipedia.
 * Speichern und laden von bis zu zehn Positionen (inklusive Zoom) als Voreinstellung
 * Globale Tastenbelegung (Hotkeys) für jede Voreinstellung (derzeit festgelegt auf die Numpad-Tasten 0-9)
 
-    <br/>
-    <img src="Assets/presets-de.png" alt="Bild der Voreinstellungspanele" width="250"/>
+<br/>
+<img src="Assets/presets-de.png" alt="Bild der Voreinstellungspanele" width="250" style="margin-left: 40px;"/>
 
 ### Steuerung
 
@@ -18,16 +18,16 @@ ViscaCamLink ist eine Kamerasteuerung für [PTZ-Kameras](https://de.m.wikipedia.
 * 18-stufige Anpassung der Bewegungsgeschwindigkeit
 * Zurücksetzen in Ausgangsposition
 
-    <br/>
-    <img src="Assets/control-de.png" alt="Bild der Steuerungspanele" width="250"/>
+<br/>
+<img src="Assets/control-de.png" alt="Bild der Steuerungspanele" width="250" style="margin-left: 40px;"/>
 
 ### Zoom
 
 * Freies herein- und herauszoomen
 * 7-stufige Anpassung der Zoom-Geschwindigkeit
 
-    <br/>
-    <img src="Assets/zoom-de.png" alt="Bild der Zoom-Panele" width="250"/>
+<br/>
+<img src="Assets/zoom-de.png" alt="Bild der Zoom-Panele" width="250" style="margin-left: 40px;"/>
 
 ### Weitere
 

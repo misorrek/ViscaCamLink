@@ -11,8 +11,8 @@ ViscaCamLink is a camera controller for [PTZ cameras](https://en.wikipedia.org/w
 * Save and load up to ten positions (including zoom) as presets
 * Global hotkey for each preset (currently assigned to the numpad keys 0-9)
 
-    <br/>
-    <img src="Assets/presets.png" alt="Picture of the preset panel" width="250"/>
+<br/>
+<img src="Assets/presets.png" alt="Picture of the preset panel" width="250" style="margin-left: 40px;"/>
 
 ### Control
 
@@ -20,16 +20,16 @@ ViscaCamLink is a camera controller for [PTZ cameras](https://en.wikipedia.org/w
 * 18-step adjustment of movement speed
 * Reset to initial position
 
-    <br/>
-    <img src="Assets/control.png" alt="Picture of the control panel" width="250"/>
+<br/>
+<img src="Assets/control.png" alt="Picture of the control panel" width="250" style="margin-left: 40px;"/>
 
 ### Zoom
 
 * Freely zooming in and out
 * 7-step adjustment of zoom speed
 
-    <br/>
-    <img src="Assets/zoom.png" alt="Picture of the zoom panel" width="250"/>
+<br/>
+<img src="Assets/zoom.png" alt="Picture of the zoom panel" width="250" style="margin-left: 40px;"/>
 
 ### More
 
