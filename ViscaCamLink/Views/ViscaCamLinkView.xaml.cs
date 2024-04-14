@@ -18,38 +18,52 @@ public partial class ViscaCamLinkView : Window
         InitializeComponent();
     }
 
+    private readonly Regex IpRegex = new (@"^(?:\d{1,3}\.){0,3}\d{0,3}$");
+    private readonly Regex PortRegex = new(@"\b[1-9]\d{0,4}\b");
+
     private void Window_LayoutUpdated(Object sender, EventArgs e)
     {
         SizeToContent = SizeToContent.Height; // To only allow horizontal resize
     }
 
-    private void TextBox_PreviewTextInput_Numeric(Object sender, TextCompositionEventArgs e)
+    private void TextBox_PreviewTextInput_Ip(Object sender, TextCompositionEventArgs e)
     {
-        e.Handled = !IsTextNumeric(e.Text);
+        if (sender is TextBox textBox)
+        {
+            var fullText = GetFullText(textBox, e.Text);
+
+            e.Handled = !IsTextIp(fullText);
+        }
     }
 
-    private void TextBox_PreviewTextInput_NumericDot(Object sender, TextCompositionEventArgs e)
+    private void TextBox_PreviewTextInput_Port(Object sender, TextCompositionEventArgs e)
     {
-        e.Handled = !IsTextNumericDot(e.Text);
+        if (sender is TextBox textBox)
+        {
+            var fullText = GetFullText(textBox, e.Text);
+
+            e.Handled = !IsTextPort(fullText);
+        }
     }
 
-    private void TextBox_PastingHandler_Numeric(Object sender, DataObjectPastingEventArgs e)
+    private void TextBox_PastingHandler_Ip(Object sender, DataObjectPastingEventArgs e)
     {
-        PastingHandler(e, IsTextNumeric);
+        PastingHandler(sender, e, IsTextIp);
     }
 
-    private void TextBox_PastingHandler_NumericDot(Object sender, DataObjectPastingEventArgs e)
+    private void TextBox_PastingHandler_Port(Object sender, DataObjectPastingEventArgs e)
     {
-        PastingHandler(e, IsTextNumericDot);
+        PastingHandler(sender, e, IsTextPort);
     }
 
-    private void PastingHandler(DataObjectPastingEventArgs e, Func<String, Boolean> pastedTextTester)
+    private static void PastingHandler(Object sender, DataObjectPastingEventArgs e, Func<String, Boolean> pastedTextTester)
     {
-        if (e.DataObject.GetDataPresent(typeof(String)))
+        if (sender is TextBox textBox && e.DataObject.GetDataPresent(typeof(String)))
         {
             String text = (String)e.DataObject.GetData(typeof(String));
+            var fullText = GetFullText(textBox, text);
 
-            if (!pastedTextTester(text))
+            if (!pastedTextTester(fullText))
             {
                 e.CancelCommand();
             }
@@ -60,18 +74,22 @@ public partial class ViscaCamLinkView : Window
         }
     }
 
-    private Boolean IsTextNumeric(String text)
+    private static String GetFullText(TextBox textBox, String inputText)
     {
-        Regex numericRegex = new Regex("[0-9]+");
+        var selectionStart = textBox.Text.IndexOf(textBox.SelectedText);
+        var selectionClearedText = textBox.Text.Remove(selectionStart, textBox.SelectedText.Length);
 
-        return numericRegex.IsMatch(text);
+        return selectionClearedText.Insert(textBox.CaretIndex, inputText);
     }
 
-    private Boolean IsTextNumericDot(String text)
+    private Boolean IsTextIp(String text)
     {
-        Regex numericRegex = new Regex("[0-9.]+");
+        return IpRegex.IsMatch(text);
+    }
 
-        return numericRegex.IsMatch(text);
+    private Boolean IsTextPort(String text)
+    {
+        return PortRegex.IsMatch(text);
     }
 
     public void ShowUpdateButton()

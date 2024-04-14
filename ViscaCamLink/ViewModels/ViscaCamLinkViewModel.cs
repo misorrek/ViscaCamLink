@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 using AutoUpdaterDotNET;
@@ -13,7 +14,9 @@ using AutoUpdaterDotNET;
 using CameraControl.Visca;
 using ViscaCamLink.Factories;
 using ViscaCamLink.Properties;
+using ViscaCamLink.Resources;
 using ViscaCamLink.Util;
+using ViscaCamLink.Views;
 
 public class ViscaCamLinkViewModel : INotifyPropertyChanged
 {
@@ -21,23 +24,23 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
     {
         ViscaController = ViscaController.ForTcp(Settings.Default.Ip, Settings.Default.Port);
 
-        var connected = ViscaController.Connected.GetValueOrDefault();
-
-        ConnectionStatus = connected ? Status.Ok : Status.Failed;
-        ConnectionInfo = connected ? "Verbunden" : "Keine Verbindung";
-
         SidebarCommand = new Command(ExecuteSidebar);
         UpdateCommand = new Command(OpenUpdateDialog);
         OptionsCommand = new Command(OpenOptions);
         ConnectionEditCommand = new Command(ExecuteConnectionEdit);
         ReconnectCommand = new Command(ExecuteReconnect);
+        PowerSwitchCommand = new Command(ExecutePowerSwitch);
         MemoryRenameCommand = new Command(ExecuteMemoryRename);
         MemorySetCommand = new Command(ExecuteMemorySet);
         MemoryCommand = new Command(ExecuteMemorySetOrRecall);            
         HomeCommand = new Command(ExecuteHome);
         MoveBeginCommand = new Command(ExecuteMoveBegin);
         MoveEndCommand = new Command(ExecuteMoveEnd);
-        ZoomCommand = new Command(ExecuteZoom);                                   
+        MoveSpeedDecreaseCommand = new Command(ExecuteMoveSpeedDecreaseCommand);
+        MoveSpeedIncreaseCommand = new Command(ExecuteMoveSpeedIncreaseCommand);
+        ZoomCommand = new Command(ExecuteZoom);
+        ZoomSpeedDecreaseCommand = new Command(ExecuteZoomSpeedDecrease);
+        ZoomSpeedIncreaseCommand = new Command(ExecuteZoomSpeedIncrease);
 
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad0, () => ExecuteMemorySetOrRecall("0"));
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad1, () => ExecuteMemorySetOrRecall("1"));
@@ -49,6 +52,8 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad7, () => ExecuteMemorySetOrRecall("7"));
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad8, () => ExecuteMemorySetOrRecall("8"));
         GlobalHotKey.RegisterHotKey(ModifierKeys.None, Key.NumPad9, () => ExecuteMemorySetOrRecall("9"));
+
+        ExecuteReconnect(); //Inital connection attempt 
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -67,6 +72,8 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     public ICommand ReconnectCommand { get; }
 
+    public ICommand PowerSwitchCommand { get; }
+
     public ICommand MemoryRenameCommand { get; }
 
     public ICommand MemorySetCommand { get; }
@@ -79,7 +86,15 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     public ICommand MoveEndCommand { get; }
 
+    public ICommand MoveSpeedDecreaseCommand { get; }
+
+    public ICommand MoveSpeedIncreaseCommand { get; }
+
     public ICommand ZoomCommand { get; }
+
+    public ICommand ZoomSpeedIncreaseCommand { get; }
+
+    public ICommand ZoomSpeedDecreaseCommand { get; }
 
     public static Int32 MaximalPanTiltSpeed
     {
@@ -126,28 +141,23 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     public String Ip
     {
-        get => Settings.Default.Ip;
+        get => _ip;
 
         set
         {
-            Settings.Default.Ip = value;
+            _ip = value;
             NotifyPropertyChanged();
         }
     }
 
     public String Port
     {
-        get => Settings.Default.Port.ToString();
+        get => _port;
 
         set
-        {
-            Int32 port;
-
-            if (!String.IsNullOrWhiteSpace(value) && Int32.TryParse(value, out port))
-            {
-                Settings.Default.Port = port;
-                NotifyPropertyChanged();
-            }
+        {       
+            _port = value;
+            NotifyPropertyChanged();
         }
     }               
 
@@ -162,13 +172,15 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         }
     }
 
-    public Status ConnectionStatus
+    public ConnectionStatus ConnectionStatus
     {
         get => _connectionStatus;
 
         set
         {
             _connectionStatus = value;
+            UpdateConnectionInfo();
+            UpdatePowerStatus();
             NotifyPropertyChanged();
         }
     }
@@ -180,6 +192,42 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         set
         {
             _connectionInfo = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public PowerStatus PowerStatus
+    {
+        get => _powerStatus;
+
+        set
+        {
+            _powerStatus = value;
+            ChangingPowerStatus = false;
+            UpdatePowerInfo();
+            NotifyPropertyChanged();
+        }
+    }
+
+    public Boolean ChangingPowerStatus
+    {
+        get => _changingPowerStatus;
+
+        set
+        {
+            _changingPowerStatus = value;
+            UpdatePowerInfo();
+            NotifyPropertyChanged();
+        }
+    }
+
+    public String PowerInfo
+    {
+        get => _powerInfo;
+
+        set
+        {
+            _powerInfo = value;
             NotifyPropertyChanged();
         }
     }
@@ -206,13 +254,23 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         }
     }
 
-    private CancellationTokenSource? MemoryInfoCancellationTokenSource { get; set; } 
+    private CancellationTokenSource? MemoryInfoCancellationTokenSource { get; set; }
+
+    private String _ip = Settings.Default.Ip;
+
+    private String _port = Settings.Default.Port.ToString();
 
     private Boolean _isEditingConnection = false;
 
-    private Status _connectionStatus = Status.Failed;
+    private ConnectionStatus _connectionStatus = ConnectionStatus.Failed;
 
     private String _connectionInfo = String.Empty;
+
+    private PowerStatus _powerStatus = PowerStatus.Unknown;
+
+    private Boolean _changingPowerStatus = false;
+
+    private String _powerInfo = String.Empty;
 
     private Boolean _isSettingMemory = false;
 
@@ -272,29 +330,135 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
     private void OpenOptions()
     {
-        MessageBox.Show("Bald verfügbar!");
+        OptionsViewFactory.CreateOptionsView().ShowDialog();
     }
 
-    private void ExecuteConnectionEdit()
+    private void UpdateConnectionInfo()
     {
-        IsEditingConnection = !IsEditingConnection;
+        switch(ConnectionStatus)
+        {
+            case ConnectionStatus.Failed:
+                ConnectionInfo = Strings.ConnectionStatus_Failed;
+                break;
+            case ConnectionStatus.Working:
+                ConnectionInfo = Strings.ConnectionStatus_Working;
+                break;
+            case ConnectionStatus.Ok:
+                ConnectionInfo = Strings.ConnectionStatus_Ok;
+                break;
+        }
+    }
+
+    private void UpdatePowerStatus()
+    {
+        if (ConnectionStatus == ConnectionStatus.Ok)
+        {
+            PowerStatus = ViscaController.GetPowerStatus().Result;
+        }
+        else
+        {
+            PowerStatus = PowerStatus.Unknown;
+        }
+    }
+
+    private void UpdatePowerInfo()
+    {
+        if (ChangingPowerStatus)
+        {
+            if (PowerStatus == PowerStatus.On)
+            {
+                PowerInfo = Strings.PowerStatus_SwitchingToStandby;
+            }
+            else if (PowerStatus == PowerStatus.Standby)
+            {
+                PowerInfo = Strings.PowerStatus_SwitchingOn;
+            }
+        }
+        else
+        {
+            switch (PowerStatus)
+            {
+                case PowerStatus.Unknown:
+                    PowerInfo = Strings.PowerStatus_Unknown;
+                    break;
+                case PowerStatus.On:
+                    PowerInfo = Strings.PowerStatus_On;
+                    break;
+                case PowerStatus.Standby:
+                    PowerInfo = Strings.PowerStatus_Standby;
+                    break;
+                case PowerStatus.InternalPowerCircuitError:
+                    PowerInfo = Strings.PowerStatus_Error;
+                    break;
+            }
+        }
+    }
+
+    private void ExecuteConnectionEdit(Object? parameter)
+    {
+        if (IsEditingConnection)
+        {
+            if (parameter is Boolean editingCancled && editingCancled)
+            {
+                Ip = Settings.Default.Ip;
+                Port = Settings.Default.Port.ToString();
+            }
+            else
+            {
+                Settings.Default.Ip = Ip;
+
+                Int32 port;
+
+                if (!String.IsNullOrWhiteSpace(Port) && Int32.TryParse(Port, out port))
+                {
+                    Settings.Default.Port = port;
+                }
+            }
+            IsEditingConnection = false;
+        }
+        else
+        {
+            IsEditingConnection = true;
+        }
     }
 
     private void ExecuteReconnect()
     {
         var source = new CancellationTokenSource();
 
-        ConnectionStatus = Status.Working;
-        ConnectionInfo = "Verbindungsversuch";
+        ConnectionStatus = ConnectionStatus.Working;
 
-        ViscaController.Reconnect(source.Token, Settings.Default.Ip, Settings.Default.Port)
+        ViscaController
+            .Reconnect(source.Token, Settings.Default.Ip, Settings.Default.Port)
             .ContinueWith(task =>
             {
                 var connected = ViscaController.Connected.GetValueOrDefault();
 
-                ConnectionStatus = connected ? Status.Ok : Status.Failed;
-                ConnectionInfo = connected ? "Verbunden" : "Keine Verbindung";
+                ConnectionStatus = connected ? ConnectionStatus.Ok : ConnectionStatus.Failed;
             });
+    }
+
+    private void ExecutePowerSwitch()
+    {
+        PowerStatus = ViscaController.GetPowerStatus().Result;
+
+        switch(PowerStatus)
+        {
+            case PowerStatus.On:
+                ViscaController.PowerOff().ContinueWith(task =>
+                {
+                    ChangingPowerStatus = true;
+                    PowerStatus = ViscaController.GetUpdatedPowerStatus(PowerStatus).Result;
+                });
+                break;
+            case PowerStatus.Standby:
+                ViscaController.PowerOn().ContinueWith(task =>
+                {
+                    ChangingPowerStatus = true;
+                    PowerStatus = ViscaController.GetUpdatedPowerStatus(PowerStatus).Result;
+                });
+                break;
+        }
     }
 
     private void ExecuteMemoryRename()
@@ -308,12 +472,12 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
 
         if (IsSettingMemory)
         {
-            MemoryInfo = "Wähle einen Slot";
+            MemoryInfo = Strings.Presets_ChooseSlot;
             MemoryInfoCancellationTokenSource?.Cancel();
         }
         else
         {
-            MemoryInfo = "Abgebrochen";
+            MemoryInfo = Strings.Common_Cancel;
             ResetMemorySetInfo();
         }
     }
@@ -328,7 +492,7 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
             {
                 ViscaController.MemorySet(slot);
                 IsSettingMemory = false;
-                MemoryInfo = "Gespeichert";
+                MemoryInfo = Strings.Common_Saved;
                 ResetMemorySetInfo();
             }
             else
@@ -343,42 +507,34 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         ViscaController.GoHome();
     }
 
-    private void ExecuteMoveBegin(Object? parameter) //TODO
+    private void ExecuteMoveBegin(Object? parameter)
+    {
+        if (parameter is MouseButtonEventArgs eventArgs &&
+            eventArgs.LeftButton == MouseButtonState.Pressed &&
+            eventArgs.Source is Button button &&
+            button.CommandParameter is MoveDirection direction)
+        {         
+             ViscaController.ContinuousPanTilt(
+                GetPan(direction), 
+                GetTilt(direction), 
+                (Byte)Settings.Default.PanTiltSpeed, 
+                GetTiltSpeed());
+        }
+    }
+
+    private void ExeuteMoveMouse(Object? parameter)
     {
         if (parameter != null && parameter is MouseEventArgs eventArgs &&
             eventArgs.Source != null && eventArgs.Source is FrameworkElement element &&
             eventArgs.LeftButton == MouseButtonState.Pressed)
         {
-            if (element.Tag == null)
-            {
-                return;
-            }
-            var tag = element.Tag.ToString();
+            var position = eventArgs.GetPosition(element); //TODO
+            var panSpeed = NormalizeSpeed(position.X, element.ActualWidth, ViscaController.MaxPanSpeed);
+            // Tilt has "up is positive" in camera coordinates, but "up is negative" in screen coordinates
+            var tiltSpeed = -NormalizeSpeed(position.Y, element.ActualHeight, ViscaController.MaxTiltSpeed);
+            var pan = panSpeed == 0 ? default(bool?) : panSpeed > 0;
+            var tilt = tiltSpeed == 0 ? default(bool?) : tiltSpeed > 0;
 
-            if (tag == null)
-            {
-                return;
-            }
-
-            bool? pan;
-            bool? tilt;
-
-            if (tag == "Mouse")
-            {
-                var position = eventArgs.GetPosition(element); //TODO
-
-                var panSpeed = NormalizeSpeed(position.X, element.ActualWidth, ViscaController.MaxPanSpeed);
-                // Tilt has "up is positive" in camera coordinates, but "up is negative" in screen coordinates
-                var tiltSpeed = -NormalizeSpeed(position.Y, element.ActualHeight, ViscaController.MaxTiltSpeed);
-
-                pan = panSpeed == 0 ? default(bool?) : panSpeed > 0;
-                tilt = tiltSpeed == 0 ? default(bool?) : tiltSpeed > 0;
-            }
-            else
-            {
-                pan = GetPan(tag);
-                tilt = GetTilt(tag);
-            }
             ViscaController.ContinuousPanTilt(pan, tilt, (Byte)Settings.Default.PanTiltSpeed, GetTiltSpeed());
         }
     }
@@ -400,26 +556,26 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         return speed;
     }
 
-    private static Boolean? GetPan(String tag) //TODO
+    private static Boolean? GetPan(MoveDirection direction)
     {
-        if (tag.ToLower().Contains("right"))
+        if (direction.HasFlag(MoveDirection.Right))
         {
             return true;
         }
-        if (tag.ToLower().Contains("left"))
+        if (direction.HasFlag(MoveDirection.Left))
         {
             return false;
         }
         return null;
     }
 
-    private static Boolean? GetTilt(String tag) //TODO
+    private static Boolean? GetTilt(MoveDirection direction)
     {
-        if (tag.ToLower().Contains("up"))
+        if (direction.HasFlag(MoveDirection.Up))
         {
             return true;
         }
-        if (tag.ToLower().Contains("down"))
+        if (direction.HasFlag(MoveDirection.Down))
         {
             return false;
         }
@@ -433,22 +589,57 @@ public class ViscaCamLinkViewModel : INotifyPropertyChanged
         return (Byte)Math.Ceiling(ViscaController.MaxTiltSpeed * speedInPercent);
     }
 
+    private void ExecuteMoveSpeedDecreaseCommand()
+    {
+        if (Settings.Default.PanTiltSpeed > 1)
+        {
+            Settings.Default.PanTiltSpeed--;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private void ExecuteMoveSpeedIncreaseCommand()
+    {
+        if (Settings.Default.PanTiltSpeed < MaximalPanTiltSpeed)
+        {
+            Settings.Default.PanTiltSpeed++;
+            NotifyPropertyChanged();
+        }
+    }
+
     private void ExecuteZoom(Object? parameter)
     {
-        if (parameter != null && parameter is MouseButtonEventArgs eventArgs && 
-            eventArgs.Source != null && eventArgs.Source is FrameworkElement element)
+        if (parameter is MouseButtonEventArgs eventArgs && 
+            eventArgs.Source is Button button &&
+            button.CommandParameter is ZoomDirection direction)
         {
-            var zoomIn = element.Tag.ToString() == "In";
-            
             switch(eventArgs.LeftButton)
             {
                 case MouseButtonState.Pressed:
-                    ViscaController.ContinuousZoom(zoomIn, (Byte)Settings.Default.ZoomSpeed);
+                    ViscaController.ContinuousZoom(direction == ZoomDirection.In, (Byte)Settings.Default.ZoomSpeed);
                     break;
                 case MouseButtonState.Released:
                     ViscaController.ContinuousZoom(default(bool?), 0);
                     break;
             }
+        }
+    }
+
+    private void ExecuteZoomSpeedDecrease()
+    {
+        if (Settings.Default.ZoomSpeed > 1)
+        {
+            Settings.Default.ZoomSpeed--;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private void ExecuteZoomSpeedIncrease()
+    {
+        if (Settings.Default.ZoomSpeed < MaximalZoomSpeed)
+        {
+            Settings.Default.ZoomSpeed++;
+            NotifyPropertyChanged();
         }
     }
 

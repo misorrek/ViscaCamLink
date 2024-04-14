@@ -1,6 +1,6 @@
-# ![ViscaCamLink](banner.png)
+# ![ViscaCamLink](Assets/banner.png)
 
-ViscaCamLink is a WPF desktop application that can control a [PTZ camera](https://en.wikipedia.org/wiki/Pan%E2%80%93tilt%E2%80%93zoom_camera) on the same network using the VISCA protocol.
+ViscaCamLink is a camera controller for [PTZ cameras](https://en.wikipedia.org/wiki/Pan%E2%80%93tilt%E2%80%93zoom_camera) that can be reached via a network connection using the VISCA protocol.
 
 🇩🇪 | 🇦🇹 | 🇨🇭 – [In Deutsch lesen](README-de.md)
 
@@ -9,7 +9,10 @@ ViscaCamLink is a WPF desktop application that can control a [PTZ camera](https:
 ### Presets
 
 * Save and load up to ten positions (including zoom) as presets
-* Global hotkey for each preset (currently assigned to numpad 0-9)
+* Global hotkey for each preset (currently assigned to the numpad keys 0-9)
+
+<br/>
+<img src="Assets/presets.png" alt="Picture of the preset panel" width="250" style="margin-left: 40px;"/>
 
 ### Control
 
@@ -17,14 +20,21 @@ ViscaCamLink is a WPF desktop application that can control a [PTZ camera](https:
 * 18-step adjustment of movement speed
 * Reset to initial position
 
+<br/>
+<img src="Assets/control.png" alt="Picture of the control panel" width="250" style="margin-left: 40px;"/>
+
 ### Zoom
 
 * Freely zooming in and out
 * 7-step adjustment of zoom speed
 
+<br/>
+<img src="Assets/zoom.png" alt="Picture of the zoom panel" width="250" style="margin-left: 40px;"/>
+
 ### More
 
 * User-specific saving of layout settings
+* Interface available in english and german
 * Full Windows scaling support
 
 ## Installation
@@ -45,17 +55,18 @@ After that ViscaCamLink is ready for use.
 
 ## Usage 
 
-After the first start, the IP of the camera and the port for the VISCA protocol (if different from the default) must be typed in (How to get this information is described in the user manual of the camera).
+After the first start, the IP address of the camera and the port for the VISCA protocol (if different from the default) must be typed in. (How to get this information is described in the user manual of the camera)
 
-After that, the connection can be established using the corresponding button in the address bar. Whether this was successful is shown in the status display below.
+After that, the connection can be established using the corresponding button in the address bar. Whether this was successful is shown in the status display below. It also shows if the camera is switched on or is in standby mode.
+
+<br/>
+<img src="Assets/connection.png" alt="Picture of the connection panel" width="250"/>
 
 ## Roadmap 
 
 * Customizable key assignment
 * Customizable name of presets
-* Additional control with mouse
-* Installation via setup
-* Support of communication via serial port
+* Additional preset slots
 
 ## License
 
