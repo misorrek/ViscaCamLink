@@ -11,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{CE7B53
 EndProject
 Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "ViscaCamLink.Installer", "ViscaCamLink.Installer\ViscaCamLink.Installer.wixproj", "{C7DFBE49-F4E3-4D57-81AF-68AC7230E76D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViscaCamLink.Common", "ViscaCamLink.Common\ViscaCamLink.Common.csproj", "{4BA5CCF1-BC56-4CC2-8354-E28F1056F668}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViscaCamLink.Common.Test", "ViscaCamLink.Common.Test\ViscaCamLink.Common.Test.csproj", "{01DFBE66-B028-41D3-B15D-8D58AA3E432C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
