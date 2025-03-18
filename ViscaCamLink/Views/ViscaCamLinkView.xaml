@@ -21,7 +21,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+                <ResourceDictionary Source="/ViscaCamLink;component/Util/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <util:ConnectionStatusToBrushConverter x:Key="ConnectionStatusToBrushConverter" />

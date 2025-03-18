@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\CameraControl.Visca\CameraControl.Visca.csproj" />
+    <ProjectReference Include="..\ViscaCamLink.Common\ViscaCamLink.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
