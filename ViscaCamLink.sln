@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViscaCamLink.Common", "Visc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViscaCamLink.Common.Test", "ViscaCamLink.Common.Test\ViscaCamLink.Common.Test.csproj", "{01DFBE66-B028-41D3-B15D-8D58AA3E432C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViscaCamLink.Updater", "ViscaCamLink.Updater\ViscaCamLink.Updater.csproj", "{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViscaCamLink.ZipExtractor", "ViscaCamLink.ZipExtractor\ViscaCamLink.ZipExtractor.csproj", "{6FE0CD83-F43D-49AD-85FE-96477C85CC34}"
 EndProject
 Global
@@ -153,6 +155,30 @@ Global
 		{01DFBE66-B028-41D3-B15D-8D58AA3E432C}.Release-Portable|x64.Build.0 = Release|Any CPU
 		{01DFBE66-B028-41D3-B15D-8D58AA3E432C}.Release-Portable|x86.ActiveCfg = Release|Any CPU
 		{01DFBE66-B028-41D3-B15D-8D58AA3E432C}.Release-Portable|x86.Build.0 = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Debug|x64.Build.0 = Debug|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Debug|x86.Build.0 = Debug|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release|ARM64.Build.0 = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release|x64.ActiveCfg = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release|x64.Build.0 = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release|x86.ActiveCfg = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release|x86.Build.0 = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release-Portable|Any CPU.ActiveCfg = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release-Portable|Any CPU.Build.0 = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release-Portable|ARM64.ActiveCfg = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release-Portable|ARM64.Build.0 = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release-Portable|x64.ActiveCfg = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release-Portable|x64.Build.0 = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release-Portable|x86.ActiveCfg = Release|Any CPU
+		{A73E4DF8-1E86-46D9-9B58-D2EF90B8A965}.Release-Portable|x86.Build.0 = Release|Any CPU
 		{6FE0CD83-F43D-49AD-85FE-96477C85CC34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6FE0CD83-F43D-49AD-85FE-96477C85CC34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FE0CD83-F43D-49AD-85FE-96477C85CC34}.Debug|ARM64.ActiveCfg = Debug|Any CPU
