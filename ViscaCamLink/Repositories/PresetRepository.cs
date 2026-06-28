@@ -1,9 +1,9 @@
-namespace ViscaCamLink.Services;
+namespace ViscaCamLink.Repositories;
 
 using System.IO;
 using System.Text.Json;
 
-public sealed class PresetRepository : IPresetRepository
+public sealed class PresetRepository(string filePath) : IPresetRepository
 {
     private const int MaxCameraSlots = 256;
 
@@ -12,28 +12,18 @@ public sealed class PresetRepository : IPresetRepository
         WriteIndented = true,
     };
 
-    private readonly string _filePath;
-
-    public PresetRepository()
-        : this(GetDefaultFilePath())
-    {
-    }
-
-    public PresetRepository(string filePath)
-    {
-        _filePath = filePath;
-    }
+    public PresetRepository() : this(GetDefaultFilePath()) { }
 
     public PresetData Load()
     {
-        if (!File.Exists(_filePath))
+        if (!File.Exists(filePath))
         {
             return CreateDefault();
         }
 
         try
         {
-            var json = File.ReadAllText(_filePath);
+            var json = File.ReadAllText(filePath);
             var data = JsonSerializer.Deserialize<PresetData>(json, JsonOptions);
 
             if (IsValid(data))
@@ -47,24 +37,26 @@ public sealed class PresetRepository : IPresetRepository
         }
 
         BackupRejectedFile();
+
         return CreateDefault();
     }
 
     public void Save(PresetData data)
     {
-        var directory = Path.GetDirectoryName(_filePath);
+        var directory = Path.GetDirectoryName(filePath);
+
         if (!string.IsNullOrEmpty(directory))
         {
             Directory.CreateDirectory(directory);
         }
 
         var json = JsonSerializer.Serialize(data, JsonOptions);
-        var tempPath = Path.Combine(directory ?? string.Empty, $"{Path.GetFileName(_filePath)}.{Guid.NewGuid():N}.tmp");
+        var tempPath = Path.Combine(directory ?? string.Empty, $"{Path.GetFileName(filePath)}.{Guid.NewGuid():N}.tmp");
 
         try
         {
             File.WriteAllText(tempPath, json);
-            File.Move(tempPath, _filePath, overwrite: true);
+            File.Move(tempPath, filePath, overwrite: true);
         }
         finally
         {
@@ -114,7 +106,7 @@ public sealed class PresetRepository : IPresetRepository
     {
         try
         {
-            File.Copy(_filePath, $"{_filePath}.bak", overwrite: true);
+            File.Copy(filePath, $"{filePath}.bak", overwrite: true);
         }
         catch
         {
@@ -130,7 +122,8 @@ public sealed class PresetRepository : IPresetRepository
     private static string GetDefaultFilePath()
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(appData, "ViscaCamLink", "presets.json");
+
+        return Path.Combine(appData, "ViscaCamLink", "presets.json"); //TODO : Provider for app location
     }
 
     private static PresetData CreateDefault()
@@ -139,6 +132,7 @@ public sealed class PresetRepository : IPresetRepository
         const int presetsPerGroup = 10;
 
         var presets = new List<PresetMetadata>(presetsPerGroup);
+
         for (var i = 0; i < presetsPerGroup; i++)
         {
             presets.Add(new PresetMetadata

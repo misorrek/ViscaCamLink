@@ -1,4 +1,4 @@
-namespace ViscaCamLink.Services;
+namespace ViscaCamLink.Repositories;
 
 using System.Windows.Input;
 

@@ -12,7 +12,8 @@ public sealed class CameraMovementService(IViscaController viscaController) : IC
     public byte GetProportionalTiltSpeed(int panTiltSpeed)
     {
         var speedInPercent = (double)panTiltSpeed / viscaController.MaxPanSpeed;
-        return (byte)Math.Ceiling(viscaController.MaxTiltSpeed * speedInPercent);
+
+        return (byte)Math.Floor(viscaController.MaxTiltSpeed * speedInPercent);
     }
 
     public Task PanTiltAsync(PanTiltDirection panTiltDirection, byte panSpeed, byte tiltSpeed) =>

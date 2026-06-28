@@ -4,7 +4,7 @@ using System.IO;
 using System.Windows.Input;
 
 using FluentAssertions;
-
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Services;
 
 public sealed class HotKeyRepositoryTests : IDisposable

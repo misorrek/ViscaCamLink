@@ -2,6 +2,8 @@ namespace ViscaCamLink.Services;
 
 using System.Windows.Input;
 
+using ViscaCamLink.Repositories;
+
 public interface IHotKeyService
 {
     IReadOnlyList<HotKeyBinding> Bindings { get; }

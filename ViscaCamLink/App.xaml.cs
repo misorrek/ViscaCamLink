@@ -15,6 +15,7 @@
     using ViscaCamLink.ViewModels;
     using ViscaCamLink.Views;
     using ViscaCamLink.Visca;
+    using ViscaCamLink.Repositories;
 
     /// <summary>
     /// Interaction logic for App.xaml

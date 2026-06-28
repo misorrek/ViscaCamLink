@@ -1,4 +1,4 @@
-namespace ViscaCamLink.Services;
+namespace ViscaCamLink.Repositories;
 
 public interface IHotKeyRepository
 {

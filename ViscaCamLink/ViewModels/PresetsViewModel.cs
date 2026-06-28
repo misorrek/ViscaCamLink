@@ -2,7 +2,7 @@ namespace ViscaCamLink.ViewModels;
 
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.Util;

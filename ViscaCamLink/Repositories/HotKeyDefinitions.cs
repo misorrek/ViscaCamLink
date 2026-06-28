@@ -1,4 +1,4 @@
-namespace ViscaCamLink.Services;
+namespace ViscaCamLink.Repositories;
 
 using System.Windows.Input;
 
@@ -35,6 +35,7 @@ public static class HotKeyDefinitions
     public static bool TryGetPresetPosition(HotKeyAction action, out byte presetPosition)
     {
         var position = (int)action;
+
         if (position < 0 || position >= PresetActions.Count)
         {
             presetPosition = 0;

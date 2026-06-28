@@ -66,6 +66,7 @@ public sealed class SettingsService(Action applyLocalization) : ISettingsService
         if (!Language.Equals(language))
         {
             Language = language;
+
             Save();
             applyLocalization();
         }
@@ -73,6 +74,7 @@ public sealed class SettingsService(Action applyLocalization) : ISettingsService
         if (NumpadLayout != numpadLayout)
         {
             NumpadLayout = numpadLayout;
+
             Save();
         }
     }

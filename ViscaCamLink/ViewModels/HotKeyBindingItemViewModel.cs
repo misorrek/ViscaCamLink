@@ -3,8 +3,7 @@ namespace ViscaCamLink.ViewModels;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-
-using ViscaCamLink.Services;
+using ViscaCamLink.Repositories;
 
 public sealed class HotKeyBindingItemViewModel : INotifyPropertyChanged
 {

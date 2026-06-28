@@ -1,3 +1,5 @@
+using ViscaCamLink.Repositories;
+
 namespace ViscaCamLink.Services;
 
 public interface IPresetService

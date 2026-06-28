@@ -3,8 +3,7 @@ namespace ViscaCamLink.Tests.Services;
 using System.IO;
 
 using FluentAssertions;
-
-using ViscaCamLink.Services;
+using ViscaCamLink.Repositories;
 
 public sealed class PresetRepositoryTests : IDisposable
 {

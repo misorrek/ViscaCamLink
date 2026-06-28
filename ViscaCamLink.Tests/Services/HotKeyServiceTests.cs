@@ -5,7 +5,7 @@ using System.Windows.Input;
 using FluentAssertions;
 
 using Moq;
-
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Services;
 using ViscaCamLink.Util;
 

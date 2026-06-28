@@ -1,5 +1,6 @@
 namespace ViscaCamLink.Services;
 
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Visca;
 
 public sealed class PresetService : IPresetService
@@ -9,7 +10,8 @@ public sealed class PresetService : IPresetService
 
     private readonly IViscaController _viscaController;
     private readonly IPresetRepository _repository;
-    private PresetData _data;
+    private readonly PresetData _data;
+
     private string _activeGroupId;
 
     public PresetService(IViscaController viscaController, IPresetRepository repository)
@@ -39,18 +41,21 @@ public sealed class PresetService : IPresetService
     public string GetPresetName(int slotIndex)
     {
         var preset = ActiveGroup.Presets.FirstOrDefault(p => p.SlotIndex == slotIndex);
+
         return preset?.Name ?? slotIndex.ToString();
     }
 
     public void RenamePreset(int slotIndex, string name)
     {
         var preset = ActiveGroup.Presets.FirstOrDefault(p => p.SlotIndex == slotIndex);
+
         if (preset is null)
         {
             return;
         }
 
         preset.Name = name;
+
         _repository.Save(_data);
         PresetsChanged?.Invoke();
     }
@@ -63,6 +68,7 @@ public sealed class PresetService : IPresetService
         }
 
         _activeGroupId = groupId;
+
         PresetsChanged?.Invoke();
     }
 
@@ -74,6 +80,7 @@ public sealed class PresetService : IPresetService
             .ToHashSet();
 
         var nextBaseSlot = FindNextAvailableBaseSlot(usedSlots);
+
         if (nextBaseSlot < 0)
         {
             return; // No more camera slots available
@@ -81,9 +88,11 @@ public sealed class PresetService : IPresetService
 
         var groupId = Guid.NewGuid().ToString("N")[..8];
         var presets = new List<PresetMetadata>(PresetsPerGroup);
+
         for (var i = 0; i < PresetsPerGroup; i++)
         {
             var slot = nextBaseSlot + i;
+
             if (slot >= MaxCameraSlots)
             {
                 break;
@@ -116,6 +125,7 @@ public sealed class PresetService : IPresetService
         }
 
         var group = _data.Groups.FirstOrDefault(g => g.Id == groupId);
+
         if (group is null)
         {
             return;
@@ -136,21 +146,24 @@ public sealed class PresetService : IPresetService
     public void RenameGroup(string groupId, string name)
     {
         var group = _data.Groups.FirstOrDefault(g => g.Id == groupId);
+
         if (group is null)
         {
             return;
         }
 
         group.Name = name;
+
         _repository.Save(_data);
         GroupsChanged?.Invoke();
     }
 
-    private int FindNextAvailableBaseSlot(HashSet<int> usedSlots)
+    private static int FindNextAvailableBaseSlot(HashSet<int> usedSlots)
     {
         for (var baseSlot = 0; baseSlot < MaxCameraSlots; baseSlot += PresetsPerGroup)
         {
             var allFree = true;
+
             for (var i = 0; i < PresetsPerGroup && baseSlot + i < MaxCameraSlots; i++)
             {
                 if (usedSlots.Contains(baseSlot + i))

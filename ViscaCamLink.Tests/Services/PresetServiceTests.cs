@@ -3,7 +3,7 @@ namespace ViscaCamLink.Tests.Services;
 using FluentAssertions;
 
 using Moq;
-
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca;
 

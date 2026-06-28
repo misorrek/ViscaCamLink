@@ -3,98 +3,78 @@ namespace ViscaCamLink.Services;
 using ViscaCamLink.Util;
 using ViscaCamLink.Visca;
 
-public sealed class CameraConnectionService : ICameraConnectionService, IDisposable
+public sealed class CameraConnectionService(
+    IViscaController viscaController,
+    ISettingsService settingsService,
+    TimeSpan? healthCheckInterval = null) : ICameraConnectionService, IDisposable
 {
-    /// <summary>How often to probe the camera when connected.</summary>
-    private static readonly TimeSpan DefaultHealthCheckInterval = TimeSpan.FromSeconds(5);
-
-    /// <summary>Per-probe network timeout. Must be shorter than <see cref="DefaultHealthCheckInterval"/>.</summary>
+    private static readonly TimeSpan DefaultHealthCheckInterval = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan HealthCheckTimeout = TimeSpan.FromSeconds(3);
 
-    private readonly IViscaController _viscaController;
-    private readonly ISettingsService _settings;
-    private readonly TimeSpan _healthCheckInterval;
+    private readonly TimeSpan _healthCheckInterval = healthCheckInterval ?? DefaultHealthCheckInterval;
 
-    // Replaced atomically in StopMonitoring(); only cancelled/disposed in Dispose().
-    private CancellationTokenSource _monitorCts = new();
-
-    public CameraConnectionService(
-        IViscaController viscaController,
-        ISettingsService settings,
-        TimeSpan? healthCheckInterval = null)
-    {
-        _viscaController = viscaController;
-        _settings = settings;
-        _healthCheckInterval = healthCheckInterval ?? DefaultHealthCheckInterval;
-    }
+    private CancellationTokenSource _healthCheckCts = new();
 
     public event EventHandler<ConnectionStatus>? ConnectionStatusChanged;
 
     public ConnectionStatus Status { get; private set; } = ConnectionStatus.Failed;
 
+    public void Dispose()
+    {
+        _healthCheckCts.Cancel();
+        _healthCheckCts.Dispose();
+    }
+
     public async Task ReconnectAsync()
     {
-        StopMonitoring();
-
+        StopHealthCheck();
         OnConnectionStatusChanged(ConnectionStatus.Working);
 
         try
         {
             using var cts = new CancellationTokenSource();
-            await _viscaController.Reconnect(cts.Token, _settings.Ip, _settings.Port).ConfigureAwait(false);
+
+            await viscaController.Reconnect(cts.Token, settingsService.Ip, settingsService.Port).ConfigureAwait(false);
         }
         catch
         {
             // Connection failures are reflected via Connected property below
         }
 
-        var connected = _viscaController.Connected.GetValueOrDefault();
+        var connected = viscaController.Connected.GetValueOrDefault();
+
         OnConnectionStatusChanged(connected ? ConnectionStatus.Ok : ConnectionStatus.Failed);
 
         if (connected)
         {
-            StartMonitoring();
+            StartHealthCheck();
         }
     }
 
     public void CommitConnectionSettings(string ip, int port)
     {
-        _settings.Ip = ip;
-        _settings.Port = port;
+        settingsService.Ip = ip;
+        settingsService.Port = port;
     }
 
-    public void Dispose()
+    private void StartHealthCheck()
     {
-        _monitorCts.Cancel();
-        _monitorCts.Dispose();
+        _ = MonitorConnectionAsync(_healthCheckCts.Token);
     }
 
-    /// <summary>
-    /// Cancels the current monitor and replaces the token source so the next
-    /// <see cref="StartMonitoring"/> call gets a fresh, uncancelled token.
-    /// </summary>
-    private void StopMonitoring()
+    private void StopHealthCheck()
     {
-        var old = _monitorCts;
-        _monitorCts = new CancellationTokenSource();
-        old.Cancel();
-        old.Dispose();
+        var oldCts = _healthCheckCts;
+        _healthCheckCts = new CancellationTokenSource();
+
+        oldCts.Cancel();
+        oldCts.Dispose();
     }
 
-    private void StartMonitoring()
-    {
-        _ = MonitorConnectionAsync(_monitorCts.Token);
-    }
-
-    /// <summary>
-    /// Background loop: sends a lightweight VISCA inquiry every
-    /// <see cref="_healthCheckInterval"/> to verify the connection is alive.
-    /// When the probe fails, status switches to <see cref="ConnectionStatus.Failed"/>;
-    /// on the next successful probe (TCP auto-reconnect may help here) it recovers to Ok.
-    /// </summary>
     private async Task MonitorConnectionAsync(CancellationToken cancellationToken)
     {
         using var timer = new PeriodicTimer(_healthCheckInterval);
+
         try
         {
             while (await timer.WaitForNextTickAsync(cancellationToken).ConfigureAwait(false))
@@ -104,7 +84,7 @@ public sealed class CameraConnectionService : ICameraConnectionService, IDisposa
         }
         catch (OperationCanceledException)
         {
-            // Normal shutdown — monitor stopped by StopMonitoring() or Dispose().
+            // Normal shutdown — health check stopped by StopMonitoring() or Dispose().
         }
     }
 
@@ -113,10 +93,11 @@ public sealed class CameraConnectionService : ICameraConnectionService, IDisposa
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            cts.CancelAfter(HealthCheckTimeout);
-            await _viscaController.GetPowerStatus(cts.Token).ConfigureAwait(false);
 
-            // TcpViscaClient may have silently auto-reconnected at the TCP layer; surface the recovery.
+            cts.CancelAfter(HealthCheckTimeout);
+
+            await viscaController.GetPowerStatus(cts.Token).ConfigureAwait(false);
+
             if (Status == ConnectionStatus.Failed)
             {
                 OnConnectionStatusChanged(ConnectionStatus.Ok);
@@ -124,7 +105,7 @@ public sealed class CameraConnectionService : ICameraConnectionService, IDisposa
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            throw; // Propagate monitor shutdown.
+            throw; // Propagate health check shutdown.
         }
         catch
         {
