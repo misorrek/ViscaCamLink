@@ -159,6 +159,9 @@
   <data name="Control_IncreaseSpeed" xml:space="preserve">
     <value>Steuerungsgeschwindigkeit erhöhen</value>
   </data>
+  <data name="Control_MousePan" xml:space="preserve">
+    <value>Klicken und ziehen zum Schwenken/Neigen</value>
+  </data>
   <data name="Language_English" xml:space="preserve">
     <value>English (Englisch)</value>
   </data>
@@ -176,6 +179,18 @@
   </data>
   <data name="Options_LanguageSelection" xml:space="preserve">
     <value>Wähle die Anzeigesprache</value>
+  </data>
+  <data name="Options_NumpadLayout" xml:space="preserve">
+    <value>Numpad-Anordnung der Presets</value>
+  </data>
+  <data name="Options_Hotkeys" xml:space="preserve">
+    <value>Hotkeys</value>
+  </data>
+  <data name="Options_HotKeyAction" xml:space="preserve">
+    <value>Aktion</value>
+  </data>
+  <data name="Options_HotKeyBinding" xml:space="preserve">
+    <value>Taste</value>
   </data>
   <data name="Options_RestartNeeded" xml:space="preserve">
     <value>Neustart notwendig</value>
@@ -224,6 +239,15 @@
   </data>
   <data name="Updater_CurrentVersion" xml:space="preserve">
     <value>Aktuell:</value>
+  </data>
+  <data name="Updater_DownloadError" xml:space="preserve">
+    <value>Download fehlgeschlagen:</value>
+  </data>
+  <data name="Updater_Downloading" xml:space="preserve">
+    <value>Herunterladen...</value>
+  </data>
+  <data name="Updater_Retry" xml:space="preserve">
+    <value>Wiederholen</value>
   </data>
   <data name="Updater_NewVersionAvailable" xml:space="preserve">
     <value>Neue Version verfügbar!</value>

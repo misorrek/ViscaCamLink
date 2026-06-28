@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib"
-                    xmlns:util="clr-namespace:ViscaCamLink.Util">
+                    xmlns:converters="clr-namespace:ViscaCamLink.Converters">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/ViscaCamLink;component/Util/Icons.xaml" />
@@ -85,23 +85,23 @@
     
     <!--#region Converter-->
 
-    <util:BoolToVisibilityConverter x:Key="FalseToHiddenConverter"
+    <converters:BoolToVisibilityConverter x:Key="FalseToHiddenConverter"
                                     TrueValue="Visible"
                                     FalseValue="Hidden" />
 
-    <util:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter"
+    <converters:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter"
                                     TrueValue="Visible"
                                     FalseValue="Collapsed" />
 
-    <util:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter"
+    <converters:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter"
                                     TrueValue="Collapsed"
                                     FalseValue="Visible" />
 
-    <util:StringToVisibilityConverter x:Key="StringEmptyToCollapsedConverter"
+    <converters:StringToVisibilityConverter x:Key="StringEmptyToCollapsedConverter"
                                       TrueValue="Visible"
                                       FalseValue="Collapsed" />
 
-    <util:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+    <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
 
     <!--#endregion-->
     

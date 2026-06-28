@@ -17,7 +17,7 @@ public enum Language
 
 public static class LanguageExtension
 {
-    public static String ToLocalizedString(this Language language)
+    public static string ToLocalizedString(this Language language)
     {
         switch (language) 
         {

@@ -3,14 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:resources="clr-namespace:ViscaCamLink.Resources"
+        xmlns:util="clr-namespace:ViscaCamLink.Util"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:OptionsViewModel}"
-        Title="{x:Static resources:Strings.Common_AppTitle}"
-        Height="300"
-        MinHeight="200"
-        Width="450"
+        Title="{Binding [Common_AppTitle], Source={x:Static util:TranslationSource.Instance}}"
+        Height="420"
+        MinHeight="320"
+        Width="560"
         MinWidth="350"
         WindowStartupLocation="CenterScreen">
 
@@ -40,69 +42,138 @@
                 Margin="{StaticResource DefaultMargin}"
                 Style="{StaticResource BaseBorder}">
 
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
-                <Grid Margin="{StaticResource ExtendedMargin}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+            <TabControl Margin="{StaticResource ExtendedMargin}">
+                <TabItem Header="{Binding [Options_General], Source={x:Static util:TranslationSource.Instance}}">
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <Grid Margin="{StaticResource ExtendedMargin}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Column="0"
-                               Grid.ColumnSpan="2"
-                               Grid.Row="0"
-                               VerticalAlignment="Stretch" 
-                               Text="{x:Static resources:Strings.Options_General}" 
-                               Style="{StaticResource HeaderTextBlock}" />
+                            <TextBlock Grid.Column="0"
+                                       Grid.Row="0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding [Options_LanguageSelection], Source={x:Static util:TranslationSource.Instance}}"
+                                       Style="{StaticResource BaseTextBlock}" />
 
-                    <TextBlock Grid.Column="0"
-                               Grid.Row="1"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               TextWrapping="Wrap"
-                               Text="{x:Static resources:Strings.Options_LanguageSelection}"
-                               Style="{StaticResource BaseTextBlock}" />
+                            <ComboBox Grid.Column="1"
+                                      Grid.Row="0"
+                                      Width="140"
+                                      Height="28"
+                                      HorizontalAlignment="Right"
+                                      ItemsSource="{Binding LanguageItems}"
+                                      SelectedValue="{Binding SelectedLanguage}"
+                                      SelectedValuePath="LanguageValue"
+                                      DisplayMemberPath="LanguageDisplay"
+                                      Style="{StaticResource BaseComboBox}"
+                                      ItemContainerStyle="{StaticResource BaseComboBoxItem}" />
 
-                    <ComboBox Grid.Column="1"
-                              Grid.Row="1"
-                              Width="140"
-                              Height="28"
-                              HorizontalAlignment="Right"
-                              ItemsSource="{Binding LanguageItems}"
-                              SelectedValue="{Binding SelectedLanguage}"
-                              SelectedValuePath="LanguageValue"
-                              DisplayMemberPath="LanguageDisplay"
-                              Style="{StaticResource BaseComboBox}"
-                              ItemContainerStyle="{StaticResource BaseComboBoxItem}" />
-                </Grid>
-            </ScrollViewer>
+                            <TextBlock Grid.Column="0"
+                                       Grid.Row="1"
+                                       Margin="0,8,0,0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding [Options_NumpadLayout], Source={x:Static util:TranslationSource.Instance}}"
+                                       Style="{StaticResource BaseTextBlock}" />
+
+                            <CheckBox Grid.Column="1"
+                                      Grid.Row="1"
+                                      Margin="0,8,0,0"
+                                      HorizontalAlignment="Right"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding NumpadLayout}" />
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="{Binding [Options_Hotkeys], Source={x:Static util:TranslationSource.Instance}}">
+                    <Grid Margin="{StaticResource ExtendedMargin}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="160" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding [Options_HotKeyAction], Source={x:Static util:TranslationSource.Instance}}"
+                                       Style="{StaticResource BaseTextBlock}"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding [Options_HotKeyBinding], Source={x:Static util:TranslationSource.Instance}}"
+                                       Style="{StaticResource BaseTextBlock}"
+                                       FontWeight="SemiBold" />
+                        </Grid>
+
+                        <ListBox Grid.Row="1"
+                                 ItemsSource="{Binding HotKeyBindings}"
+                                 BorderThickness="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type viewmodels:HotKeyBindingItemViewModel}">
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="160" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="{Binding ActionDisplayName}"
+                                                   Style="{StaticResource BaseTextBlock}" />
+
+                                        <Button Grid.Column="1"
+                                                Height="28"
+                                                Command="{Binding DataContext.HotKeyCaptureCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Content="{Binding ButtonText}">
+                                            <Button.Style>
+                                                <Style TargetType="{x:Type Button}"
+                                                       BasedOn="{StaticResource DialogButton}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasConflict}" Value="True">
+                                                            <Setter Property="BorderBrush" Value="Tomato" />
+                                                            <Setter Property="BorderThickness" Value="2" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                            <behaviors:Interaction.Triggers>
+                                                <behaviors:EventTrigger EventName="PreviewKeyDown">
+                                                    <behaviors:InvokeCommandAction Command="{Binding DataContext.HotKeyPreviewKeyDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                                   PassEventArgsToCommand="True" />
+                                                </behaviors:EventTrigger>
+                                            </behaviors:Interaction.Triggers>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <TextBlock Grid.Row="2"
+                                   Margin="0,6,0,0"
+                                   Foreground="Tomato"
+                                   Text="{Binding HotKeyValidationMessage}"
+                                   TextWrapping="Wrap"
+                                   Style="{StaticResource BaseTextBlock}" />
+                    </Grid>
+                </TabItem>
+            </TabControl>
         </Border>
-
-        <Path Grid.Column="0"
-              Grid.Row="1"
-              Margin="4,0,0,4"
-              Data="{StaticResource Info}"
-              Visibility="{Binding LanguageChanged,
-                                   Converter={StaticResource FalseToHiddenConverter}}"
-              Style="{StaticResource Icon16Path}" />
-
-        <TextBlock Grid.Column="1"
-                   Grid.Row="1"
-                   Margin="4,0,0,4"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Center"
-                   Text="{x:Static resources:Strings.Options_RestartNeeded}"
-                   TextWrapping="NoWrap"
-                   TextTrimming="CharacterEllipsis"
-                   Visibility="{Binding LanguageChanged,
-                                        Converter={StaticResource FalseToHiddenConverter}}"
-                   Style="{StaticResource BaseTextBlock}" />
 
         <StackPanel Grid.Column="2"
                     Grid.Row="1"
@@ -111,7 +182,7 @@
                     Orientation="Horizontal">
             <Button Height="32"
                     Width="120"
-                    Content="{x:Static resources:Strings.Common_OK}"
+                    Content="{Binding [Common_OK], Source={x:Static util:TranslationSource.Instance}}"
                     Background="{StaticResource PrimaryForegroundBrush}"
                     Foreground="{StaticResource PrimaryBackgroundBrush}"
                     Command="{Binding OkCommand}"
@@ -120,7 +191,7 @@
             <Button Height="32"
                     Width="120"
                     Margin="4,0,0,0"
-                    Content="{x:Static resources:Strings.Common_Cancel}" 
+                    Content="{Binding [Common_Cancel], Source={x:Static util:TranslationSource.Instance}}" 
                     Command="{Binding CancelCommand}"
                     Style="{StaticResource DialogButton}" />
         </StackPanel>    

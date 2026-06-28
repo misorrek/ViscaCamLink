@@ -1,0 +1,15 @@
+namespace ViscaCamLink.Services;
+
+using System.Text.Json.Serialization;
+
+public sealed class PresetGroup
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("presets")]
+    public List<PresetMetadata> Presets { get; set; } = [];
+}

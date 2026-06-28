@@ -1,25 +1,38 @@
 ﻿namespace ViscaCamLink.ViewModels;
 
-using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-using ViscaCamLink.Properties;
+using ViscaCamLink.Services;
 using ViscaCamLink.Util;
 
 public class OptionsViewModel : INotifyPropertyChanged
 {
-    public OptionsViewModel(Action closeHandler)
+    private readonly ISettingsService _settings;
+    private readonly IHotKeyService _hotKeyService;
+    private readonly Command _okCommand;
+
+    public OptionsViewModel(ISettingsService settings, IHotKeyService hotKeyService, Action closeHandler)
     {
+        _settings = settings;
+        _hotKeyService = hotKeyService;
         CloseHandler = closeHandler;
 
-        OkCommand = new Command(ExecuteOk);
+        _okCommand = new Command(ExecuteOk, () => !HasHotKeyConflicts);
+        OkCommand = _okCommand;
         CancelCommand = new Command(ExecuteCancel);
+        HotKeyCaptureCommand = new Command(ExecuteHotKeyCapture);
+        HotKeyPreviewKeyDownCommand = new Command(ExecuteHotKeyPreviewKeyDown);
         LanguageItems = GetLanguageItems();
+        HotKeyBindings = new ObservableCollection<HotKeyBindingItemViewModel>(
+            _hotKeyService.Bindings.Select(binding => new HotKeyBindingItemViewModel(binding)));
 
-        _selectedLanguage = Settings.Default.Language;
+        _selectedLanguage = _settings.Language;
+        _numpadLayout = _settings.NumpadLayout;
+        RefreshHotKeyValidation();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -28,7 +41,36 @@ public class OptionsViewModel : INotifyPropertyChanged
 
     public ICommand CancelCommand { get; }
 
+    public ICommand HotKeyCaptureCommand { get; }
+
+    public ICommand HotKeyPreviewKeyDownCommand { get; }
+
     public IEnumerable<LanguageItem> LanguageItems { get; }
+
+    public ObservableCollection<HotKeyBindingItemViewModel> HotKeyBindings { get; }
+
+    public bool HasHotKeyConflicts
+    {
+        get => _hasHotKeyConflicts;
+        private set
+        {
+            if (_hasHotKeyConflicts == value) return;
+            _hasHotKeyConflicts = value;
+            NotifyPropertyChanged();
+            _okCommand.Invalidate();
+        }
+    }
+
+    public string HotKeyValidationMessage
+    {
+        get => _hotKeyValidationMessage;
+        private set
+        {
+            if (_hotKeyValidationMessage == value) return;
+            _hotKeyValidationMessage = value;
+            NotifyPropertyChanged();
+        }
+    }
 
     public Language SelectedLanguage
     {
@@ -39,28 +81,43 @@ public class OptionsViewModel : INotifyPropertyChanged
             _selectedLanguage = value;
 
             NotifyPropertyChanged();
-            NotifyPropertyChanged(nameof(LanguageChanged));
         }
     }
 
-    public Boolean LanguageChanged => Settings.Default.Language != SelectedLanguage;
+    public bool NumpadLayout
+    {
+        get => _numpadLayout;
+
+        set
+        {
+            _numpadLayout = value;
+            NotifyPropertyChanged();
+        }
+    }
+
     private Action CloseHandler { get; }
 
     private Language _selectedLanguage;
+    private bool _numpadLayout;
+    private bool _hasHotKeyConflicts;
+    private string _hotKeyValidationMessage = string.Empty;
+    private HotKeyBindingItemViewModel? _capturingHotKey;
 
-    protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+    protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    //TODO Make options model
     private void ExecuteOk()
     {
-        if (!Settings.Default.Language.Equals(_selectedLanguage))
+        RefreshHotKeyValidation();
+        if (HasHotKeyConflicts)
         {
-            Settings.Default.Language = _selectedLanguage;
-            Settings.Default.Save();
+            return;
         }
+
+        _settings.ApplyOptions(_selectedLanguage, _numpadLayout);
+        _hotKeyService.ApplyBindings(HotKeyBindings.Select(binding => binding.ToBinding()).ToList());
 
         CloseHandler.Invoke();
     }
@@ -81,6 +138,94 @@ public class OptionsViewModel : INotifyPropertyChanged
 
         return languages;
     }
+
+    private void ExecuteHotKeyCapture(object? parameter)
+    {
+        if (_capturingHotKey is not null)
+        {
+            _capturingHotKey.IsCapturing = false;
+        }
+
+        _capturingHotKey = parameter as HotKeyBindingItemViewModel;
+        if (_capturingHotKey is not null)
+        {
+            _capturingHotKey.IsCapturing = true;
+        }
+    }
+
+    private void ExecuteHotKeyPreviewKeyDown(object? parameter)
+    {
+        if (_capturingHotKey is null || parameter is not KeyEventArgs eventArgs)
+        {
+            return;
+        }
+
+        var key = GetPressedKey(eventArgs);
+        eventArgs.Handled = true;
+
+        if (key == Key.Escape)
+        {
+            _capturingHotKey.IsCapturing = false;
+            _capturingHotKey = null;
+            return;
+        }
+
+        if (IsModifierKey(key))
+        {
+            return;
+        }
+
+        _capturingHotKey.Modifier = Keyboard.Modifiers;
+        _capturingHotKey.Key = key;
+        _capturingHotKey.IsCapturing = false;
+        _capturingHotKey = null;
+
+        RefreshHotKeyValidation();
+    }
+
+    private void RefreshHotKeyValidation()
+    {
+        foreach (var binding in HotKeyBindings)
+        {
+            binding.HasConflict = false;
+        }
+
+        var duplicateGestures = HotKeyBindings
+            .GroupBy(binding => new { binding.Modifier, binding.Key })
+            .Where(group => group.Count() > 1)
+            .SelectMany(group => group)
+            .ToHashSet();
+
+        foreach (var binding in duplicateGestures)
+        {
+            binding.HasConflict = true;
+        }
+
+        var validation = _hotKeyService.ValidateBindings(HotKeyBindings.Select(binding => binding.ToBinding()));
+        HasHotKeyConflicts = !validation.IsValid;
+        HotKeyValidationMessage = validation.Message ?? string.Empty;
+    }
+
+    private static Key GetPressedKey(KeyEventArgs eventArgs)
+    {
+        if (eventArgs.Key == Key.System)
+        {
+            return eventArgs.SystemKey;
+        }
+
+        if (eventArgs.Key == Key.ImeProcessed)
+        {
+            return eventArgs.ImeProcessedKey;
+        }
+
+        return eventArgs.Key;
+    }
+
+    private static bool IsModifierKey(Key key) => key is
+        Key.LeftCtrl or Key.RightCtrl or
+        Key.LeftAlt or Key.RightAlt or
+        Key.LeftShift or Key.RightShift or
+        Key.LWin or Key.RWin;
 }
 
 public class LanguageItem
@@ -92,5 +237,5 @@ public class LanguageItem
 
     public Language LanguageValue { get; }
 
-    public String LanguageDisplay => LanguageValue.ToLocalizedString();
+    public string LanguageDisplay => LanguageValue.ToLocalizedString();
 }

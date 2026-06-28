@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading;
 
 using ViscaCamLink.Properties;
+using ViscaCamLink.Resources;
 
 public static class LocalizationHelper
 {
@@ -22,5 +23,8 @@ public static class LocalizationHelper
 
         Thread.CurrentThread.CurrentCulture = cultureInfo;
         Thread.CurrentThread.CurrentUICulture = cultureInfo;
+        Strings.Culture = cultureInfo;
+
+        TranslationSource.Instance.NotifyLanguageChanged();
     }
 }

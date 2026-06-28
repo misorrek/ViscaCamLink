@@ -159,6 +159,9 @@
   <data name="Control_IncreaseSpeed" xml:space="preserve">
     <value>Increase move speed</value>
   </data>
+  <data name="Control_MousePan" xml:space="preserve">
+    <value>Click and drag to pan/tilt</value>
+  </data>
   <data name="Language_English" xml:space="preserve">
     <value>English</value>
   </data>
@@ -176,6 +179,18 @@
   </data>
   <data name="Options_LanguageSelection" xml:space="preserve">
     <value>Choose the display language </value>
+  </data>
+  <data name="Options_NumpadLayout" xml:space="preserve">
+    <value>Numpad preset layout</value>
+  </data>
+  <data name="Options_Hotkeys" xml:space="preserve">
+    <value>Hotkeys</value>
+  </data>
+  <data name="Options_HotKeyAction" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="Options_HotKeyBinding" xml:space="preserve">
+    <value>Key</value>
   </data>
   <data name="Options_RestartNeeded" xml:space="preserve">
     <value>Restart needed</value>
@@ -224,6 +239,15 @@
   </data>
   <data name="Updater_CurrentVersion" xml:space="preserve">
     <value>Current:</value>
+  </data>
+  <data name="Updater_DownloadError" xml:space="preserve">
+    <value>Download failed:</value>
+  </data>
+  <data name="Updater_Downloading" xml:space="preserve">
+    <value>Downloading...</value>
+  </data>
+  <data name="Updater_Retry" xml:space="preserve">
+    <value>Retry</value>
   </data>
   <data name="Updater_NewVersionAvailable" xml:space="preserve">
     <value>New version available!</value>

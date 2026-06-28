@@ -141,5 +141,17 @@ namespace ViscaCamLink.Properties {
                 this["Language"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool NumpadLayout {
+            get {
+                return ((bool)(this["NumpadLayout"]));
+            }
+            set {
+                this["NumpadLayout"] = value;
+            }
+        }
     }
 }

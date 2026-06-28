@@ -1,31 +1,29 @@
 ﻿namespace ViscaCamLink.Util;
 
-using System;
 using System.Collections.Generic;
 using System.Windows.Input;
 using System.Windows;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 
-public class GlobalHotKeyManager : IDisposable
+public sealed class GlobalHotKeyManager : IGlobalHotKeyManager
 {
-    // Registers a hot key with Windows
     [DllImport("User32.dll")]
-    private static extern Boolean RegisterHotKey(
+    private static extern bool RegisterHotKey(
         [In] IntPtr hWnd,
-        [In] Int32 id,
-        [In] UInt32 fsModifiers,
-        [In] UInt32 vk);
+        [In] int id,
+        [In] uint fsModifiers,
+        [In] uint vk);
 
-    // Unregisters a hot key with Windows
     [DllImport("User32.dll")]
-    private static extern Boolean UnregisterHotKey(
+    private static extern bool UnregisterHotKey(
         [In] IntPtr hWnd,
-        [In] Int32 id);
+        [In] int id);
 
     public GlobalHotKeyManager(Window mainWindow)
     {
         var windowInteropHelper = new WindowInteropHelper(mainWindow);
+        windowInteropHelper.EnsureHandle();
 
         MainWindowHandle = windowInteropHelper.Handle;
 
@@ -37,11 +35,11 @@ public class GlobalHotKeyManager : IDisposable
 
     private HwndSource HwndSource { get; }
 
-    private Int32 CurrentHotKeyId { get; set; } = 0;
+    private int CurrentHotKeyId { get; set; } = 0;
 
-    private Dictionary<Int32, Action> RegisteredHotKeys { get; } = new Dictionary<int, Action>();
+    private Dictionary<int, Action> RegisteredHotKeys { get; } = [];
 
-    public Boolean RegisterHotKey(ModifierKeys modifier, Key key, Action action)
+    public bool RegisterHotKey(ModifierKeys modifier, Key key, Action action)
     {
         if (action is null)
         {
@@ -53,7 +51,7 @@ public class GlobalHotKeyManager : IDisposable
 
         CurrentHotKeyId++;
 
-        Boolean registered = RegisterHotKey(MainWindowHandle, CurrentHotKeyId, modifierCode, virtualKeyCode);
+        bool registered = RegisterHotKey(MainWindowHandle, CurrentHotKeyId, modifierCode, virtualKeyCode);
 
         if (registered)
         {
@@ -62,7 +60,16 @@ public class GlobalHotKeyManager : IDisposable
         return registered;
     }
 
-    private IntPtr HwndHook(IntPtr hwnd, Int32 msg, IntPtr wParam, IntPtr lParam, ref Boolean handled)
+    public void UnregisterAll()
+    {
+        foreach (var id in RegisteredHotKeys.Keys.ToList())
+        {
+            UnregisterHotKey(MainWindowHandle, id);
+            RegisteredHotKeys.Remove(id);
+        }
+    }
+
+    private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         const int WM_HOTKEY = 0x0312;
 
@@ -70,9 +77,7 @@ public class GlobalHotKeyManager : IDisposable
         {
             case WM_HOTKEY:
                 var hotKeyId = wParam.ToInt32();
-                Action? action;
-
-                if (RegisteredHotKeys.TryGetValue(hotKeyId, out action))
+                if (RegisteredHotKeys.TryGetValue(hotKeyId, out var action))
                 {
                     action.Invoke();
                 }
@@ -84,10 +89,8 @@ public class GlobalHotKeyManager : IDisposable
     public void Dispose()
     {
         HwndSource.RemoveHook(HwndHook);
+        UnregisterAll();
 
-        for (var id = CurrentHotKeyId; id > 0; id--)
-        {
-            UnregisterHotKey(MainWindowHandle, id);
-        }
+        GC.SuppressFinalize(this);
     }
 }

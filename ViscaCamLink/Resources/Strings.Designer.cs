@@ -385,6 +385,24 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Download failed:.
+        /// </summary>
+        public static string Updater_DownloadError {
+            get {
+                return ResourceManager.GetString("Updater_DownloadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading....
+        /// </summary>
+        public static string Updater_Downloading {
+            get {
+                return ResourceManager.GetString("Updater_Downloading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to New version available!.
         /// </summary>
         public static string Updater_NewVersionAvailable {
@@ -399,6 +417,15 @@ namespace ViscaCamLink.Resources {
         public static string Updater_Update {
             get {
                 return ResourceManager.GetString("Updater_Update", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Retry.
+        /// </summary>
+        public static string Updater_Retry {
+            get {
+                return ResourceManager.GetString("Updater_Retry", resourceCulture);
             }
         }
         

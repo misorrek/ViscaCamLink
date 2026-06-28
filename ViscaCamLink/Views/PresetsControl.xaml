@@ -1,0 +1,351 @@
+<UserControl x:Class="ViscaCamLink.Views.PresetsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:converters="clr-namespace:ViscaCamLink.Converters"
+             xmlns:util="clr-namespace:ViscaCamLink.Util"
+             xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewmodels:PresetsViewModel}">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:IntEqualsToCollapsedConverter x:Key="IntEqualsToCollapsedConverter" />
+            <converters:IntEqualsToVisibleConverter x:Key="IntEqualsToVisibleConverter" />
+
+            <Style x:Key="PresetButton"
+                   TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource LargeButton}">
+                <Setter Property="Margin" Value="4,4,0,0" />
+                <Style.Triggers>
+                    <Trigger Property="Grid.Column" Value="0">
+                        <Setter Property="Margin" Value="0,4,0,0" />
+                    </Trigger>
+                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection, 
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource BaseBorder}">
+        <StackPanel Margin="{StaticResource DefaultMargin}">
+
+            <!-- Header -->
+            <DockPanel Height="24"
+                       LastChildFill="False">
+                <TextBlock VerticalAlignment="Stretch"
+                           Text="{Binding [Presets_ContainerTitle], Source={x:Static util:TranslationSource.Instance}}"
+                           Style="{StaticResource HeaderTextBlock}" />
+
+                <Button DockPanel.Dock="Right"
+                        Width="24"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding MemorySetCommand}"
+                        ToolTip="{Binding [Presets_Save], Source={x:Static util:TranslationSource.Instance}}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource BorderlessButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection, 
+                                                               RelativeSource={RelativeSource AncestorType=Window}}"
+                                             Value="True">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Path>
+                        <Path.Style>
+                            <Style TargetType="{x:Type Path}"
+                                   BasedOn="{StaticResource Icon16Path}">
+                                <Setter Property="Data"
+                                        Value="{StaticResource Disk}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSettingMemory}"
+                                                 Value="True">
+                                        <Setter Property="Data"
+                                                Value="{StaticResource Cross}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                </Button>
+            </DockPanel>
+
+            <Label HorizontalContentAlignment="Left"
+                   Content="{Binding MemoryInfo}"
+                   Style="{StaticResource BaseLabel}"
+                   Visibility="{Binding RelativeSource={RelativeSource Self},
+                                        Path=Content,
+                                        Converter={StaticResource StringEmptyToCollapsedConverter}}"/>
+
+            <!-- Preset 0 full-width at top (Standard layout) -->
+            <Grid Height="40"
+                  Visibility="{Binding IsNumpadLayout,
+                                       Converter={StaticResource TrueToCollapsedConverter}}">
+                <Button Content="{Binding Presets[0].Name}"
+                        Command="{Binding MemoryCommand}"
+                        CommandParameter="{Binding Presets[0].SlotIndex}"
+                        Style="{StaticResource PresetButton}">
+                    <Button.Visibility>
+                        <MultiBinding Converter="{StaticResource IntEqualsToCollapsedConverter}">
+                            <Binding Path="Presets[0].SlotIndex" />
+                            <Binding Path="RenamingSlotIndex" />
+                        </MultiBinding>
+                    </Button.Visibility>
+                    <behaviors:Interaction.Triggers>
+                        <behaviors:EventTrigger EventName="MouseDoubleClick">
+                            <behaviors:InvokeCommandAction Command="{Binding MemoryRenameCommand}"
+                                                           CommandParameter="{Binding Presets[0].SlotIndex}" />
+                        </behaviors:EventTrigger>
+                    </behaviors:Interaction.Triggers>
+                </Button>
+                <Border Background="{StaticResource PrimaryBackgroundBrush}"
+                        BorderBrush="{StaticResource PrimaryHighlightBrush}"
+                        BorderThickness="1" CornerRadius="4" Margin="0,4,0,0">
+                    <Border.Visibility>
+                        <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
+                            <Binding Path="Presets[0].SlotIndex" />
+                            <Binding Path="RenamingSlotIndex" />
+                        </MultiBinding>
+                    </Border.Visibility>
+                    <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
+                             Margin="4,0" BorderThickness="0" Background="Transparent"
+                             Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20">
+                        <behaviors:Interaction.Triggers>
+                            <behaviors:KeyTrigger Key="Return">
+                                <behaviors:InvokeCommandAction Command="{Binding MemoryRenameConfirmCommand}" />
+                            </behaviors:KeyTrigger>
+                            <behaviors:KeyTrigger Key="Escape">
+                                <behaviors:InvokeCommandAction Command="{Binding MemoryRenameCancelCommand}" />
+                            </behaviors:KeyTrigger>
+                        </behaviors:Interaction.Triggers>
+                    </TextBox>
+                </Border>
+            </Grid>
+
+            <!-- 3x3 Preset Grid -->
+            <ItemsControl ItemsSource="{Binding GridPresets}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="3" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Height="40" Margin="2,4,2,0">
+                            <Button Content="{Binding Name}"
+                                    Command="{Binding DataContext.MemoryCommand, 
+                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding SlotIndex}"
+                                    Style="{StaticResource LargeButton}">
+                                <Button.Visibility>
+                                    <MultiBinding Converter="{StaticResource IntEqualsToCollapsedConverter}">
+                                        <Binding Path="SlotIndex" />
+                                        <Binding Path="DataContext.RenamingSlotIndex" 
+                                                 RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+                                    </MultiBinding>
+                                </Button.Visibility>
+                                <Button.IsEnabled>
+                                    <Binding Path="DataContext.Connection.IsEditingConnection"
+                                             RelativeSource="{RelativeSource AncestorType=Window}"
+                                             Converter="{StaticResource InverseBooleanConverter}" />
+                                </Button.IsEnabled>
+                                <behaviors:Interaction.Triggers>
+                                    <behaviors:EventTrigger EventName="MouseDoubleClick">
+                                        <behaviors:InvokeCommandAction 
+                                            Command="{Binding DataContext.MemoryRenameCommand, 
+                                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding SlotIndex}" />
+                                    </behaviors:EventTrigger>
+                                </behaviors:Interaction.Triggers>
+                            </Button>
+                            <Border Background="{StaticResource PrimaryBackgroundBrush}"
+                                    BorderBrush="{StaticResource PrimaryHighlightBrush}"
+                                    BorderThickness="1" CornerRadius="4">
+                                <Border.Visibility>
+                                    <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
+                                        <Binding Path="SlotIndex" />
+                                        <Binding Path="DataContext.RenamingSlotIndex" 
+                                                 RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+                                    </MultiBinding>
+                                </Border.Visibility>
+                                <TextBox Text="{Binding DataContext.RenamingText, 
+                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}, 
+                                                        UpdateSourceTrigger=PropertyChanged}"
+                                         VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
+                                         Margin="4,0" BorderThickness="0" Background="Transparent"
+                                         Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20">
+                                    <behaviors:Interaction.Triggers>
+                                        <behaviors:KeyTrigger Key="Return">
+                                            <behaviors:InvokeCommandAction 
+                                                Command="{Binding DataContext.MemoryRenameConfirmCommand, 
+                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                        </behaviors:KeyTrigger>
+                                        <behaviors:KeyTrigger Key="Escape">
+                                            <behaviors:InvokeCommandAction 
+                                                Command="{Binding DataContext.MemoryRenameCancelCommand, 
+                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                        </behaviors:KeyTrigger>
+                                    </behaviors:Interaction.Triggers>
+                                </TextBox>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Preset 0 full-width at bottom (Numpad layout) -->
+            <Grid Height="40"
+                  Visibility="{Binding IsNumpadLayout,
+                                       Converter={StaticResource FalseToCollapsedConverter}}">
+                <Button Content="{Binding Presets[0].Name}"
+                        Command="{Binding MemoryCommand}"
+                        CommandParameter="{Binding Presets[0].SlotIndex}"
+                        Style="{StaticResource PresetButton}">
+                    <Button.Visibility>
+                        <MultiBinding Converter="{StaticResource IntEqualsToCollapsedConverter}">
+                            <Binding Path="Presets[0].SlotIndex" />
+                            <Binding Path="RenamingSlotIndex" />
+                        </MultiBinding>
+                    </Button.Visibility>
+                    <behaviors:Interaction.Triggers>
+                        <behaviors:EventTrigger EventName="MouseDoubleClick">
+                            <behaviors:InvokeCommandAction Command="{Binding MemoryRenameCommand}"
+                                                           CommandParameter="{Binding Presets[0].SlotIndex}" />
+                        </behaviors:EventTrigger>
+                    </behaviors:Interaction.Triggers>
+                </Button>
+                <Border Background="{StaticResource PrimaryBackgroundBrush}"
+                        BorderBrush="{StaticResource PrimaryHighlightBrush}"
+                        BorderThickness="1" CornerRadius="4" Margin="0,4,0,0">
+                    <Border.Visibility>
+                        <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
+                            <Binding Path="Presets[0].SlotIndex" />
+                            <Binding Path="RenamingSlotIndex" />
+                        </MultiBinding>
+                    </Border.Visibility>
+                    <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
+                             Margin="4,0" BorderThickness="0" Background="Transparent"
+                             Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20">
+                        <behaviors:Interaction.Triggers>
+                            <behaviors:KeyTrigger Key="Return">
+                                <behaviors:InvokeCommandAction Command="{Binding MemoryRenameConfirmCommand}" />
+                            </behaviors:KeyTrigger>
+                            <behaviors:KeyTrigger Key="Escape">
+                                <behaviors:InvokeCommandAction Command="{Binding MemoryRenameCancelCommand}" />
+                            </behaviors:KeyTrigger>
+                        </behaviors:Interaction.Triggers>
+                    </TextBox>
+                </Border>
+            </Grid>
+
+            <!-- Preset Groups (tab row) -->
+            <DockPanel Margin="0,6,0,0">
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <Button Width="20" Height="20" Margin="4,0,0,0"
+                            Command="{Binding GroupAddCommand}"
+                            Style="{StaticResource BorderlessButton}"
+                            ToolTip="Add Group">
+                        <Path Data="{StaticResource Plus}"
+                              Style="{StaticResource Icon16Path}"
+                              Width="10" Height="10" />
+                    </Button>
+                    <Button Width="20" Height="20" Margin="2,0,0,0"
+                            Command="{Binding GroupRemoveCommand}"
+                            Style="{StaticResource BorderlessButton}"
+                            ToolTip="Remove Group"
+                            Visibility="{Binding HasMultipleGroups,
+                                                 Converter={StaticResource FalseToCollapsedConverter}}">
+                        <Path Data="{StaticResource Trash}"
+                              Style="{StaticResource Icon16Path}"
+                              Width="10" Height="10" />
+                    </Button>
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding PresetGroups}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,0,2,0">
+                                <Button Command="{Binding DataContext.GroupSwitchCommand, 
+                                                           RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding Id}"
+                                        Content="{Binding Name}"
+                                        FontSize="11"
+                                        Visibility="{Binding IsRenaming,
+                                                             Converter={StaticResource TrueToCollapsedConverter}}">
+                                    <Button.Style>
+                                        <Style TargetType="Button"
+                                               BasedOn="{StaticResource BaseButton}">
+                                            <Setter Property="Padding" Value="6,3" />
+                                            <Setter Property="Background"
+                                                    Value="{StaticResource SecondaryBackgroundBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Background"
+                                                            Value="{StaticResource PrimaryHighlightBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <behaviors:Interaction.Triggers>
+                                        <behaviors:EventTrigger EventName="MouseDoubleClick">
+                                            <behaviors:InvokeCommandAction 
+                                                Command="{Binding DataContext.GroupRenameCommand, 
+                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding Id}" />
+                                        </behaviors:EventTrigger>
+                                    </behaviors:Interaction.Triggers>
+                                </Button>
+                                <Border Background="{StaticResource PrimaryBackgroundBrush}"
+                                        BorderBrush="{StaticResource PrimaryHighlightBrush}"
+                                        BorderThickness="1" CornerRadius="3"
+                                        Visibility="{Binding IsRenaming,
+                                                             Converter={StaticResource FalseToCollapsedConverter}}">
+                                    <TextBox Text="{Binding DataContext.RenamingGroupText, 
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl},
+                                                            UpdateSourceTrigger=PropertyChanged}"
+                                             VerticalContentAlignment="Center"
+                                             Margin="4,0" BorderThickness="0" Background="Transparent"
+                                             Foreground="{StaticResource PrimaryForegroundBrush}"
+                                             FontSize="11" MaxLength="20" MinWidth="40">
+                                        <behaviors:Interaction.Triggers>
+                                            <behaviors:KeyTrigger Key="Return">
+                                                <behaviors:InvokeCommandAction 
+                                                    Command="{Binding DataContext.GroupRenameConfirmCommand, 
+                                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                            </behaviors:KeyTrigger>
+                                            <behaviors:KeyTrigger Key="Escape">
+                                                <behaviors:InvokeCommandAction 
+                                                    Command="{Binding DataContext.GroupRenameCancelCommand, 
+                                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                            </behaviors:KeyTrigger>
+                                        </behaviors:Interaction.Triggers>
+                                    </TextBox>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </DockPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

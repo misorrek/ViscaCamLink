@@ -6,10 +6,11 @@
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:resources="clr-namespace:ViscaCamLink.Resources"
+        xmlns:util="clr-namespace:ViscaCamLink.Util"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:UpdateViewModel}"
-        Title="{x:Static resources:Strings.Common_AppTitle}"          
+        Title="{Binding [Common_AppTitle], Source={x:Static util:TranslationSource.Instance}}"          
         Width="700"
         Height="500"
         Loaded="Window_Loaded"
@@ -53,7 +54,7 @@
                     Grid.Row="0"
                     Margin="0,44,0,0"
                     Orientation="Vertical">
-            <TextBlock Text="{x:Static resources:Strings.Updater_NewVersionAvailable}"
+            <TextBlock Text="{Binding [Updater_NewVersionAvailable], Source={x:Static util:TranslationSource.Instance}}"
                        Style="{StaticResource HeaderTextBlock}" />
 
             <TextBlock Text="{Binding VersionText}" 
@@ -64,7 +65,7 @@
         <TextBlock Grid.Column="1"
                    Grid.Row="1"
                    Margin="0,0,4,0"
-                   Text="{x:Static resources:Strings.Updater_Changelog}"
+                   Text="{Binding [Updater_Changelog], Source={x:Static util:TranslationSource.Instance}}"
                    FontSize="{StaticResource SecondaryHeaderFontSize}"
                    Style="{StaticResource BaseTextBlock}" />
 
@@ -83,7 +84,7 @@
                     Orientation="Horizontal">
 
             <Button Width="140"
-                    Content="{x:Static resources:Strings.Updater_Update}"
+                    Content="{Binding [Updater_Update], Source={x:Static util:TranslationSource.Instance}}"
                     Background="{StaticResource PrimaryForegroundBrush}"
                     Foreground="{StaticResource PrimaryBackgroundBrush}"
                     Command="{Binding UpdateCommand}"
@@ -91,7 +92,7 @@
 
             <Button Width="120"
                     Margin="4,0,0,0"
-                    Content="{x:Static resources:Strings.Common_Cancel}" 
+                    Content="{Binding [Common_Cancel], Source={x:Static util:TranslationSource.Instance}}" 
                     Command="{Binding CancelCommand}"
                     Style="{StaticResource DialogButton}" />
         </StackPanel>

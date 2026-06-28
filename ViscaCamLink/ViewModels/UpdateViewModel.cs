@@ -1,56 +1,58 @@
 ﻿namespace ViscaCamLink.ViewModels;
 
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using System.Windows.Input;
 
-using AutoUpdaterDotNET;
-
 using ViscaCamLink.Resources;
+using ViscaCamLink.Updater;
 using ViscaCamLink.Util;
 
 public class UpdateViewModel : INotifyPropertyChanged
 {
-    public UpdateViewModel(UpdateInfoEventArgs updateInfoEventArgs, Action closeHandler)
+    private readonly UpdateInfo _updateInfo;
+    private readonly Version? _installedVersion;
+    private readonly Action _closeHandler;
+    private readonly Action<UpdateInfo> _showUpdateDownloadDialog;
+
+    public UpdateViewModel(
+        UpdateInfo updateInfo,
+        Version? installedVersion,
+        Action closeHandler,
+        Action<UpdateInfo> showUpdateDownloadDialog)
     {
-        UpdateInfoEventArgs = updateInfoEventArgs;
-        CloseHandler = closeHandler;
+        _updateInfo = updateInfo;
+        _installedVersion = installedVersion;
+        _closeHandler = closeHandler;
+        _showUpdateDownloadDialog = showUpdateDownloadDialog;
 
         UpdateCommand = new Command(ExecuteUpdate);
-        CancelCommand = new Command(ExecuteCancel);            
+        CancelCommand = new Command(ExecuteCancel);
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;        
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand UpdateCommand { get; }
 
     public ICommand CancelCommand { get; }
 
-    public String VersionText => $"{UpdateInfoEventArgs.CurrentVersion} ({Strings.Updater_CurrentVersion} {UpdateInfoEventArgs.InstalledVersion})";
+    public string VersionText => $"v{_updateInfo.Version} ({Strings.Updater_CurrentVersion} v{_installedVersion})";
 
-    public String ChangelogUrl => UpdateInfoEventArgs.ChangelogURL;
+    public string ChangelogUrl => _updateInfo.HtmlUrl;
 
-    private UpdateInfoEventArgs UpdateInfoEventArgs { get; }
-
-    private Action CloseHandler { get; }
-
-    protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+    protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-    
+
     private void ExecuteUpdate()
     {
-        if (AutoUpdater.DownloadUpdate(UpdateInfoEventArgs))
-        {
-            CloseHandler.Invoke();
-            Application.Current.MainWindow.Close();
-        }
+        _closeHandler.Invoke();
+        _showUpdateDownloadDialog.Invoke(_updateInfo);
     }
+
     private void ExecuteCancel()
     {
-        CloseHandler.Invoke();
+        _closeHandler.Invoke();
     }
 }

@@ -7,30 +7,30 @@ public class Command : ICommand
 {
     public event EventHandler? CanExecuteChanged;
 
-    public Command(Action executeAction, Func<Boolean>? canExecuteFunc = null)
+    public Command(Action executeAction, Func<bool>? canExecuteFunc = null)
     {
-        void wrapper(Object? parameter) => executeAction.Invoke();
+        void wrapper(object? parameter) => executeAction.Invoke();
 
-        ExecuteAction = new Action<Object?>(wrapper);
+        ExecuteAction = new Action<object?>(wrapper);
         CanExecuteFunc = canExecuteFunc;
     }
 
-    public Command(Action<Object?> executeAction, Func<Boolean>? canExecuteFunc = null)
+    public Command(Action<object?> executeAction, Func<bool>? canExecuteFunc = null)
     {
         ExecuteAction = executeAction;
         CanExecuteFunc = canExecuteFunc;
     }
 
-    private Action<Object?> ExecuteAction { get; }
+    private Action<object?> ExecuteAction { get; }
 
-    private Func<Boolean>? CanExecuteFunc { get; }
+    private Func<bool>? CanExecuteFunc { get; }
 
-    public Boolean CanExecute(Object? parameter)
+    public bool CanExecute(object? parameter)
     {
         return CanExecuteFunc == null || CanExecuteFunc();
     }
 
-    public void Execute(Object? parameter)
+    public void Execute(object? parameter)
     {
         ExecuteAction(parameter);
     }
