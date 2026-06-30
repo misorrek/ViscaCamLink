@@ -2,19 +2,10 @@ namespace ViscaCamLink.Repositories;
 
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using ViscaCamLink.Util;
 
 public sealed class HotKeyRepository(string filePath) : IHotKeyRepository
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        Converters =
-        {
-            new JsonStringEnumConverter(),
-        },
-    };
-
     public HotKeyRepository() : this(GetDefaultFilePath()) { }
 
     public IReadOnlyList<HotKeyBinding> Load()
@@ -26,8 +17,8 @@ public sealed class HotKeyRepository(string filePath) : IHotKeyRepository
 
         try
         {
-            var json = File.ReadAllText(filePath);
-            var loadedBindings = JsonSerializer.Deserialize<List<HotKeyBinding>>(json, JsonOptions);
+            using var stream = File.OpenRead(filePath);
+            var loadedBindings = JsonSerializer.Deserialize(stream, RepositoryJsonContext.Default.ListHotKeyBinding);
 
             return MergeWithDefaults(loadedBindings ?? []);
         }
@@ -46,17 +37,13 @@ public sealed class HotKeyRepository(string filePath) : IHotKeyRepository
             Directory.CreateDirectory(directory);
         }
 
-        var json = JsonSerializer.Serialize(bindings, JsonOptions);
+        var bindingsList = bindings is List<HotKeyBinding> list ? list : [.. bindings];
 
-        File.WriteAllText(filePath, json);
+        using var stream = File.Create(filePath);
+        JsonSerializer.Serialize(stream, bindingsList, RepositoryJsonContext.Default.ListHotKeyBinding);
     }
 
-    private static string GetDefaultFilePath()
-    {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        return Path.Combine(appData, "ViscaCamLink", "hotkeys.json"); //TODO : Provider for app location
-    }
+    private static string GetDefaultFilePath() => AppPaths.HotKeys;
 
     private static List<HotKeyBinding> MergeWithDefaults(IReadOnlyList<HotKeyBinding> loadedBindings)
     {

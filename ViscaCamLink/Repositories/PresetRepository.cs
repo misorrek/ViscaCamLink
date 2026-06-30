@@ -2,15 +2,11 @@ namespace ViscaCamLink.Repositories;
 
 using System.IO;
 using System.Text.Json;
+using ViscaCamLink.Util;
 
 public sealed class PresetRepository(string filePath) : IPresetRepository
 {
     private const int MaxCameraSlots = 256;
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-    };
 
     public PresetRepository() : this(GetDefaultFilePath()) { }
 
@@ -23,8 +19,8 @@ public sealed class PresetRepository(string filePath) : IPresetRepository
 
         try
         {
-            var json = File.ReadAllText(filePath);
-            var data = JsonSerializer.Deserialize<PresetData>(json, JsonOptions);
+            using var stream = File.OpenRead(filePath);
+            var data = JsonSerializer.Deserialize(stream, RepositoryJsonContext.Default.PresetData);
 
             if (IsValid(data))
             {
@@ -50,12 +46,15 @@ public sealed class PresetRepository(string filePath) : IPresetRepository
             Directory.CreateDirectory(directory);
         }
 
-        var json = JsonSerializer.Serialize(data, JsonOptions);
         var tempPath = Path.Combine(directory ?? string.Empty, $"{Path.GetFileName(filePath)}.{Guid.NewGuid():N}.tmp");
 
         try
         {
-            File.WriteAllText(tempPath, json);
+            using (var stream = File.Create(tempPath))
+            {
+                JsonSerializer.Serialize(stream, data, RepositoryJsonContext.Default.PresetData);
+            }
+
             File.Move(tempPath, filePath, overwrite: true);
         }
         finally
@@ -119,12 +118,7 @@ public sealed class PresetRepository(string filePath) : IPresetRepository
         try { File.Delete(path); } catch { /* best effort */ }
     }
 
-    private static string GetDefaultFilePath()
-    {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        return Path.Combine(appData, "ViscaCamLink", "presets.json"); //TODO : Provider for app location
-    }
+    private static string GetDefaultFilePath() => AppPaths.Presets;
 
     private static PresetData CreateDefault()
     {
