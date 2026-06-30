@@ -1,25 +1,28 @@
 namespace ViscaCamLink.Util;
 
 using System.IO;
+using System.Threading;
 
 using Microsoft.Extensions.Logging;
 
 internal sealed class FileLoggerProvider : ILoggerProvider
 {
     private readonly string _logDirectory;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
+    private readonly TimeProvider _timeProvider;
 
     private string _currentLogPath = string.Empty;
     private StreamWriter? _writer;
 
-    internal FileLoggerProvider(string logDirectory)
+    internal FileLoggerProvider(string logDirectory, TimeProvider? timeProvider = null)
     {
         _logDirectory = logDirectory;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         Directory.CreateDirectory(logDirectory);
     }
 
     public ILogger CreateLogger(string categoryName) =>
-        new FileLogger(categoryName, WriteEntry);
+        new FileLogger(categoryName, WriteEntry, _timeProvider);
 
     private void WriteEntry(string message)
     {
@@ -32,7 +35,7 @@ internal sealed class FileLoggerProvider : ILoggerProvider
 
     private void EnsureWriter()
     {
-        var today = DateTime.Now.ToString("yyyy-MM-dd");
+        var today = _timeProvider.GetLocalNow().ToString("yyyy-MM-dd");
         var path = Path.Combine(_logDirectory, $"viscacamlink-{today}.log");
 
         if (path == _currentLogPath)
@@ -57,11 +60,13 @@ internal sealed class FileLogger : ILogger
 {
     private readonly string _categoryName;
     private readonly Action<string> _writeEntry;
+    private readonly TimeProvider _timeProvider;
 
-    internal FileLogger(string categoryName, Action<string> writeEntry)
+    internal FileLogger(string categoryName, Action<string> writeEntry, TimeProvider timeProvider)
     {
         _categoryName = categoryName;
         _writeEntry = writeEntry;
+        _timeProvider = timeProvider;
     }
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
@@ -78,7 +83,7 @@ internal sealed class FileLogger : ILogger
         if (!IsEnabled(logLevel))
             return;
 
-        var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+        var timestamp = _timeProvider.GetLocalNow().ToString("yyyy-MM-dd HH:mm:ss.fff");
         var level = logLevel switch
         {
             LogLevel.Trace => "TRC",

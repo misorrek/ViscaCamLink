@@ -2,7 +2,7 @@ namespace ViscaCamLink.Visca;
 
 using Microsoft.Extensions.Logging;
 
-public abstract class ViscaClientBase(ILogger? logger) : IViscaClient
+public abstract partial class ViscaClientBase(ILogger logger) : IViscaClient
 {
     private const int ResponseTypeBitShift = 4;
     private const int ResponseTypeAcknowledged = 4;
@@ -19,7 +19,7 @@ public abstract class ViscaClientBase(ILogger? logger) : IViscaClient
     protected abstract Task ConnectAsync(CancellationToken cancellationToken);
     protected abstract void Disconnect();
 
-    protected ILogger? Logger { get; } = logger;
+    protected ILogger Logger { get; } = logger;
 
     private readonly SemaphoreSlim sendReceiveLock = new(1);
 
@@ -33,20 +33,20 @@ public abstract class ViscaClientBase(ILogger? logger) : IViscaClient
         {
             await SendPacketAsync(request, cancellationToken).ConfigureAwait(false);
 
-            Logger?.LogTrace("Sent VISCA packet: {Packet}", request);
+            LogPacketSent(Logger, request);
 
             while (true)
             {
                 var response = await ReceivePacketAsync(cancellationToken).ConfigureAwait(false);
 
-                Logger?.LogTrace("Received VISCA packet: {Packet}", response);
+                LogPacketReceived(Logger, response);
 
                 if (response.Length < MinimumResponseLength)
                 {
                     throw new ViscaProtocolException($"Received packet of length {response.Length} from VISCA endpoint");
                 }
 
-                var responseType = response[1] >> ResponseTypeBitShift;
+                var responseType = response[ViscaProtocol.ResponseTypeByteIndex] >> ResponseTypeBitShift;
 
                 switch (responseType)
                 {
@@ -77,4 +77,10 @@ public abstract class ViscaClientBase(ILogger? logger) : IViscaClient
             }
         }
     }
+
+    [LoggerMessage(EventId = 1201, Level = LogLevel.Trace, Message = "Sent VISCA packet: {Packet}")]
+    private static partial void LogPacketSent(ILogger logger, ViscaPacket packet);
+
+    [LoggerMessage(EventId = 1202, Level = LogLevel.Trace, Message = "Received VISCA packet: {Packet}")]
+    private static partial void LogPacketReceived(ILogger logger, ViscaPacket packet);
 }

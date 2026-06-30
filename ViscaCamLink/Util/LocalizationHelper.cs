@@ -3,22 +3,21 @@
 using System.Globalization;
 using System.Threading;
 
-using ViscaCamLink.Properties;
 using ViscaCamLink.Resources;
 
 public static class LocalizationHelper
 {
-    public static void ApplyLocalization()
+    public static void ApplyLocalization(Language language)
     {
         CultureInfo cultureInfo;
 
-        if (Settings.Default.Language == Language.System)
+        if (language == Language.System)
         {
             cultureInfo = CultureInfo.CurrentCulture;
         }
         else
         {
-            cultureInfo = CultureInfo.CreateSpecificCulture(Settings.Default.Language.GetDescription());
+            cultureInfo = CultureInfo.CreateSpecificCulture(language.GetDescription());
         }
 
         Thread.CurrentThread.CurrentCulture = cultureInfo;

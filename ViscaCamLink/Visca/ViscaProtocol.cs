@@ -2,6 +2,9 @@ namespace ViscaCamLink.Visca;
 
 public static class ViscaProtocol
 {
+    public const int ResponseTypeByteIndex = 1;
+    public const int PowerStatusByteIndex = 2;
+
     public const byte CameraAddress = 0x81;
     public const byte Terminator = 0xff;
 

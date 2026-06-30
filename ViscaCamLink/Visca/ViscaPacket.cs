@@ -4,6 +4,13 @@ using System.Text;
 
 public readonly struct ViscaPacket
 {
+    private const int BytesPerSegment = 8;
+    private const int BitsPerByte = 8;
+    private const int MinimumPacketLength = 1;
+    private const int MaximumPacketLength = BytesPerSegment * 2;
+    private const int MostSignificantByteShift = (BytesPerSegment - 1) * BitsPerByte;
+    private const int BitsPerViscaNibble = 4;
+
     private readonly long head;
     private readonly long tail;
     private readonly string? cachedText;
@@ -20,9 +27,11 @@ public readonly struct ViscaPacket
             ArgumentOutOfRangeException.ThrowIfNegative(index);
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Length);
 
-            return index < 8
-                ? (byte)(head >> (56 - (index * 8)))
-                : (byte)(tail >> (120 - (index * 8)));
+            var isHeadSegment = index < BytesPerSegment;
+            var segment = isHeadSegment ? head : tail;
+            var segmentIndex = isHeadSegment ? index : index - BytesPerSegment;
+
+            return (byte)(segment >> (MostSignificantByteShift - (segmentIndex * BitsPerByte)));
         }
     }
 
@@ -36,33 +45,39 @@ public readonly struct ViscaPacket
 
     public short GetInt16(int index)
     {
+        const int ViscaInt16LengthInBytes = 4;
+
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, Length - 4);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, Length - ViscaInt16LengthInBytes);
 
         return (short)(
-            (this[index] << 12) |
-            (this[index + 1] << 8) |
-            (this[index + 2] << 4) |
+            (this[index] << (BitsPerViscaNibble * 3)) |
+            (this[index + 1] << (BitsPerViscaNibble * 2)) |
+            (this[index + 2] << BitsPerViscaNibble) |
             this[index + 3]
         );
     }
 
     public override string ToString()
     {
+        const int StringCharsPerFormattedByte = 3;
+        const int HexCharsPerByte = 2;
+        const char ByteSeparator = '-';
+
         if (cachedText is not null)
         {
             return cachedText;
         }
 
-        var builder = new StringBuilder(Length * 3 - 1);
+        var builder = new StringBuilder((Length * StringCharsPerFormattedByte) - 1);
 
         for (int i = 0; i < Length; i++)
         {
             if (i > 0)
             {
-                builder.Append('-');
+                builder.Append(ByteSeparator);
             }
-            builder.AppendFormat("{0:x2}", this[i]);
+            builder.AppendFormat($"{{0:x{HexCharsPerByte}}}", this[i]);
         }
 
         return builder.ToString();
@@ -72,13 +87,13 @@ public readonly struct ViscaPacket
     {
         ArgumentNullException.ThrowIfNull(bytes);
         ArgumentOutOfRangeException.ThrowIfNegative(start);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(start, bytes.Length - 1);
-        ArgumentOutOfRangeException.ThrowIfLessThan(length, 1);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, 16);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(start, bytes.Length - MinimumPacketLength);
+        ArgumentOutOfRangeException.ThrowIfLessThan(length, MinimumPacketLength);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, MaximumPacketLength);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(length, bytes.Length - start);
 
         var head = PackBytesIntoLong(bytes, start, length, byteOffset: 0);
-        var tail = PackBytesIntoLong(bytes, start, length, byteOffset: 8);
+        var tail = PackBytesIntoLong(bytes, start, length, byteOffset: BytesPerSegment);
         var packet = new ViscaPacket(head, tail, length, cachedText: null);
 
         return preformatText
@@ -90,11 +105,11 @@ public readonly struct ViscaPacket
     {
         long result = 0;
 
-        for (int i = byteOffset; i < byteOffset + 8; i++)
+        for (int i = byteOffset; i < byteOffset + BytesPerSegment; i++)
         {
             if (i < length)
             {
-                result |= ((long)bytes[start + i]) << (56 - ((i - byteOffset) * 8));
+                result |= ((long)bytes[start + i]) << (MostSignificantByteShift - ((i - byteOffset) * BitsPerByte));
             }
         }
 

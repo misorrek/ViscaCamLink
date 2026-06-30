@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using ViscaCamLink.Visca.Types;
 
-public sealed class ViscaController(IViscaClient viscaClient, TimeSpan commandTimeout, ILogger? logger) : IViscaController
+public sealed partial class ViscaController(IViscaClient viscaClient, TimeSpan commandTimeout, ILogger logger) : IViscaController
 {
     private readonly Stopwatch performanceTimer = Stopwatch.StartNew();
 
@@ -25,13 +25,6 @@ public sealed class ViscaController(IViscaClient viscaClient, TimeSpan commandTi
     private static readonly ViscaPacket GoHomePacket = ViscaPacket.FromBytesWithPreformatting(
         ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
         ViscaProtocol.CmdHome, ViscaProtocol.Terminator);
-
-    public static ViscaController ForTcp(string host, int port, TimeSpan? commandTimeout = null, ILogger? logger = null, TcpSendLock? sendLock = null)
-    {
-        var client = new TcpViscaClient(host, port, logger, sendLock);
-
-        return new ViscaController(client, commandTimeout ?? ViscaProtocol.DefaultCommandTimeout, logger);
-    }
 
     public bool? Connected => viscaClient.IsConnected();
     public byte MaxPanSpeed => ViscaProtocol.MaxPanSpeed;
@@ -53,7 +46,19 @@ public sealed class ViscaController(IViscaClient viscaClient, TimeSpan commandTi
     {
         var response = await SendCommandAsync(PowerStatusInquiryPacket, cancellationToken).ConfigureAwait(false);
 
-        return (PowerStatus)response[2];
+        if (response.Length <= ViscaProtocol.PowerStatusByteIndex)
+        {
+            throw new ViscaProtocolException($"Power status response too short. Packet: {response}");
+        }
+
+        var rawStatus = response[ViscaProtocol.PowerStatusByteIndex];
+        
+        if (!Enum.IsDefined(typeof(PowerStatus), (int)rawStatus))
+        {
+            throw new ViscaProtocolException($"Unexpected power status value '{rawStatus}'. Packet: {response}");
+        }
+
+        return (PowerStatus)rawStatus;
     }
 
     public async Task<PowerStatus> GetUpdatedPowerStatus(PowerStatus lastPowerStatus, CancellationToken cancellationToken = default)
@@ -74,12 +79,14 @@ public sealed class ViscaController(IViscaClient viscaClient, TimeSpan commandTi
                     return currentStatus;
                 }
             }
-            catch (Exception) when (!cancellationToken.IsCancellationRequested)
+            catch (Exception) when (!cancellationToken.IsCancellationRequested) { }
+
+            attemptsRemaining--;
+
+            if (attemptsRemaining > 0)
             {
                 await Task.Delay(ViscaProtocol.PerOperationDelayMs, cancellationToken).ConfigureAwait(false);
             }
-
-            attemptsRemaining--;
         }
 
         return PowerStatus.Unknown;
@@ -143,15 +150,14 @@ public sealed class ViscaController(IViscaClient viscaClient, TimeSpan commandTi
     {
         using var timeoutSource = new CancellationTokenSource(commandTimeout);
         using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
-
-        logger?.LogDebug("Sending VISCA command '{Command}'", commandName);
+        LogSendingCommand(logger, commandName);
 
         var ticksBefore = performanceTimer.ElapsedTicks;
         var response = await viscaClient.SendAsync(packet, linkedCancellation.Token).ConfigureAwait(false);
         var ticksAfter = performanceTimer.ElapsedTicks;
 
         var elapsedMilliseconds = (ticksAfter - ticksBefore) * 1000 / Stopwatch.Frequency;
-        logger?.LogDebug("VISCA command '{Command}' completed in {Millis}ms", commandName, elapsedMilliseconds);
+        LogCompletedCommand(logger, commandName, elapsedMilliseconds);
 
         return response;
     }
@@ -196,4 +202,11 @@ public sealed class ViscaController(IViscaClient viscaClient, TimeSpan commandTi
             _ => ViscaProtocol.ZoomStop
         };
     }
+
+    [LoggerMessage(EventId = 1101, Level = LogLevel.Debug, Message = "Sending VISCA command '{Command}'")]
+    private static partial void LogSendingCommand(ILogger logger, string? command);
+
+    [LoggerMessage(EventId = 1102, Level = LogLevel.Debug, Message = "VISCA command '{Command}' completed in {Millis}ms")]
+    private static partial void LogCompletedCommand(ILogger logger, string? command, long millis);
+
 }

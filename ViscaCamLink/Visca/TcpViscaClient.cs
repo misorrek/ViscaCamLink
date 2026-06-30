@@ -5,9 +5,8 @@ using System.Net.Sockets;
 
 using Microsoft.Extensions.Logging;
 
-public sealed class TcpViscaClient(string host, int port, ILogger? logger, TcpSendLock? sendLock) : ViscaClientBase(logger)
+public sealed partial class TcpViscaClient(string host, int port, ILogger logger) : ViscaClientBase(logger)
 {
-    private readonly TcpSendLock sendLock = sendLock ?? new TcpSendLock(postSendDelay: null);
     private readonly ReadBuffer readBuffer = new();
     private readonly byte[] writeBuffer = new byte[16];
 
@@ -46,12 +45,13 @@ public sealed class TcpViscaClient(string host, int port, ILogger? logger, TcpSe
     {
         if (isFirstConnection)
         {
-            Logger?.LogInformation("Connecting to {Host}:{Port}", host, port);
+            LogConnecting(Logger, host, port);
+
             isFirstConnection = false;
         }
         else
         {
-            Logger?.LogInformation("Reconnecting to {Host}:{Port}", host, port);
+            LogReconnecting(Logger, host, port);
         }
 
         readBuffer.Clear();
@@ -62,11 +62,11 @@ public sealed class TcpViscaClient(string host, int port, ILogger? logger, TcpSe
         {
             await tcpClient.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
         }
-        catch
+        catch (Exception ex)
         {
             tcpClient = null;
-            Logger?.LogError("Failed to connect to {Host}:{Port}", host, port);
-            
+            LogConnectFailed(Logger, host, port, ex);
+
             throw;
         }
 
@@ -85,17 +85,7 @@ public sealed class TcpViscaClient(string host, int port, ILogger? logger, TcpSe
             writeBuffer[i] = packet[i];
         }
 
-        await sendLock.AcquireAsync(cancellationToken).ConfigureAwait(false);
-
-        try
-        {
-            await networkStream!.WriteAsync(writeBuffer.AsMemory(0, packet.Length), cancellationToken).ConfigureAwait(false);
-            await sendLock.WaitPostSendDelayAsync(cancellationToken).ConfigureAwait(false);
-        }
-        finally
-        {
-            sendLock.Release();
-        }
+        await networkStream!.WriteAsync(writeBuffer.AsMemory(0, packet.Length), cancellationToken).ConfigureAwait(false);
     }
 
     protected override Task<ViscaPacket> ReceivePacketAsync(CancellationToken cancellationToken)
@@ -106,4 +96,13 @@ public sealed class TcpViscaClient(string host, int port, ILogger? logger, TcpSe
         }
         return readBuffer.ReadAsync(networkStream, cancellationToken);
     }
+
+    [LoggerMessage(EventId = 1001, Level = LogLevel.Information, Message = "Connecting to {Host}:{Port}")]
+    private static partial void LogConnecting(ILogger logger, string host, int port);
+
+    [LoggerMessage(EventId = 1002, Level = LogLevel.Information, Message = "Reconnecting to {Host}:{Port}")]
+    private static partial void LogReconnecting(ILogger logger, string host, int port);
+
+    [LoggerMessage(EventId = 1003, Level = LogLevel.Error, Message = "Failed to connect to {Host}:{Port}")]
+    private static partial void LogConnectFailed(ILogger logger, string host, int port, Exception ex);
 }
