@@ -1,65 +1,71 @@
 namespace ViscaCamLink.Services;
 
-using ViscaCamLink.Properties;
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Util;
 
-public sealed class SettingsService(Action applyLocalization) : ISettingsService
+public sealed class SettingsService(AppSettings settings, AppSettingsRepository settingsRepository, Action<Language> applyLocalization) : ISettingsService
 {
+    public Microsoft.Extensions.Logging.LogLevel LogLevel
+    {
+        get => settings.LogLevel;
+        set => settings.LogLevel = value;
+    }
+
+        public Language Language
+    {
+        get => settings.Language;
+        set => settings.Language = value;
+    }
+
     public string Ip
     {
-        get => Settings.Default.Ip;
-        set => Settings.Default.Ip = value;
+        get => settings.Ip;
+        set => settings.Ip = value;
     }
 
     public int Port
     {
-        get => Settings.Default.Port;
-        set => Settings.Default.Port = value;
+        get => settings.Port;
+        set => settings.Port = value;
     }
 
     public bool MemoryContainerVisible
     {
-        get => Settings.Default.MemoryContainerVisible;
-        set => Settings.Default.MemoryContainerVisible = value;
+        get => settings.MemoryContainerVisible;
+        set => settings.MemoryContainerVisible = value;
     }
 
     public bool MoveContainerVisible
     {
-        get => Settings.Default.MoveContainerVisible;
-        set => Settings.Default.MoveContainerVisible = value;
+        get => settings.MoveContainerVisible;
+        set => settings.MoveContainerVisible = value;
     }
 
     public bool ZoomContainerVisible
     {
-        get => Settings.Default.ZoomContainerVisible;
-        set => Settings.Default.ZoomContainerVisible = value;
+        get => settings.ZoomContainerVisible;
+        set => settings.ZoomContainerVisible = value;
     }
 
     public int PanTiltSpeed
     {
-        get => Settings.Default.PanTiltSpeed;
-        set => Settings.Default.PanTiltSpeed = value;
+        get => settings.PanTiltSpeed;
+        set => settings.PanTiltSpeed = value;
     }
 
     public int ZoomSpeed
     {
-        get => Settings.Default.ZoomSpeed;
-        set => Settings.Default.ZoomSpeed = value;
-    }
-
-    public Language Language
-    {
-        get => Settings.Default.Language;
-        set => Settings.Default.Language = value;
+        get => settings.ZoomSpeed;
+        set => settings.ZoomSpeed = value;
     }
 
     public bool NumpadLayout
     {
-        get => Settings.Default.NumpadLayout;
-        set => Settings.Default.NumpadLayout = value;
+        get => settings.NumpadLayout;
+        set => settings.NumpadLayout = value;
     }
 
-    public void Save() => Settings.Default.Save();
+    public void Save() => settingsRepository.Save(settings);
 
     public void ApplyOptions(Language language, bool numpadLayout)
     {
@@ -68,7 +74,7 @@ public sealed class SettingsService(Action applyLocalization) : ISettingsService
             Language = language;
 
             Save();
-            applyLocalization();
+            applyLocalization(language);
         }
 
         if (NumpadLayout != numpadLayout)

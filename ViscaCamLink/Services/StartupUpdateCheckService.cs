@@ -10,13 +10,15 @@ public sealed class StartupUpdateCheckService : IStartupUpdateCheckService
     private readonly TimeSpan _startupDelay;
     private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
     private readonly Action<Exception>? _reportException;
+    private readonly TimeProvider _timeProvider;
 
     public StartupUpdateCheckService(IUpdateService updateService)
         : this(
             updateService,
             DefaultStartupDelay,
             Task.Delay,
-            exception => Debug.WriteLine($"Startup update check failed: {exception}"))
+            exception => Debug.WriteLine($"Startup update check failed: {exception}"),
+            TimeProvider.System)
     {
     }
 
@@ -24,19 +26,29 @@ public sealed class StartupUpdateCheckService : IStartupUpdateCheckService
         IUpdateService updateService,
         TimeSpan startupDelay,
         Func<TimeSpan, CancellationToken, Task> delayAsync,
-        Action<Exception>? reportException = null)
+        Action<Exception>? reportException = null,
+        TimeProvider? timeProvider = null)
     {
         _updateService = updateService;
         _startupDelay = startupDelay;
         _delayAsync = delayAsync;
         _reportException = reportException;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            await _delayAsync(_startupDelay, cancellationToken).ConfigureAwait(false);
+            if (_timeProvider == TimeProvider.System)
+            {
+                await _delayAsync(_startupDelay, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await Task.Delay(_startupDelay, _timeProvider, cancellationToken).ConfigureAwait(false);
+            }
+
             await _updateService.StartAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

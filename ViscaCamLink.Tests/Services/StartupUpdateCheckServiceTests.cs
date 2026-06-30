@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Tests.Services;
 
-using FluentAssertions;
+using Shouldly;
 
 using Moq;
 
@@ -22,7 +22,7 @@ public sealed class StartupUpdateCheckServiceTests
 
         await service.RunAsync();
 
-        delayCalls.Should().ContainSingle().Which.Should().Be(TimeSpan.FromMilliseconds(10));
+        delayCalls.ShouldHaveSingleItem().ShouldBe(TimeSpan.FromMilliseconds(10));
         _updateService.Verify(s => s.StartAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -51,8 +51,8 @@ public sealed class StartupUpdateCheckServiceTests
 
         var act = () => service.RunAsync();
 
-        await act.Should().NotThrowAsync();
-        reported.Should().BeSameAs(thrown);
+        await Should.NotThrowAsync(act);
+        reported.ShouldBeSameAs(thrown);
     }
 
     private StartupUpdateCheckService CreateService(

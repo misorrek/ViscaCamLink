@@ -4,6 +4,8 @@ using ViscaCamLink.Util;
 
 public interface ISettingsService
 {
+    Microsoft.Extensions.Logging.LogLevel LogLevel { get; }
+
     string Ip { get; set; }
 
     int Port { get; set; }
