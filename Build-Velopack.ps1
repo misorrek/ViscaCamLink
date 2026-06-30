@@ -11,27 +11,26 @@
     All output goes to ./releases/
 
 .PARAMETER Version
-    The semantic version for this release (e.g., "0.4.0").
+    The semantic version for this release (e.g., "1.0.0").
 
 .PARAMETER Channel
     The release channel (default: "win"). Used for multi-channel setups.
 
 .EXAMPLE
-    .\Build-Velopack.ps1 -Version "0.4.0"
+    .\Build-Velopack.ps1 -Version "1.0.0"
 #>
 
 param(
     [Parameter(Mandatory = $true)]
     [string]$Version,
-
     [string]$Channel = "win"
 )
 
 $ErrorActionPreference = "Stop"
 
-$projectDir   = "$PSScriptRoot\..\ViscaCamLink"
-$publishDir   = "$PSScriptRoot\..\publish\velopack"
-$releasesDir  = "$PSScriptRoot\..\releases\velopack"
+$projectDir   = "$PSScriptRoot\ViscaCamLink"
+$publishDir   = "$PSScriptRoot\publish"
+$releasesDir  = "$PSScriptRoot\releases\velopack"
 
 Write-Host "=== ViscaCamLink Velopack Build ===" -ForegroundColor Cyan
 Write-Host "Version: $Version"
