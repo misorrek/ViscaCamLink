@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Tests.Services;
 
-using FluentAssertions;
+using Shouldly;
 
 using Moq;
 
@@ -30,7 +30,7 @@ public sealed class PowerServiceTests
 
         await _powerService.RefreshPowerStatusAsync();
 
-        received.Should().Be(PowerStatus.On);
+        received.ShouldBe(PowerStatus.On);
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class PowerServiceTests
 
         await _powerService.SwitchPowerAsync();
 
-        switchingRaised.Should().BeTrue();
+        switchingRaised.ShouldBeTrue();
     }
 
     [Fact]
@@ -133,6 +133,6 @@ public sealed class PowerServiceTests
 
         await _powerService.SwitchPowerAsync();
 
-        received.Should().Be(PowerStatus.On);
+        received.ShouldBe(PowerStatus.On);
     }
 }

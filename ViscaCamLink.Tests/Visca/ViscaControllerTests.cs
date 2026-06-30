@@ -2,9 +2,10 @@ namespace ViscaCamLink.Tests.Visca;
 
 using System.Runtime.CompilerServices;
 
-using FluentAssertions;
+using Shouldly;
 
 using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
@@ -19,7 +20,7 @@ public sealed class ViscaControllerTests
         _viscaClient
             .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreateAckPacket());
-        _controller = new ViscaController(_viscaClient.Object, TimeSpan.FromSeconds(5), null);
+        _controller = new ViscaController(_viscaClient.Object, TimeSpan.FromSeconds(5), NullLogger.Instance);
     }
 
     // --- Connection ---
@@ -29,7 +30,7 @@ public sealed class ViscaControllerTests
     {
         _viscaClient.Setup(c => c.IsConnected()).Returns(true);
 
-        _controller.Connected.Should().BeTrue();
+        _controller.Connected.ShouldBe(true);
     }
 
     [Fact]
@@ -50,19 +51,19 @@ public sealed class ViscaControllerTests
     [Fact]
     public void MaxPanSpeed_ReturnsProtocolConstant()
     {
-        ((IViscaController)_controller).MaxPanSpeed.Should().Be(ViscaProtocol.MaxPanSpeed);
+        ((IViscaController)_controller).MaxPanSpeed.ShouldBe(ViscaProtocol.MaxPanSpeed);
     }
 
     [Fact]
     public void MaxTiltSpeed_ReturnsProtocolConstant()
     {
-        ((IViscaController)_controller).MaxTiltSpeed.Should().Be(ViscaProtocol.MaxTiltSpeed);
+        ((IViscaController)_controller).MaxTiltSpeed.ShouldBe(ViscaProtocol.MaxTiltSpeed);
     }
 
     [Fact]
     public void MaxZoomSpeed_ReturnsProtocolConstant()
     {
-        ((IViscaController)_controller).MaxZoomSpeed.Should().Be(ViscaProtocol.MaxZoomSpeed);
+        ((IViscaController)_controller).MaxZoomSpeed.ShouldBe(ViscaProtocol.MaxZoomSpeed);
     }
 
     // --- Power ---
@@ -74,7 +75,7 @@ public sealed class ViscaControllerTests
 
         await _controller.PowerOn();
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdPower, ViscaProtocol.PowerOnArg, ViscaProtocol.Terminator]);
@@ -87,7 +88,7 @@ public sealed class ViscaControllerTests
 
         await _controller.PowerOff();
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdPower, ViscaProtocol.PowerOffArg, ViscaProtocol.Terminator]);
@@ -103,7 +104,7 @@ public sealed class ViscaControllerTests
 
         var status = await _controller.GetPowerStatus();
 
-        status.Should().Be(PowerStatus.On);
+        status.ShouldBe(PowerStatus.On);
     }
 
     [Fact]
@@ -116,7 +117,33 @@ public sealed class ViscaControllerTests
 
         var status = await _controller.GetPowerStatus();
 
-        status.Should().Be(PowerStatus.Standby);
+        status.ShouldBe(PowerStatus.Standby);
+    }
+
+    [Fact]
+    public async Task GetPowerStatus_ThrowsWhenResponseIsTooShort()
+    {
+        var response = ViscaPacket.FromBytes([0x90, 0x50, 0xff], 0, 3);
+        _viscaClient
+            .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        var act = () => _controller.GetPowerStatus();
+
+        await Should.ThrowAsync<ViscaProtocolException>(act);
+    }
+
+    [Fact]
+    public async Task GetPowerStatus_ThrowsWhenStatusValueIsUnknown()
+    {
+        var response = ViscaPacket.FromBytes([0x90, 0x50, 0x7f, 0xff], 0, 4);
+        _viscaClient
+            .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        var act = () => _controller.GetPowerStatus();
+
+        await Should.ThrowAsync<ViscaProtocolException>(act);
     }
 
     // --- Memory ---
@@ -131,7 +158,7 @@ public sealed class ViscaControllerTests
 
         await _controller.MemorySet(slot);
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdMemoryReset, ViscaProtocol.MemorySubSet, slot, ViscaProtocol.Terminator]);
@@ -147,7 +174,7 @@ public sealed class ViscaControllerTests
 
         await _controller.MemoryRecall(slot);
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdMemoryReset, ViscaProtocol.MemorySubRecall, slot, ViscaProtocol.Terminator]);
@@ -162,7 +189,7 @@ public sealed class ViscaControllerTests
 
         await _controller.GoHome();
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
             ViscaProtocol.CmdHome, ViscaProtocol.Terminator]);
@@ -175,7 +202,7 @@ public sealed class ViscaControllerTests
 
         await _controller.ContinuousPanTilt(PanTiltDirection.PanRightTiltUp, 0x10, 0x08);
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
             ViscaProtocol.CmdContinuousPanTilt, 0x10, 0x08,
@@ -189,7 +216,7 @@ public sealed class ViscaControllerTests
 
         await _controller.ContinuousPanTilt(PanTiltDirection.PanLeftTiltDown, 0x05, 0x03);
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
             ViscaProtocol.CmdContinuousPanTilt, 0x05, 0x03,
@@ -203,7 +230,7 @@ public sealed class ViscaControllerTests
 
         await _controller.ContinuousPanTilt(PanTiltDirection.None, 0, 0);
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
             ViscaProtocol.CmdContinuousPanTilt, 0x00, 0x00,
@@ -219,7 +246,7 @@ public sealed class ViscaControllerTests
 
         await _controller.ContinuousZoom(ZoomDirection.In, 0x05);
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdZoomVariable, ViscaProtocol.ZoomInMask | 0x05, ViscaProtocol.Terminator]);
@@ -232,7 +259,7 @@ public sealed class ViscaControllerTests
 
         await _controller.ContinuousZoom(ZoomDirection.Out, 0x03);
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdZoomVariable, ViscaProtocol.ZoomOutMask | 0x03, ViscaProtocol.Terminator]);
@@ -245,7 +272,7 @@ public sealed class ViscaControllerTests
 
         await _controller.ContinuousZoom(ZoomDirection.None, 0x00);
 
-        sent.Value.Should().NotBeNull();
+        sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdZoomVariable, ViscaProtocol.ZoomStop, ViscaProtocol.Terminator]);
@@ -278,10 +305,10 @@ public sealed class ViscaControllerTests
 
     private static void AssertPacketBytes(ViscaPacket packet, byte[] expected)
     {
-        packet.Length.Should().Be(expected.Length);
+        packet.Length.ShouldBe(expected.Length);
         for (var i = 0; i < expected.Length; i++)
         {
-            packet.GetByte(i).Should().Be(expected[i], $"byte at index {i} should be 0x{expected[i]:x2}");
+            packet.GetByte(i).ShouldBe(expected[i], $"byte at index {i} should be 0x{expected[i]:x2}");
         }
     }
 }

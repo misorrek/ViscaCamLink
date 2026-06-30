@@ -2,7 +2,7 @@ namespace ViscaCamLink.Tests.Services;
 
 using System.IO;
 
-using FluentAssertions;
+using Shouldly;
 using ViscaCamLink.Repositories;
 
 public sealed class PresetRepositoryTests : IDisposable
@@ -34,10 +34,10 @@ public sealed class PresetRepositoryTests : IDisposable
     {
         var data = _repository.Load();
 
-        data.Should().NotBeNull();
-        data.Groups.Should().HaveCount(1);
-        data.Groups[0].Id.Should().Be("default");
-        data.Groups[0].Presets.Should().HaveCount(10);
+        data.ShouldNotBeNull();
+        data.Groups.Count.ShouldBe(1);
+        data.Groups[0].Id.ShouldBe("default");
+        data.Groups[0].Presets.Count.ShouldBe(10);
     }
 
     [Fact]
@@ -50,8 +50,8 @@ public sealed class PresetRepositoryTests : IDisposable
         _repository.Save(data);
         var loaded = _repository.Load();
 
-        loaded.Groups[0].Presets[0].Name.Should().Be("Home");
-        loaded.Groups[0].Presets[5].Name.Should().Be("Stage Left");
+        loaded.Groups[0].Presets[0].Name.ShouldBe("Home");
+        loaded.Groups[0].Presets[5].Name.ShouldBe("Stage Left");
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class PresetRepositoryTests : IDisposable
         var data = repo.Load();
         repo.Save(data);
 
-        File.Exists(nestedPath).Should().BeTrue();
+        File.Exists(nestedPath).ShouldBeTrue();
 
         // Cleanup
         Directory.Delete(Path.GetDirectoryName(nestedPath)!, true);
@@ -76,9 +76,9 @@ public sealed class PresetRepositoryTests : IDisposable
 
         for (var i = 0; i < 10; i++)
         {
-            data.Groups[0].Presets[i].SlotIndex.Should().Be(i);
-            data.Groups[0].Presets[i].Name.Should().Be(i.ToString());
-            data.Groups[0].Presets[i].GroupId.Should().Be("default");
+            data.Groups[0].Presets[i].SlotIndex.ShouldBe(i);
+            data.Groups[0].Presets[i].Name.ShouldBe(i.ToString());
+            data.Groups[0].Presets[i].GroupId.ShouldBe("default");
         }
     }
 
@@ -98,11 +98,11 @@ public sealed class PresetRepositoryTests : IDisposable
         _repository.Save(data);
         var loaded = _repository.Load();
 
-        loaded.Groups.Should().HaveCount(2);
-        loaded.Groups[1].Id.Should().Be("second");
-        loaded.Groups[1].Name.Should().Be("Second");
-        loaded.Groups[1].Presets.Should().HaveCount(10);
-        loaded.Groups[1].Presets[0].SlotIndex.Should().Be(10);
+        loaded.Groups.Count.ShouldBe(2);
+        loaded.Groups[1].Id.ShouldBe("second");
+        loaded.Groups[1].Name.ShouldBe("Second");
+        loaded.Groups[1].Presets.Count.ShouldBe(10);
+        loaded.Groups[1].Presets[0].SlotIndex.ShouldBe(10);
     }
 
         [Fact]
@@ -112,9 +112,9 @@ public sealed class PresetRepositoryTests : IDisposable
 
                 var data = _repository.Load();
 
-                data.Groups.Should().HaveCount(1);
-                data.Groups[0].Id.Should().Be("default");
-                File.Exists($"{_tempFile}.bak").Should().BeTrue();
+                data.Groups.Count.ShouldBe(1);
+                data.Groups[0].Id.ShouldBe("default");
+                File.Exists($"{_tempFile}.bak").ShouldBeTrue();
         }
 
         [Fact]
@@ -124,9 +124,9 @@ public sealed class PresetRepositoryTests : IDisposable
 
                 var data = _repository.Load();
 
-                data.Groups.Should().HaveCount(1);
-                data.Groups[0].Id.Should().Be("default");
-                File.Exists($"{_tempFile}.bak").Should().BeTrue();
+                data.Groups.Count.ShouldBe(1);
+                data.Groups[0].Id.ShouldBe("default");
+                File.Exists($"{_tempFile}.bak").ShouldBeTrue();
         }
 
         [Fact]
@@ -148,9 +148,9 @@ public sealed class PresetRepositoryTests : IDisposable
 
                 var data = _repository.Load();
 
-                data.Groups.Should().HaveCount(1);
-                data.Groups[0].Id.Should().Be("default");
-                File.Exists($"{_tempFile}.bak").Should().BeTrue();
+                data.Groups.Count.ShouldBe(1);
+                data.Groups[0].Id.ShouldBe("default");
+                File.Exists($"{_tempFile}.bak").ShouldBeTrue();
         }
 
         [Fact]
@@ -179,8 +179,8 @@ public sealed class PresetRepositoryTests : IDisposable
 
                 var data = _repository.Load();
 
-                data.Groups.Should().HaveCount(1);
-                data.Groups[0].Id.Should().Be("default");
-                File.Exists($"{_tempFile}.bak").Should().BeTrue();
+                data.Groups.Count.ShouldBe(1);
+                data.Groups[0].Id.ShouldBe("default");
+                File.Exists($"{_tempFile}.bak").ShouldBeTrue();
         }
 }

@@ -3,7 +3,7 @@ namespace ViscaCamLink.Updater.Tests;
 using System.Net;
 using System.Text;
 
-using FluentAssertions;
+using Shouldly;
 
 using ViscaCamLink.Updater;
 
@@ -37,11 +37,11 @@ public sealed class GitHubUpdateCheckerTests
 
         var result = await checker.CheckAsync(new Version(0, 9, 0));
 
-        result.Should().NotBeNull();
-        result!.Version.Should().Be(new Version(1, 0, 0));
-        result.ReleaseNotes.Should().Contain("1.0.0");
-        result.InstallerAssetUrl.Should().EndWith("setup.exe");
-        result.PortableAssetUrl.Should().EndWith("portable.zip");
+        result.ShouldNotBeNull();
+        result!.Version.ShouldBe(new Version(1, 0, 0));
+        result.ReleaseNotes.ShouldContain("1.0.0");
+        result.InstallerAssetUrl.ShouldEndWith("setup.exe");
+        result.PortableAssetUrl.ShouldEndWith("portable.zip");
     }
 
     // --- up to date ---
@@ -53,7 +53,7 @@ public sealed class GitHubUpdateCheckerTests
 
         var result = await checker.CheckAsync(new Version(1, 0, 0));
 
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class GitHubUpdateCheckerTests
 
         var result = await checker.CheckAsync(new Version(2, 0, 0));
 
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 
     // --- malformed / error responses ---
@@ -75,7 +75,7 @@ public sealed class GitHubUpdateCheckerTests
 
         var result = await checker.CheckAsync(new Version(0, 1, 0));
 
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public sealed class GitHubUpdateCheckerTests
 
         var result = await checker.CheckAsync(new Version(0, 1, 0));
 
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public sealed class GitHubUpdateCheckerTests
 
         var result = await checker.CheckAsync(new Version(0, 1, 0));
 
-        result.Should().BeNull();
+        result.ShouldBeNull();
     }
 
     [Fact]
@@ -114,8 +114,8 @@ public sealed class GitHubUpdateCheckerTests
 
         var result = await checker.CheckAsync(new Version(1, 0, 0));
 
-        result.Should().NotBeNull();
-        result!.Version.Should().Be(new Version(2, 0, 0));
+        result.ShouldNotBeNull();
+        result!.Version.ShouldBe(new Version(2, 0, 0));
     }
 
     // --- helpers ---

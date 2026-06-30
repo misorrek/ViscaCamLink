@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Tests.Services;
 
-using FluentAssertions;
+using Shouldly;
 
 using Moq;
 
@@ -32,7 +32,7 @@ public sealed class CameraConnectionServiceTests
     public void Status_InitiallyFailed()
     {
         using var svc = CreateService();
-        svc.Status.Should().Be(ConnectionStatus.Failed);
+        svc.Status.ShouldBe(ConnectionStatus.Failed);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public sealed class CameraConnectionServiceTests
         using var svc = CreateService();
         await svc.ReconnectAsync();
 
-        svc.Status.Should().Be(ConnectionStatus.Ok);
+        svc.Status.ShouldBe(ConnectionStatus.Ok);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public sealed class CameraConnectionServiceTests
         using var svc = CreateService();
         await svc.ReconnectAsync();
 
-        svc.Status.Should().Be(ConnectionStatus.Failed);
+        svc.Status.ShouldBe(ConnectionStatus.Failed);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public sealed class CameraConnectionServiceTests
         using var svc = CreateService();
         await svc.ReconnectAsync();
 
-        svc.Status.Should().Be(ConnectionStatus.Failed);
+        svc.Status.ShouldBe(ConnectionStatus.Failed);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class CameraConnectionServiceTests
 
         await svc.ReconnectAsync();
 
-        statuses.Should().Equal(ConnectionStatus.Working, ConnectionStatus.Ok);
+        statuses.ShouldBe([ConnectionStatus.Working, ConnectionStatus.Ok]);
     }
 
     [Fact]
@@ -143,8 +143,8 @@ public sealed class CameraConnectionServiceTests
         var result = await failedTcs.Task.WaitAsync(WaitTimeout);
 
         // Assert
-        result.Should().Be(ConnectionStatus.Failed);
-        svc.Status.Should().Be(ConnectionStatus.Failed);
+        result.ShouldBe(ConnectionStatus.Failed);
+        svc.Status.ShouldBe(ConnectionStatus.Failed);
     }
 
     [Fact]
@@ -181,8 +181,8 @@ public sealed class CameraConnectionServiceTests
         await recoveredTcs.Task.WaitAsync(WaitTimeout);
 
         // Assert
-        statusChanges.Should().ContainInOrder(ConnectionStatus.Failed, ConnectionStatus.Ok);
-        svc.Status.Should().Be(ConnectionStatus.Ok);
+        statusChanges.ShouldBe([ConnectionStatus.Failed, ConnectionStatus.Ok]);
+        svc.Status.ShouldBe(ConnectionStatus.Ok);
     }
 
     [Fact]
@@ -207,8 +207,8 @@ public sealed class CameraConnectionServiceTests
         await Task.Delay(FastInterval * 4);
 
         // Assert: status remains Ok with no extra events.
-        extraEvents.Should().Be(0);
-        svc.Status.Should().Be(ConnectionStatus.Ok);
+        extraEvents.ShouldBe(0);
+        svc.Status.ShouldBe(ConnectionStatus.Ok);
     }
 
     [Fact]
@@ -229,7 +229,7 @@ public sealed class CameraConnectionServiceTests
         // Act: reconnect again — should not throw, and status should reach Ok.
         await svc.ReconnectAsync();
 
-        svc.Status.Should().Be(ConnectionStatus.Ok);
+        svc.Status.ShouldBe(ConnectionStatus.Ok);
     }
 
     [Fact]
@@ -253,6 +253,6 @@ public sealed class CameraConnectionServiceTests
         // Let a potential probe interval pass.
         await Task.Delay(FastInterval * 4);
 
-        eventsAfterDispose.Should().Be(0);
+        eventsAfterDispose.ShouldBe(0);
     }
 }

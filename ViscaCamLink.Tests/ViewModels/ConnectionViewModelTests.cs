@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Tests.ViewModels;
 
-using FluentAssertions;
+using Shouldly;
 
 using Moq;
 
@@ -44,8 +44,8 @@ public sealed class ConnectionViewModelTests
             _connectionService.Object,
             ConnectionStatus.Failed);
 
-        viewModel.ConnectionStatus.Should().Be(ConnectionStatus.Failed);
-        viewModel.PowerStatus.Should().Be(PowerStatus.Unknown);
+        viewModel.ConnectionStatus.ShouldBe(ConnectionStatus.Failed);
+        viewModel.PowerStatus.ShouldBe(PowerStatus.Unknown);
         _uiDispatcher.Verify(d => d.InvokeAsync(It.IsAny<Action>()), Times.Exactly(2));
     }
 
@@ -59,7 +59,7 @@ public sealed class ConnectionViewModelTests
             _powerService.Object,
             PowerStatus.On);
 
-        viewModel.PowerStatus.Should().Be(PowerStatus.On);
+        viewModel.PowerStatus.ShouldBe(PowerStatus.On);
         _uiDispatcher.Verify(d => d.Post(It.IsAny<Action>()), Times.Once);
     }
 
@@ -73,7 +73,7 @@ public sealed class ConnectionViewModelTests
             _powerService.Object,
             EventArgs.Empty);
 
-        viewModel.ChangingPowerStatus.Should().BeTrue();
+        viewModel.ChangingPowerStatus.ShouldBeTrue();
         _uiDispatcher.Verify(d => d.Post(It.IsAny<Action>()), Times.Once);
     }
 

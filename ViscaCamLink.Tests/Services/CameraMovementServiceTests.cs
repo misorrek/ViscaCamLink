@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Tests.Services;
 
-using FluentAssertions;
+using Shouldly;
 
 using Moq;
 
@@ -24,13 +24,13 @@ public sealed class CameraMovementServiceTests
     [Fact]
     public void MaxPanTiltSpeed_ReturnsControllerMaxPanSpeed()
     {
-        _movementService.MaxPanTiltSpeed.Should().Be(ViscaProtocol.MaxPanSpeed);
+        _movementService.MaxPanTiltSpeed.ShouldBe(ViscaProtocol.MaxPanSpeed);
     }
 
     [Fact]
     public void MaxZoomSpeed_ReturnsControllerMaxZoomSpeed()
     {
-        _movementService.MaxZoomSpeed.Should().Be(ViscaProtocol.MaxZoomSpeed);
+        _movementService.MaxZoomSpeed.ShouldBe(ViscaProtocol.MaxZoomSpeed);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public sealed class CameraMovementServiceTests
     {
         var result = _movementService.GetProportionalTiltSpeed(ViscaProtocol.MaxPanSpeed);
 
-        result.Should().Be(ViscaProtocol.MaxTiltSpeed);
+        result.ShouldBe(ViscaProtocol.MaxTiltSpeed);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class CameraMovementServiceTests
 
         // Ceiling of (MaxTiltSpeed * 0.5) = Ceiling(20 * 0.5) = 10
         var expected = (byte)Math.Ceiling(ViscaProtocol.MaxTiltSpeed * ((double)halfPan / ViscaProtocol.MaxPanSpeed));
-        result.Should().Be(expected);
+        result.ShouldBe(expected);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public sealed class CameraMovementServiceTests
     {
         var result = _movementService.GetProportionalTiltSpeed(0);
 
-        result.Should().Be(0);
+        result.ShouldBe((byte)0);
     }
 
     [Fact]

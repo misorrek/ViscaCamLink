@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Tests.Visca;
 
-using FluentAssertions;
+using Shouldly;
 
 using ViscaCamLink.Visca;
 
@@ -13,7 +13,7 @@ public sealed class ViscaPacketTests
 
         var packet = ViscaPacket.FromBytes(data, 0, 5);
 
-        packet.Length.Should().Be(5);
+        packet.Length.ShouldBe(5);
     }
 
     [Fact]
@@ -22,9 +22,9 @@ public sealed class ViscaPacketTests
         byte[] data = [0x81, 0x01, 0x04, 0xff];
         var packet = ViscaPacket.FromBytes(data, 0, 3);
 
-        packet[0].Should().Be(0x81);
-        packet[1].Should().Be(0x01);
-        packet[2].Should().Be(0x04);
+        packet[0].ShouldBe((byte)0x81);
+        packet[1].ShouldBe((byte)0x01);
+        packet[2].ShouldBe((byte)0x04);
     }
 
     [Fact]
@@ -33,8 +33,8 @@ public sealed class ViscaPacketTests
         byte[] data = [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A];
         var packet = ViscaPacket.FromBytes(data, 0, 10);
 
-        packet[8].Should().Be(0x09);
-        packet[9].Should().Be(0x0A);
+        packet[8].ShouldBe((byte)0x09);
+        packet[9].ShouldBe((byte)0x0A);
     }
 
     [Fact]
@@ -43,9 +43,9 @@ public sealed class ViscaPacketTests
         byte[] data = [0x81, 0x01, 0xff];
         var packet = ViscaPacket.FromBytes(data, 0, 2);
 
-        var act = () => packet[-1];
+        Action act = () => _ = packet[-1];
 
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        Should.Throw<ArgumentOutOfRangeException>(act);
     }
 
     [Fact]
@@ -54,9 +54,9 @@ public sealed class ViscaPacketTests
         byte[] data = [0x81, 0x01, 0xff];
         var packet = ViscaPacket.FromBytes(data, 0, 2);
 
-        var act = () => packet[2];
+        Action act = () => _ = packet[2];
 
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        Should.Throw<ArgumentOutOfRangeException>(act);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed class ViscaPacketTests
         byte[] data = [0x90, 0x50, 0x02, 0xff];
         var packet = ViscaPacket.FromBytes(data, 0, 3);
 
-        packet.GetByte(1).Should().Be(packet[1]);
+        packet.GetByte(1).ShouldBe(packet[1]);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public sealed class ViscaPacketTests
 
         short value = packet.GetInt16(2);
 
-        value.Should().Be(0x1234);
+        value.ShouldBe((short)0x1234);
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public sealed class ViscaPacketTests
         byte[] data = [0x90, 0x50, 0x00, 0x00, 0x00, 0x00, 0xff];
         var packet = ViscaPacket.FromBytes(data, 0, 6);
 
-        packet.GetInt16(2).Should().Be(0);
+        packet.GetInt16(2).ShouldBe((short)0);
     }
 
     [Fact]
@@ -96,16 +96,16 @@ public sealed class ViscaPacketTests
 
         var packet = ViscaPacket.FromBytes(data, start: 2, length: 2);
 
-        packet[0].Should().Be(0x81);
-        packet[1].Should().Be(0x01);
+        packet[0].ShouldBe((byte)0x81);
+        packet[1].ShouldBe((byte)0x01);
     }
 
     [Fact]
     public void FromBytes_NullArray_ThrowsArgumentNullException()
     {
-        var act = () => ViscaPacket.FromBytes(null!, 0, 1);
+        Action act = () => _ = ViscaPacket.FromBytes(null!, 0, 1);
 
-        act.Should().Throw<ArgumentNullException>();
+        Should.Throw<ArgumentNullException>(act);
     }
 
     [Fact]
@@ -113,9 +113,9 @@ public sealed class ViscaPacketTests
     {
         var data = new byte[20];
 
-        var act = () => ViscaPacket.FromBytes(data, 0, 17);
+        Action act = () => _ = ViscaPacket.FromBytes(data, 0, 17);
 
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        Should.Throw<ArgumentOutOfRangeException>(act);
     }
 
     [Fact]
@@ -123,9 +123,9 @@ public sealed class ViscaPacketTests
     {
         var data = new byte[5];
 
-        var act = () => ViscaPacket.FromBytes(data, 0, 0);
+        Action act = () => _ = ViscaPacket.FromBytes(data, 0, 0);
 
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        Should.Throw<ArgumentOutOfRangeException>(act);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public sealed class ViscaPacketTests
         byte[] data = [0x81, 0x01, 0x04, 0xff];
         var packet = ViscaPacket.FromBytes(data, 0, 3);
 
-        packet.ToString().Should().Be("81-01-04");
+        packet.ToString().ShouldBe("81-01-04");
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public sealed class ViscaPacketTests
         var first = packet.ToString();
         var second = packet.ToString();
 
-        ReferenceEquals(first, second).Should().BeTrue();
+        ReferenceEquals(first, second).ShouldBeTrue();
     }
 
     [Fact]
@@ -154,6 +154,6 @@ public sealed class ViscaPacketTests
         byte[] data = [0xAB];
         var packet = ViscaPacket.FromBytes(data, 0, 1);
 
-        packet.ToString().Should().Be("ab");
+        packet.ToString().ShouldBe("ab");
     }
 }

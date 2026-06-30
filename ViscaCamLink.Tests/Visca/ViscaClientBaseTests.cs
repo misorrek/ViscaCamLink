@@ -1,6 +1,8 @@
 namespace ViscaCamLink.Tests.Visca;
 
-using FluentAssertions;
+using Shouldly;
+
+using Microsoft.Extensions.Logging.Abstractions;
 
 using ViscaCamLink.Visca;
 
@@ -13,7 +15,7 @@ public sealed class ViscaClientBaseTests
 
         var result = await ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
 
-        result[1].Should().Be(0x50);
+        result[1].ShouldBe((byte)0x50);
     }
 
     [Fact]
@@ -26,7 +28,7 @@ public sealed class ViscaClientBaseTests
 
         var result = await ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
 
-        result[1].Should().Be(0x50);
+        result[1].ShouldBe((byte)0x50);
     }
 
     [Fact]
@@ -36,8 +38,8 @@ public sealed class ViscaClientBaseTests
 
         var act = () => ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
 
-        await act.Should().ThrowAsync<ViscaResponseException>()
-            .WithMessage("*Error returned from VISCA endpoint*");
+        var ex = await Should.ThrowAsync<ViscaResponseException>(act);
+        ex.Message.ShouldContain("Error returned from VISCA endpoint");
     }
 
     [Fact]
@@ -47,8 +49,8 @@ public sealed class ViscaClientBaseTests
 
         var act = () => ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
 
-        await act.Should().ThrowAsync<ViscaProtocolException>()
-            .WithMessage("*Invalid packet*");
+        var ex = await Should.ThrowAsync<ViscaProtocolException>(act);
+        ex.Message.ShouldContain("Invalid packet");
     }
 
     [Fact]
@@ -58,8 +60,8 @@ public sealed class ViscaClientBaseTests
 
         var act = () => ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
 
-        await act.Should().ThrowAsync<ViscaProtocolException>()
-            .WithMessage("*length*");
+        var ex = await Should.ThrowAsync<ViscaProtocolException>(act);
+        ex.Message.ShouldContain("length");
     }
 
     [Fact]
@@ -69,7 +71,7 @@ public sealed class ViscaClientBaseTests
 
         try { await ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None); } catch { }
 
-        client.DisconnectCallCount.Should().Be(1);
+        client.DisconnectCallCount.ShouldBe(1);
     }
 
     [Fact]
@@ -79,7 +81,7 @@ public sealed class ViscaClientBaseTests
 
         await ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
 
-        client.DisconnectCallCount.Should().Be(0);
+        client.DisconnectCallCount.ShouldBe(0);
     }
 
     private static ViscaPacket CreateRequest() =>
@@ -88,7 +90,7 @@ public sealed class ViscaClientBaseTests
     private static ViscaPacket CreateResponsePacket(params byte[] bytes) =>
         ViscaPacket.FromBytes(bytes, 0, bytes.Length);
 
-    private sealed class FakeClient(ViscaPacket[] responses) : ViscaClientBase(logger: null)
+    private sealed class FakeClient(ViscaPacket[] responses) : ViscaClientBase(NullLogger.Instance)
     {
         private int responseIndex;
 

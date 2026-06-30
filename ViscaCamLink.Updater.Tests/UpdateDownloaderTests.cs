@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 
-using FluentAssertions;
+using Shouldly;
 
 using ViscaCamLink.Updater;
 
@@ -30,8 +30,8 @@ public sealed class UpdateDownloaderTests
 
         try
         {
-            File.Exists(path).Should().BeTrue();
-            (await File.ReadAllBytesAsync(path)).Should().Equal(content);
+            File.Exists(path).ShouldBeTrue();
+            (await File.ReadAllBytesAsync(path)).ShouldBe(content);
         }
         finally { TryDelete(path); }
     }
@@ -45,8 +45,8 @@ public sealed class UpdateDownloaderTests
 
         try
         {
-            path.Should().StartWith(Path.GetTempPath());
-            Path.GetFileName(path).Should().Be(FileName);
+            path.ShouldStartWith(Path.GetTempPath());
+            Path.GetFileName(path).ShouldBe(FileName);
         }
         finally { TryDelete(path); }
     }
@@ -66,8 +66,8 @@ public sealed class UpdateDownloaderTests
 
         try
         {
-            reported.Should().NotBeEmpty();
-            reported.Last().Should().Be(100);
+            reported.ShouldNotBeEmpty();
+            reported.Last().ShouldBe(100);
         }
         finally { TryDelete(path); }
     }
@@ -83,7 +83,7 @@ public sealed class UpdateDownloaderTests
             "https://example.com/setup.exe", FileName,
             new Progress<int>(p => reported.Add(p)));
 
-        try { reported.Should().BeEmpty(); }
+        try { reported.ShouldBeEmpty(); }
         finally { TryDelete(path); }
     }
 
@@ -95,8 +95,8 @@ public sealed class UpdateDownloaderTests
         var handler    = new ErrorHttpHandler(HttpStatusCode.NotFound);
         var downloader = new UpdateDownloader(new HttpClient(handler));
 
-        await downloader.Invoking(d => d.DownloadAsync("https://example.com/setup.exe", FileName))
-                        .Should().ThrowAsync<HttpRequestException>();
+        await Should.ThrowAsync<HttpRequestException>(
+            () => downloader.DownloadAsync("https://example.com/setup.exe", FileName));
     }
 
     // --- corrupt download / Content-Length mismatch ---
@@ -119,8 +119,8 @@ public sealed class UpdateDownloaderTests
 
         try
         {
-            (await File.ReadAllBytesAsync(path)).Should().Equal(correctContent);
-            handler.CallCount.Should().Be(2);
+            (await File.ReadAllBytesAsync(path)).ShouldBe(correctContent);
+            handler.CallCount.ShouldBe(2);
         }
         finally { TryDelete(path); }
     }
@@ -135,11 +135,12 @@ public sealed class UpdateDownloaderTests
 
         var downloader = new UpdateDownloader(new HttpClient(handler));
 
-        await downloader.Invoking(d => d.DownloadAsync("https://example.com/setup.exe", FileName))
-                        .Should().ThrowAsync<InvalidDataException>()
-                        .WithMessage("*expected 100 bytes*received 50*");
+        var ex = await Should.ThrowAsync<InvalidDataException>(
+            () => downloader.DownloadAsync("https://example.com/setup.exe", FileName));
+        ex.Message.ShouldContain("expected 100 bytes");
+        ex.Message.ShouldContain("received 50");
 
-        handler.CallCount.Should().Be(2, "exactly one retry is expected");
+        handler.CallCount.ShouldBe(2, "exactly one retry is expected");
     }
 
     [Fact]
@@ -151,7 +152,7 @@ public sealed class UpdateDownloaderTests
 
         var path = await downloader.DownloadAsync("https://example.com/setup.exe", FileName);
 
-        try { File.Exists(path).Should().BeTrue(); }
+        try { File.Exists(path).ShouldBeTrue(); }
         finally { TryDelete(path); }
     }
 
@@ -175,7 +176,7 @@ public sealed class UpdateDownloaderTests
         {
             // Final file must contain only the correct content, not a mix of partial + correct.
             var written = await File.ReadAllBytesAsync(path);
-            written.Should().Equal(correctContent);
+            written.ShouldBe(correctContent);
         }
         finally { TryDelete(path); }
     }

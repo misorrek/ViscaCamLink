@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Tests.Services;
 
-using FluentAssertions;
+using Shouldly;
 
 using Moq;
 using ViscaCamLink.Repositories;
@@ -58,7 +58,7 @@ public sealed class PresetServiceTests
     {
         var name = _presetService.GetPresetName(0);
 
-        name.Should().Be("0");
+        name.ShouldBe("0");
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public sealed class PresetServiceTests
     {
         var name = _presetService.GetPresetName(99);
 
-        name.Should().Be("99");
+        name.ShouldBe("99");
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public sealed class PresetServiceTests
     {
         _presetService.RenamePreset(0, "Home");
 
-        _presetService.GetPresetName(0).Should().Be("Home");
+        _presetService.GetPresetName(0).ShouldBe("Home");
         _repository.Verify(r => r.Save(It.IsAny<PresetData>()), Times.Once);
     }
 
@@ -86,7 +86,7 @@ public sealed class PresetServiceTests
 
         _presetService.RenamePreset(0, "Home");
 
-        raised.Should().BeTrue();
+        raised.ShouldBeTrue();
     }
 
     [Fact]
@@ -100,22 +100,22 @@ public sealed class PresetServiceTests
     [Fact]
     public void Presets_ReturnsPresetsFromActiveGroup()
     {
-        _presetService.Presets.Should().HaveCount(10);
-        _presetService.Presets[0].SlotIndex.Should().Be(0);
-        _presetService.Presets[9].SlotIndex.Should().Be(9);
+        _presetService.Presets.Count.ShouldBe(10);
+        _presetService.Presets[0].SlotIndex.ShouldBe(0);
+        _presetService.Presets[9].SlotIndex.ShouldBe(9);
     }
 
     [Fact]
     public void Groups_ReturnsAllGroups()
     {
-        _presetService.Groups.Should().HaveCount(1);
-        _presetService.Groups[0].Id.Should().Be("default");
+        _presetService.Groups.Count.ShouldBe(1);
+        _presetService.Groups[0].Id.ShouldBe("default");
     }
 
     [Fact]
     public void ActiveGroupId_ReturnsFirstGroupByDefault()
     {
-        _presetService.ActiveGroupId.Should().Be("default");
+        _presetService.ActiveGroupId.ShouldBe("default");
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public sealed class PresetServiceTests
 
         _presetService.SwitchGroup(secondGroupId);
 
-        _presetService.ActiveGroupId.Should().Be(secondGroupId);
+        _presetService.ActiveGroupId.ShouldBe(secondGroupId);
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public sealed class PresetServiceTests
 
         _presetService.SwitchGroup(secondGroupId);
 
-        raised.Should().BeTrue();
+        raised.ShouldBeTrue();
     }
 
     [Fact]
@@ -150,8 +150,8 @@ public sealed class PresetServiceTests
 
         _presetService.SwitchGroup("nonexistent");
 
-        raised.Should().BeFalse();
-        _presetService.ActiveGroupId.Should().Be("default");
+        raised.ShouldBeFalse();
+        _presetService.ActiveGroupId.ShouldBe("default");
     }
 
     [Fact]
@@ -159,9 +159,9 @@ public sealed class PresetServiceTests
     {
         _presetService.AddGroup("Second");
 
-        _presetService.Groups.Should().HaveCount(2);
-        _presetService.Groups[1].Name.Should().Be("Second");
-        _presetService.Groups[1].Presets.Should().HaveCount(10);
+        _presetService.Groups.Count.ShouldBe(2);
+        _presetService.Groups[1].Name.ShouldBe("Second");
+        _presetService.Groups[1].Presets.Count.ShouldBe(10);
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public sealed class PresetServiceTests
 
         var firstSlots = _presetService.Groups[0].Presets.Select(p => p.SlotIndex).ToHashSet();
         var secondSlots = _presetService.Groups[1].Presets.Select(p => p.SlotIndex).ToHashSet();
-        firstSlots.Overlaps(secondSlots).Should().BeFalse();
+        firstSlots.Overlaps(secondSlots).ShouldBeFalse();
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public sealed class PresetServiceTests
 
         _presetService.AddGroup("Second");
 
-        raised.Should().BeTrue();
+        raised.ShouldBeTrue();
     }
 
     [Fact]
@@ -201,8 +201,8 @@ public sealed class PresetServiceTests
 
         _presetService.RemoveGroup(secondGroupId);
 
-        _presetService.Groups.Should().HaveCount(1);
-        _presetService.Groups[0].Id.Should().Be("default");
+        _presetService.Groups.Count.ShouldBe(1);
+        _presetService.Groups[0].Id.ShouldBe("default");
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public sealed class PresetServiceTests
     {
         _presetService.RemoveGroup("default");
 
-        _presetService.Groups.Should().HaveCount(1);
+        _presetService.Groups.Count.ShouldBe(1);
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public sealed class PresetServiceTests
 
         _presetService.RemoveGroup(secondGroupId);
 
-        _presetService.ActiveGroupId.Should().Be("default");
+        _presetService.ActiveGroupId.ShouldBe("default");
     }
 
     [Fact]
@@ -235,7 +235,7 @@ public sealed class PresetServiceTests
 
         _presetService.RemoveGroup(secondGroupId);
 
-        raised.Should().BeTrue();
+        raised.ShouldBeTrue();
     }
 
     [Fact]
@@ -243,7 +243,7 @@ public sealed class PresetServiceTests
     {
         _presetService.RenameGroup("default", "Main Camera");
 
-        _presetService.Groups[0].Name.Should().Be("Main Camera");
+        _presetService.Groups[0].Name.ShouldBe("Main Camera");
     }
 
     [Fact]
@@ -262,7 +262,7 @@ public sealed class PresetServiceTests
 
         _presetService.RenameGroup("default", "Main Camera");
 
-        raised.Should().BeTrue();
+        raised.ShouldBeTrue();
     }
 
     [Fact]
@@ -281,8 +281,8 @@ public sealed class PresetServiceTests
 
         _presetService.SwitchGroup(secondGroupId);
 
-        _presetService.Presets.Should().HaveCount(10);
-        _presetService.Presets[0].SlotIndex.Should().NotBe(0);
+        _presetService.Presets.Count.ShouldBe(10);
+        _presetService.Presets[0].SlotIndex.ShouldNotBe(0);
     }
 
     private static PresetData CreateDefaultPresetData()

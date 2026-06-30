@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Updater.Tests;
 
-using FluentAssertions;
+using Shouldly;
 
 using Moq;
 
@@ -31,7 +31,7 @@ public sealed class UpdateServiceTests
 
         await service.StartAsync();
 
-        receivedInfo.Should().Be(AvailableUpdate);
+        receivedInfo.ShouldBe(AvailableUpdate);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public sealed class UpdateServiceTests
 
         await service.StartAsync();
 
-        raised.Should().BeFalse();
+        raised.ShouldBeFalse();
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class UpdateServiceTests
 
         await service.StartAsync();
 
-        raised.Should().BeFalse();
+        raised.ShouldBeFalse();
     }
 
     [Fact]

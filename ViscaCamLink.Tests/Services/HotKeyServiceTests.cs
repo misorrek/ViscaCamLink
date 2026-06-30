@@ -2,7 +2,7 @@ namespace ViscaCamLink.Tests.Services;
 
 using System.Windows.Input;
 
-using FluentAssertions;
+using Shouldly;
 
 using Moq;
 using ViscaCamLink.Repositories;
@@ -31,7 +31,7 @@ public sealed class HotKeyServiceTests
 
         var result = _hotKeyService.RegisterHotKey(ModifierKeys.Control, Key.A, action);
 
-        result.Should().BeTrue();
+        result.ShouldBeTrue();
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public sealed class HotKeyServiceTests
 
         var result = _hotKeyService.RegisterHotKey(ModifierKeys.Alt, Key.F1, action);
 
-        result.Should().BeFalse();
+        result.ShouldBeFalse();
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public sealed class HotKeyServiceTests
 
         var result = _hotKeyService.ApplyBindings(bindings);
 
-        result.Should().BeTrue();
+        result.ShouldBeTrue();
         _repository.Verify(r => r.Save(It.Is<IReadOnlyList<HotKeyBinding>>(saved =>
             saved.Any(binding =>
                 binding.Action == HotKeyAction.Preset0 &&
@@ -96,7 +96,7 @@ public sealed class HotKeyServiceTests
 
         var result = _hotKeyService.ApplyBindings(bindings);
 
-        result.Should().BeFalse();
+        result.ShouldBeFalse();
         _repository.Verify(r => r.Save(It.IsAny<IReadOnlyList<HotKeyBinding>>()), Times.Never);
         _hotKeyManager.Verify(m => m.UnregisterAll(), Times.Never);
     }

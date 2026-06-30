@@ -2,7 +2,7 @@ namespace ViscaCamLink.Tests.Visca;
 
 using System.IO;
 
-using FluentAssertions;
+using Shouldly;
 
 using ViscaCamLink.Visca;
 
@@ -18,10 +18,10 @@ public sealed class ReadBufferTests
 
         var packet = await readBuffer.ReadAsync(stream, CancellationToken.None);
 
-        packet.Length.Should().Be(3);
-        packet[0].Should().Be(0x90);
-        packet[1].Should().Be(0x50);
-        packet[2].Should().Be(0x02);
+        packet.Length.ShouldBe(3);
+        packet[0].ShouldBe((byte)0x90);
+        packet[1].ShouldBe((byte)0x50);
+        packet[2].ShouldBe((byte)0x02);
     }
 
     [Fact]
@@ -33,13 +33,13 @@ public sealed class ReadBufferTests
         var first = await readBuffer.ReadAsync(stream, CancellationToken.None);
         var second = await readBuffer.ReadAsync(stream, CancellationToken.None);
 
-        first.Length.Should().Be(2);
-        first[0].Should().Be(0x90);
-        first[1].Should().Be(0x50);
+        first.Length.ShouldBe(2);
+        first[0].ShouldBe((byte)0x90);
+        first[1].ShouldBe((byte)0x50);
 
-        second.Length.Should().Be(2);
-        second[0].Should().Be(0x90);
-        second[1].Should().Be(0x41);
+        second.Length.ShouldBe(2);
+        second[0].ShouldBe((byte)0x90);
+        second[1].ShouldBe((byte)0x41);
     }
 
     [Fact]
@@ -49,10 +49,10 @@ public sealed class ReadBufferTests
 
         var packet = await readBuffer.ReadAsync(chunkedStream, CancellationToken.None);
 
-        packet.Length.Should().Be(3);
-        packet[0].Should().Be(0x90);
-        packet[1].Should().Be(0x50);
-        packet[2].Should().Be(0x02);
+        packet.Length.ShouldBe(3);
+        packet[0].ShouldBe((byte)0x90);
+        packet[1].ShouldBe((byte)0x50);
+        packet[2].ShouldBe((byte)0x02);
     }
 
     [Fact]
@@ -63,8 +63,8 @@ public sealed class ReadBufferTests
 
         var act = () => readBuffer.ReadAsync(stream, CancellationToken.None);
 
-        await act.Should().ThrowAsync<ViscaProtocolException>()
-            .WithMessage("*end of VISCA stream*");
+        var ex = await Should.ThrowAsync<ViscaProtocolException>(act);
+        ex.Message.ShouldContain("end of VISCA stream");
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public sealed class ReadBufferTests
 
         var act = () => readBuffer.ReadAsync(neverEndingStream, cts.Token);
 
-        await act.Should().ThrowAsync<OperationCanceledException>();
+        await Should.ThrowAsync<OperationCanceledException>(act);
     }
 
     [Fact]
@@ -92,8 +92,8 @@ public sealed class ReadBufferTests
         using var secondStream = new MemoryStream(secondData);
         var packet = await readBuffer.ReadAsync(secondStream, CancellationToken.None);
 
-        packet.Length.Should().Be(3);
-        packet[0].Should().Be(0x81);
+        packet.Length.ShouldBe(3);
+        packet[0].ShouldBe((byte)0x81);
     }
 
     private sealed class ChunkedMemoryStream(byte[] data, int chunkSize) : MemoryStream(data)

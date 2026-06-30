@@ -3,7 +3,7 @@ namespace ViscaCamLink.Tests.Services;
 using System.IO;
 using System.Windows.Input;
 
-using FluentAssertions;
+using Shouldly;
 using ViscaCamLink.Repositories;
 using ViscaCamLink.Services;
 
@@ -18,9 +18,9 @@ public sealed class HotKeyRepositoryTests : IDisposable
 
         var bindings = repository.Load();
 
-        bindings.Should().HaveCount(10);
-        bindings[0].Action.Should().Be(HotKeyAction.Preset0);
-        bindings[0].Key.Should().Be(Key.NumPad0);
+        bindings.Count.ShouldBe(10);
+        bindings[0].Action.ShouldBe(HotKeyAction.Preset0);
+        bindings[0].Key.ShouldBe(Key.NumPad0);
     }
 
     [Fact]
@@ -36,10 +36,48 @@ public sealed class HotKeyRepositoryTests : IDisposable
         repository.Save(bindings);
         var loadedBindings = repository.Load();
 
-        loadedBindings.Should().ContainSingle(binding =>
+        loadedBindings.ShouldContain(binding =>
             binding.Action == HotKeyAction.Preset0 &&
             binding.Modifier == ModifierKeys.Control &&
             binding.Key == Key.D0);
+    }
+
+    [Fact]
+    public void Save_WritesEnumsAsStrings()
+    {
+        var repository = new HotKeyRepository(_filePath);
+        var bindings = HotKeyDefinitions.CreateDefaultBindings()
+            .Select(binding => binding.Copy())
+            .ToList();
+
+        repository.Save(bindings);
+        var json = File.ReadAllText(_filePath);
+
+        json.ShouldContain("\"Action\": \"Preset0\"");
+        json.ShouldContain("\"Modifier\": \"None\"");
+        json.ShouldContain("\"Key\": \"NumPad0\"");
+    }
+
+    [Fact]
+    public void Load_WhenEnumValueIsUnknown_ReturnsDefaultBindings()
+    {
+        File.WriteAllText(_filePath, """
+            [
+              {
+                "Action": "NotARealAction",
+                "Modifier": "Control",
+                "Key": "D0"
+              }
+            ]
+            """);
+
+        var repository = new HotKeyRepository(_filePath);
+        var bindings = repository.Load();
+
+        bindings.Count.ShouldBe(10);
+        bindings[0].Action.ShouldBe(HotKeyAction.Preset0);
+        bindings[0].Modifier.ShouldBe(ModifierKeys.None);
+        bindings[0].Key.ShouldBe(Key.NumPad0);
     }
 
     public void Dispose()
