@@ -20,7 +20,7 @@ public sealed class ViscaControllerTests
         _viscaClient
             .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreateAckPacket());
-        _controller = new ViscaController(_viscaClient.Object, TimeSpan.FromSeconds(5), NullLogger.Instance);
+        _controller = new ViscaController(_viscaClient.Object, NullLogger.Instance);
     }
 
     // --- Connection ---
