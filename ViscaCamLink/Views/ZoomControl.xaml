@@ -47,6 +47,40 @@
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
+
+            <Style x:Key="SpeedButton"
+                   TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource BorderlessButton}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="SpeedSlider"
+                   TargetType="{x:Type Slider}"
+                   BasedOn="{StaticResource HorizontalSlider}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -101,7 +135,7 @@
                         Margin="0,0,8,0"
                         Width="24"
                         Command="{Binding ZoomSpeedDecreaseCommand}"
-                        Style="{StaticResource BorderlessButton}">
+                        Style="{StaticResource SpeedButton}">
                     <Path Data="{StaticResource TachometerSlow}"
                           Style="{StaticResource Icon16Path}" />
                 </Button>
@@ -113,13 +147,13 @@
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
                         Value="{Binding ZoomSpeed}"
-                        Style="{StaticResource HorizontalSlider}" />
+                        Style="{StaticResource SpeedSlider}" />
 
                 <Button Grid.Column="2"
                         Margin="8,0,0,0"
                         Width="24"
                         Command="{Binding ZoomSpeedIncreaseCommand}"
-                        Style="{StaticResource BorderlessButton}">
+                        Style="{StaticResource SpeedButton}">
                     <Path Data="{StaticResource TachometerFast}"
                           Style="{StaticResource Icon16Path}" />
                 </Button>

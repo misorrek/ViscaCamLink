@@ -141,6 +141,16 @@ public class ConnectionViewModel : ViewModelBase
         ExecuteReconnect();
     }
 
+    public void CancelEditMode()
+    {
+        if (IsEditingConnection)
+        {
+            Ip = _settings.Ip;
+            Port = _settings.Port.ToString();
+            IsEditingConnection = false;
+        }
+    }
+
     public void OnLanguageChanged()
     {
         UpdateConnectionInfo();

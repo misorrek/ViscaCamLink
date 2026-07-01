@@ -1,17 +1,20 @@
 namespace ViscaCamLink.ViewModels;
 
+using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using ViscaCamLink.Repositories;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.Util;
+using ViscaCamLink.Visca.Types;
 
 public class PresetsViewModel : ViewModelBase
 {
     private readonly IPresetService _presetService;
     private readonly ISettingsService _settings;
     private readonly IHotKeyService _hotKeyService;
+    private readonly ConnectionViewModel _connection;
 
     private bool _isSettingMemory;
     private string _memoryInfo = string.Empty;
@@ -20,21 +23,26 @@ public class PresetsViewModel : ViewModelBase
     private bool _isNumpadLayout;
     private bool _usePresetGroups;
     private string _renamingGroupText = string.Empty;
+    private int _lastRecalledPresetSlot = -1;
+    private PresetIndicatorState _presetIndicatorState = PresetIndicatorState.None;
 
     public PresetsViewModel(
         IPresetService presetService,
         ISettingsService settings,
-        IHotKeyService hotKeyService)
+        IHotKeyService hotKeyService,
+        ConnectionViewModel connection)
     {
         _presetService = presetService;
         _settings = settings;
         _hotKeyService = hotKeyService;
+        _connection = connection;
 
         _isNumpadLayout = _settings.NumpadLayout;
         _usePresetGroups = _settings.UsePresetGroups;
 
         _presetService.PresetsChanged += OnPresetsChanged;
         _presetService.GroupsChanged += OnGroupsChanged;
+        _connection.PropertyChanged += OnConnectionPropertyChanged;
 
         Presets = new ObservableCollection<PresetItemViewModel>(
             _presetService.Presets.Select(p => new PresetItemViewModel(p.SlotIndex, p.Name)));
@@ -94,9 +102,22 @@ public class PresetsViewModel : ViewModelBase
         set
         {
             _memoryInfo = value;
+            IsMemoryInfoVisible = !string.IsNullOrEmpty(value);
             NotifyPropertyChanged();
         }
     }
+
+    public bool IsMemoryInfoVisible
+    {
+        get => _isMemoryInfoVisible;
+        private set
+        {
+            _isMemoryInfoVisible = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    private bool _isMemoryInfoVisible;
 
     public ObservableCollection<PresetItemViewModel> Presets { get; }
 
@@ -167,6 +188,56 @@ public class PresetsViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// The slot index (0-255) of the last recalled preset, or -1 when no preset is active.
+    /// Drives the indicator dot visibility on the matching preset button.
+    /// </summary>
+    public int LastRecalledPresetSlot
+    {
+        get => _lastRecalledPresetSlot;
+        private set
+        {
+            _lastRecalledPresetSlot = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    /// <summary>
+    /// Visual state of the last-recalled preset indicator dot.
+    /// Green (Active) = camera is at the preset; Yellow (Moved) = camera has moved since.
+    /// </summary>
+    public PresetIndicatorState PresetIndicatorState
+    {
+        get => _presetIndicatorState;
+        private set
+        {
+            _presetIndicatorState = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    /// <summary>
+    /// Called when the camera starts moving or zooming. Transitions the indicator from
+    /// Active (green) to Moved (yellow) to signal the camera is no longer at the preset.
+    /// </summary>
+    public void NotifyMovementStarted()
+    {
+        if (PresetIndicatorState == PresetIndicatorState.Active)
+        {
+            PresetIndicatorState = PresetIndicatorState.Moved;
+        }
+    }
+
+    /// <summary>
+    /// Called when the home button is pressed. Clears the indicator entirely because
+    /// the camera moves to a known home position unrelated to any preset.
+    /// </summary>
+    public void ClearPresetIndicator()
+    {
+        LastRecalledPresetSlot = -1;
+        PresetIndicatorState = PresetIndicatorState.None;
+    }
+
     private CancellationTokenSource? MemoryInfoCancellationTokenSource { get; set; }
 
     public void OnLanguageChanged()
@@ -175,6 +246,24 @@ public class PresetsViewModel : ViewModelBase
         {
             MemoryInfo = Strings.Presets_ChooseSlot;
         }
+    }
+
+    public void CancelEditMode()
+    {
+        if (IsSettingMemory)
+        {
+            MemoryInfoCancellationTokenSource?.Cancel();
+            IsSettingMemory = false;
+            MemoryInfo = string.Empty;
+        }
+
+        if (RenamingSlotIndex >= 0)
+        {
+            RenamingSlotIndex = -1;
+            RenamingText = string.Empty;
+        }
+
+        ExecuteGroupRenameCancel();
     }
 
     public void RefreshLayout()
@@ -187,6 +276,24 @@ public class PresetsViewModel : ViewModelBase
         if (_usePresetGroups != _settings.UsePresetGroups)
         {
             UsePresetGroups = _settings.UsePresetGroups;
+        }
+    }
+
+    /// <summary>
+    /// Clears the indicator when the camera disconnects or loses power,
+    /// because the last-recalled preset position can no longer be trusted.
+    /// </summary>
+    private void OnConnectionPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(ConnectionViewModel.ConnectionStatus) or nameof(ConnectionViewModel.PowerStatus))
+        {
+            var isConnectedAndOn = _connection.ConnectionStatus == ConnectionStatus.Ok
+                                   && _connection.PowerStatus == PowerStatus.On;
+
+            if (!isConnectedAndOn)
+            {
+                ClearPresetIndicator();
+            }
         }
     }
 
@@ -411,6 +518,11 @@ public class PresetsViewModel : ViewModelBase
         }
         else
         {
+            // Update the indicator immediately on the UI thread before awaiting the camera.
+            // This also avoids cross-thread PropertyChanged issues (the await may resume on
+            // a thread-pool thread depending on how RecallMemoryAsync is implemented).
+            LastRecalledPresetSlot = slot;
+            PresetIndicatorState = PresetIndicatorState.Active;
             await TryCameraOperation(_presetService.RecallMemoryAsync(slot));
         }
     }

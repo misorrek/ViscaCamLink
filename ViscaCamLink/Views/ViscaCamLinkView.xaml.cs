@@ -14,19 +14,36 @@ using WpfAnimatedGif;
 public partial class ViscaCamLinkView : Window
 {
     private readonly ISettingsService _settingsService;
+    private WindowState _restoredWindowState = WindowState.Normal;
 
     public ViscaCamLinkView(ISettingsService settingsService)
     {
         _settingsService = settingsService;
+
+        // Pre-set Width before InitializeComponent so the HWND is created at the correct
+        // size. SetWindowPlacement in SourceInitialized then only moves the window (no
+        // resize) which avoids the DWM black flash on startup.
+        if (_settingsService.WindowPlacement is { } p)
+            Width = p.NormalRight - p.NormalLeft;
+
         InitializeComponent();
         SourceInitialized += OnSourceInitialized;
+        ContentRendered += OnContentRendered;
         Closing += OnClosing;
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
     {
         if (_settingsService.WindowPlacement is { } placement)
-            WindowPlacementHelper.Restore(this, placement);
+            _restoredWindowState = WindowPlacementHelper.Restore(this, placement);
+    }
+
+    private void OnContentRendered(object? sender, EventArgs e)
+    {
+        // Apply maximized state after first render to avoid DWM black flash.
+        if (_restoredWindowState == WindowState.Maximized)
+            WindowState = WindowState.Maximized;
+        ContentRendered -= OnContentRendered;
     }
 
     private void OnClosing(object? sender, CancelEventArgs e)

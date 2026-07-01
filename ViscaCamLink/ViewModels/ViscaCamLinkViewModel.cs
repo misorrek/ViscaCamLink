@@ -36,6 +36,10 @@ public class ViscaCamLinkViewModel : ViewModelBase
         _updateService.UpdateAvailable += OnUpdateAvailable;
         TranslationSource.Instance.LanguageChanged += OnLanguageChanged;
 
+        Movement.MovementStarted += Presets.NotifyMovementStarted;
+        Movement.HomeExecuted += Presets.ClearPresetIndicator;
+        Zoom.ZoomStarted += Presets.NotifyMovementStarted;
+
         SidebarCommand = new Command(ExecuteSidebar);
         UpdateCommand = new Command(OpenUpdateDialog);
         OptionsCommand = new Command(OpenOptions);
@@ -124,6 +128,8 @@ public class ViscaCamLinkViewModel : ViewModelBase
 
     private void OpenOptions()
     {
+        Connection.CancelEditMode();
+        Presets.CancelEditMode();
         _dialogService.ShowOptionsDialog();
         Presets.RefreshLayout();
     }

@@ -47,7 +47,8 @@
                            Text="{Binding [Presets_ContainerTitle], Source={x:Static util:TranslationSource.Instance}}"
                            Style="{StaticResource HeaderTextBlock}" />
 
-                <Button DockPanel.Dock="Right"
+                <Button x:Name="MemorySetButton"
+                        DockPanel.Dock="Right"
                         Width="24"
                         VerticalAlignment="Stretch"
                         Command="{Binding MemorySetCommand}"
@@ -82,12 +83,28 @@
                 </Button>
             </DockPanel>
 
-            <Label HorizontalContentAlignment="Left"
-                   Content="{Binding MemoryInfo}"
-                   Style="{StaticResource BaseLabel}"
-                   Visibility="{Binding RelativeSource={RelativeSource Self},
-                                        Path=Content,
-                                        Converter={StaticResource StringEmptyToCollapsedConverter}}"/>
+            <Popup PlacementTarget="{Binding ElementName=MemorySetButton}"
+                   Placement="Top"
+                   HorizontalOffset="-4"
+                   IsOpen="{Binding IsMemoryInfoVisible, Mode=OneWay}"
+                   StaysOpen="True"
+                   AllowsTransparency="True"
+                   PopupAnimation="Fade">
+                <Border Background="{StaticResource PrimaryBackgroundBrush}"
+                        BorderBrush="{StaticResource DefaultBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="8,4">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="2" BlurRadius="6" Opacity="0.2" />
+                    </Border.Effect>
+                    <TextBlock Text="{Binding MemoryInfo}"
+                               Foreground="{StaticResource DefaultFontBrush}"
+                               FontSize="{StaticResource DefaultFontSize}"
+                               FontFamily="{StaticResource DefaultFontFamily}"
+                               FontWeight="{StaticResource DefaultFontWeight}" />
+                </Border>
+            </Popup>
 
             <!-- Preset 0 full-width at top (Standard layout) -->
             <Grid Height="40"
@@ -110,6 +127,30 @@
                         </behaviors:EventTrigger>
                     </behaviors:Interaction.Triggers>
                 </Button>
+                <!-- Last-recalled indicator dot for Preset 0 (standard top position) -->
+                <Ellipse Width="8" Height="8"
+                         HorizontalAlignment="Right" VerticalAlignment="Top"
+                         Margin="0,6,4,0"
+                         IsHitTestVisible="False"
+                         Panel.ZIndex="1">
+                    <Ellipse.Visibility>
+                        <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
+                            <Binding Path="Presets[0].SlotIndex" />
+                            <Binding Path="LastRecalledPresetSlot" />
+                        </MultiBinding>
+                    </Ellipse.Visibility>
+                    <Ellipse.Style>
+                        <Style TargetType="Ellipse">
+                            <Setter Property="Fill" Value="LimeGreen" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PresetIndicatorState}"
+                                             Value="{x:Static viewmodels:PresetIndicatorState.Moved}">
+                                    <Setter Property="Fill" Value="Gold" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Style>
+                </Ellipse>
                 <Border Background="{StaticResource PrimaryBackgroundBrush}"
                         BorderBrush="{StaticResource PrimaryHighlightBrush}"
                         BorderThickness="1" CornerRadius="4" Margin="0,4,0,0">
@@ -122,16 +163,8 @@
                     <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
                              Margin="4,0" BorderThickness="0" Background="Transparent"
-                             Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20">
-                        <behaviors:Interaction.Triggers>
-                            <behaviors:KeyTrigger Key="Return">
-                                <behaviors:InvokeCommandAction Command="{Binding MemoryRenameConfirmCommand}" />
-                            </behaviors:KeyTrigger>
-                            <behaviors:KeyTrigger Key="Escape">
-                                <behaviors:InvokeCommandAction Command="{Binding MemoryRenameCancelCommand}" />
-                            </behaviors:KeyTrigger>
-                        </behaviors:Interaction.Triggers>
-                    </TextBox>
+                             Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20"
+                             IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                 </Border>
             </Grid>
 
@@ -171,6 +204,32 @@
                                     </behaviors:EventTrigger>
                                 </behaviors:Interaction.Triggers>
                             </Button>
+                            <!-- Last-recalled indicator dot for each grid preset button -->
+                            <Ellipse Width="8" Height="8"
+                                     HorizontalAlignment="Right" VerticalAlignment="Top"
+                                     Margin="0,6,4,0"
+                                     IsHitTestVisible="False"
+                                     Panel.ZIndex="1">
+                                <Ellipse.Visibility>
+                                    <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
+                                        <Binding Path="SlotIndex" />
+                                        <Binding Path="DataContext.LastRecalledPresetSlot"
+                                                 RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+                                    </MultiBinding>
+                                </Ellipse.Visibility>
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="LimeGreen" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding DataContext.PresetIndicatorState,
+                                                                           RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                         Value="{x:Static viewmodels:PresetIndicatorState.Moved}">
+                                                <Setter Property="Fill" Value="Gold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
                             <Border Background="{StaticResource PrimaryBackgroundBrush}"
                                     BorderBrush="{StaticResource PrimaryHighlightBrush}"
                                     BorderThickness="1" CornerRadius="4">
@@ -186,20 +245,8 @@
                                                         UpdateSourceTrigger=PropertyChanged}"
                                          VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
                                          Margin="4,0" BorderThickness="0" Background="Transparent"
-                                         Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20">
-                                    <behaviors:Interaction.Triggers>
-                                        <behaviors:KeyTrigger Key="Return">
-                                            <behaviors:InvokeCommandAction 
-                                                Command="{Binding DataContext.MemoryRenameConfirmCommand, 
-                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
-                                        </behaviors:KeyTrigger>
-                                        <behaviors:KeyTrigger Key="Escape">
-                                            <behaviors:InvokeCommandAction 
-                                                Command="{Binding DataContext.MemoryRenameCancelCommand, 
-                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
-                                        </behaviors:KeyTrigger>
-                                    </behaviors:Interaction.Triggers>
-                                </TextBox>
+                                         Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20"
+                                         IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                             </Border>
                         </Grid>
                     </DataTemplate>
@@ -227,6 +274,30 @@
                         </behaviors:EventTrigger>
                     </behaviors:Interaction.Triggers>
                 </Button>
+                <!-- Last-recalled indicator dot for Preset 0 (numpad bottom position) -->
+                <Ellipse Width="8" Height="8"
+                         HorizontalAlignment="Right" VerticalAlignment="Top"
+                         Margin="0,6,4,0"
+                         IsHitTestVisible="False"
+                         Panel.ZIndex="1">
+                    <Ellipse.Visibility>
+                        <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
+                            <Binding Path="Presets[0].SlotIndex" />
+                            <Binding Path="LastRecalledPresetSlot" />
+                        </MultiBinding>
+                    </Ellipse.Visibility>
+                    <Ellipse.Style>
+                        <Style TargetType="Ellipse">
+                            <Setter Property="Fill" Value="LimeGreen" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PresetIndicatorState}"
+                                             Value="{x:Static viewmodels:PresetIndicatorState.Moved}">
+                                    <Setter Property="Fill" Value="Gold" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Style>
+                </Ellipse>
                 <Border Background="{StaticResource PrimaryBackgroundBrush}"
                         BorderBrush="{StaticResource PrimaryHighlightBrush}"
                         BorderThickness="1" CornerRadius="4" Margin="0,4,0,0">
@@ -239,16 +310,8 @@
                     <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
                              Margin="4,0" BorderThickness="0" Background="Transparent"
-                             Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20">
-                        <behaviors:Interaction.Triggers>
-                            <behaviors:KeyTrigger Key="Return">
-                                <behaviors:InvokeCommandAction Command="{Binding MemoryRenameConfirmCommand}" />
-                            </behaviors:KeyTrigger>
-                            <behaviors:KeyTrigger Key="Escape">
-                                <behaviors:InvokeCommandAction Command="{Binding MemoryRenameCancelCommand}" />
-                            </behaviors:KeyTrigger>
-                        </behaviors:Interaction.Triggers>
-                    </TextBox>
+                             Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20"
+                             IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                 </Border>
             </Grid>
 
@@ -341,20 +404,8 @@
                                              VerticalContentAlignment="Center"
                                              Margin="4,0" BorderThickness="0" Background="Transparent"
                                              Foreground="{StaticResource PrimaryForegroundBrush}"
-                                             FontSize="11" MaxLength="20" MinWidth="40">
-                                        <behaviors:Interaction.Triggers>
-                                            <behaviors:KeyTrigger Key="Return">
-                                                <behaviors:InvokeCommandAction 
-                                                    Command="{Binding DataContext.GroupRenameConfirmCommand, 
-                                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
-                                            </behaviors:KeyTrigger>
-                                            <behaviors:KeyTrigger Key="Escape">
-                                                <behaviors:InvokeCommandAction 
-                                                    Command="{Binding DataContext.GroupRenameCancelCommand, 
-                                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
-                                            </behaviors:KeyTrigger>
-                                        </behaviors:Interaction.Triggers>
-                                    </TextBox>
+                                             FontSize="11" MaxLength="20" MinWidth="40"
+                                             IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                                 </Border>
                             </Grid>
                         </DataTemplate>

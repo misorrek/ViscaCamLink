@@ -52,6 +52,12 @@ public class MovementViewModel : ViewModelBase
 
     public ICommand MousePanEndCommand { get; }
 
+    /// <summary>Raised when any pan/tilt movement begins (button press, mouse drag, or hotkey).</summary>
+    public event Action? MovementStarted;
+
+    /// <summary>Raised when the home button is pressed.</summary>
+    public event Action? HomeExecuted;
+
     public int MaximalPanTiltSpeed => _movementService.MaxPanTiltSpeed;
 
     public int PanTiltSpeed
@@ -78,6 +84,7 @@ public class MovementViewModel : ViewModelBase
 
     private async void ExecuteHome()
     {
+        HomeExecuted?.Invoke();
         await TryCameraOperation(_movementService.GoHomeAsync());
     }
 
@@ -88,6 +95,7 @@ public class MovementViewModel : ViewModelBase
             eventArgs.Source is Button button &&
             button.CommandParameter is PanTiltDirection direction)
         {
+            MovementStarted?.Invoke();
             await TryCameraOperation(_movementService.PanTiltAsync(
                 direction,
                 (byte)_settings.PanTiltSpeed,
@@ -111,6 +119,7 @@ public class MovementViewModel : ViewModelBase
             return;
 
         _lastMousePanTiltTime = now;
+        MovementStarted?.Invoke();
 
         var position = eventArgs.GetPosition(element);
         var panSpeed = NormalizeSpeed(position.X, element.ActualWidth, _movementService.MaxPanTiltSpeed);
@@ -205,16 +214,16 @@ public class MovementViewModel : ViewModelBase
     private IEnumerable<HotKeyActionRegistration> CreateHotKeyActions()
     {
         yield return new HotKeyActionRegistration(HotKeyAction.MoveUp,
-            () => _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.TiltUp, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))),
+            () => { MovementStarted?.Invoke(); _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.TiltUp, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))); },
             () => _ = TryCameraOperation(_movementService.StopPanTiltAsync()));
         yield return new HotKeyActionRegistration(HotKeyAction.MoveDown,
-            () => _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.TiltDown, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))),
+            () => { MovementStarted?.Invoke(); _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.TiltDown, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))); },
             () => _ = TryCameraOperation(_movementService.StopPanTiltAsync()));
         yield return new HotKeyActionRegistration(HotKeyAction.MoveLeft,
-            () => _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.PanLeft, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))),
+            () => { MovementStarted?.Invoke(); _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.PanLeft, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))); },
             () => _ = TryCameraOperation(_movementService.StopPanTiltAsync()));
         yield return new HotKeyActionRegistration(HotKeyAction.MoveRight,
-            () => _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.PanRight, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))),
+            () => { MovementStarted?.Invoke(); _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.PanRight, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))); },
             () => _ = TryCameraOperation(_movementService.StopPanTiltAsync()));
     }
 }

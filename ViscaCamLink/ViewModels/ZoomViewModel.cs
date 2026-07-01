@@ -35,6 +35,9 @@ public class ZoomViewModel : ViewModelBase
 
     public ICommand ZoomSpeedDecreaseCommand { get; }
 
+    /// <summary>Raised when a zoom operation begins (button press or hotkey).</summary>
+    public event Action? ZoomStarted;
+
     public int MaximalZoomSpeed => _movementService.MaxZoomSpeed;
 
     public int ZoomSpeed
@@ -57,6 +60,7 @@ public class ZoomViewModel : ViewModelBase
             switch (eventArgs.LeftButton)
             {
                 case MouseButtonState.Pressed:
+                    ZoomStarted?.Invoke();
                     await TryCameraOperation(_movementService.ZoomAsync(direction, (byte)_settings.ZoomSpeed));
                     break;
                 case MouseButtonState.Released:
@@ -87,10 +91,10 @@ public class ZoomViewModel : ViewModelBase
     private IEnumerable<HotKeyActionRegistration> CreateHotKeyActions()
     {
         yield return new HotKeyActionRegistration(HotKeyAction.ZoomIn,
-            () => _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.In, (byte)_settings.ZoomSpeed)),
+            () => { ZoomStarted?.Invoke(); _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.In, (byte)_settings.ZoomSpeed)); },
             () => _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.None, 0)));
         yield return new HotKeyActionRegistration(HotKeyAction.ZoomOut,
-            () => _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.Out, (byte)_settings.ZoomSpeed)),
+            () => { ZoomStarted?.Invoke(); _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.Out, (byte)_settings.ZoomSpeed)); },
             () => _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.None, 0)));
     }
 }
