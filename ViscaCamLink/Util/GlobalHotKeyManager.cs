@@ -1,27 +1,56 @@
 ﻿namespace ViscaCamLink.Util;
 
 using System.Collections.Generic;
-using System.Windows.Input;
-using System.Windows;
 using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 
-public sealed class GlobalHotKeyManager : IGlobalHotKeyManager
+public sealed partial class GlobalHotKeyManager : IGlobalHotKeyManager
 {
-    [DllImport("User32.dll")]
-    private static extern bool RegisterHotKey(
-        [In] IntPtr hWnd,
-        [In] int id,
-        [In] uint fsModifiers,
-        [In] uint vk);
+    [LibraryImport("User32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
 
-    [DllImport("User32.dll")]
-    private static extern bool UnregisterHotKey(
-        [In] IntPtr hWnd,
-        [In] int id);
+    [LibraryImport("User32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool UnregisterHotKey(IntPtr hWnd, int id);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    private static partial IntPtr SetWindowsHookEx(int idHook, IntPtr lpfn, IntPtr hMod, uint dwThreadId);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool UnhookWindowsHookEx(IntPtr hhk);
+
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+    [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    private static partial IntPtr GetModuleHandle(string? lpModuleName);
+
+    private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct KBDLLHOOKSTRUCT
+    {
+        public uint vkCode;
+        public uint scanCode;
+        public uint flags;
+        public uint time;
+        public IntPtr dwExtraInfo;
+    }
+
+    private const int WH_KEYBOARD_LL = 13;
+    private const int WM_KEYUP = 0x0101;
+    private const int WM_SYSKEYUP = 0x0105;
+
+    private readonly Window _mainWindow;
 
     public GlobalHotKeyManager(Window mainWindow)
     {
+        _mainWindow = mainWindow;
+
         var windowInteropHelper = new WindowInteropHelper(mainWindow);
         windowInteropHelper.EnsureHandle();
 
@@ -32,40 +61,188 @@ public sealed class GlobalHotKeyManager : IGlobalHotKeyManager
     }
 
     private IntPtr MainWindowHandle { get; }
-
     private HwndSource HwndSource { get; }
-
     private int CurrentHotKeyId { get; set; } = 0;
 
-    private Dictionary<int, Action> RegisteredHotKeys { get; } = [];
+    // Global press registrations: hotkey ID -> action
+    private Dictionary<int, Action> GlobalRegistrations { get; } = [];
+
+    // Global hold registrations: hotkey ID -> (virtual key code, release action)
+    private Dictionary<int, (uint Vk, Action ReleaseAction)> GlobalHoldRegistrations { get; } = [];
+
+    // Currently active (pressed) global hold keys, tracked by virtual key code
+    private HashSet<uint> ActiveGlobalHoldVks { get; } = [];
+
+    // LL hook state
+    private LowLevelKeyboardProc? _llKeyboardProc;
+    private IntPtr _llHookHandle = IntPtr.Zero;
+
+    // Local press registrations: (modifier, key) -> action
+    private Dictionary<(ModifierKeys, Key), Action> LocalRegistrations { get; } = [];
+
+    // Local hold registrations: key -> release action (matched by key only on release)
+    private Dictionary<Key, Action> LocalHoldReleaseCallbacks { get; } = [];
+
+    // Currently active local hold keys
+    private HashSet<Key> ActiveLocalHoldKeys { get; } = [];
+
+    private bool _localKeyDownHandlerAttached;
+    private bool _localKeyUpHandlerAttached;
+
+    public bool UseGlobalHotKeys { get; set; } = true;
 
     public bool RegisterHotKey(ModifierKeys modifier, Key key, Action action)
     {
-        if (action is null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
+        return UseGlobalHotKeys
+            ? RegisterGlobalHotKey(modifier, key, action)
+            : RegisterLocalHotKey(modifier, key, action);
+    }
 
-        var modifierCode = Convert.ToUInt32(modifier);
-        var virtualKeyCode = Convert.ToUInt32(KeyInterop.VirtualKeyFromKey(key));
-
-        CurrentHotKeyId++;
-
-        bool registered = RegisterHotKey(MainWindowHandle, CurrentHotKeyId, modifierCode, virtualKeyCode);
-
-        if (registered)
-        {
-            RegisteredHotKeys.Add(CurrentHotKeyId, action);
-        }
-        return registered;
+    public bool RegisterHoldHotKey(ModifierKeys modifier, Key key, Action pressAction, Action releaseAction)
+    {
+        ArgumentNullException.ThrowIfNull(pressAction);
+        ArgumentNullException.ThrowIfNull(releaseAction);
+        return UseGlobalHotKeys
+            ? RegisterGlobalHoldHotKey(modifier, key, pressAction, releaseAction)
+            : RegisterLocalHoldHotKey(modifier, key, pressAction, releaseAction);
     }
 
     public void UnregisterAll()
     {
-        foreach (var id in RegisteredHotKeys.Keys.ToList())
-        {
+        foreach (var id in GlobalRegistrations.Keys.ToList())
             UnregisterHotKey(MainWindowHandle, id);
-            RegisteredHotKeys.Remove(id);
+        GlobalRegistrations.Clear();
+        GlobalHoldRegistrations.Clear();
+        ActiveGlobalHoldVks.Clear();
+        RemoveLowLevelHook();
+
+        if (_localKeyDownHandlerAttached)
+        {
+            _mainWindow.PreviewKeyDown -= OnLocalPreviewKeyDown;
+            _localKeyDownHandlerAttached = false;
+        }
+        if (_localKeyUpHandlerAttached)
+        {
+            _mainWindow.PreviewKeyUp -= OnLocalPreviewKeyUp;
+            _localKeyUpHandlerAttached = false;
+        }
+        LocalRegistrations.Clear();
+        LocalHoldReleaseCallbacks.Clear();
+        ActiveLocalHoldKeys.Clear();
+    }
+
+    private bool RegisterGlobalHotKey(ModifierKeys modifier, Key key, Action action)
+    {
+        var modifierCode = Convert.ToUInt32(modifier);
+        var virtualKeyCode = Convert.ToUInt32(KeyInterop.VirtualKeyFromKey(key));
+        CurrentHotKeyId++;
+
+        bool registered = RegisterHotKey(MainWindowHandle, CurrentHotKeyId, modifierCode, virtualKeyCode);
+        if (registered)
+            GlobalRegistrations.Add(CurrentHotKeyId, action);
+        return registered;
+    }
+
+    private bool RegisterGlobalHoldHotKey(ModifierKeys modifier, Key key, Action pressAction, Action releaseAction)
+    {
+        var vk = (uint)KeyInterop.VirtualKeyFromKey(key);
+        bool result = RegisterGlobalHotKey(modifier, key, pressAction);
+        if (result)
+        {
+            GlobalHoldRegistrations[CurrentHotKeyId] = (vk, releaseAction);
+            EnsureLowLevelHook();
+        }
+        return result;
+    }
+
+    private bool RegisterLocalHotKey(ModifierKeys modifier, Key key, Action action)
+    {
+        if (!_localKeyDownHandlerAttached)
+        {
+            _mainWindow.PreviewKeyDown += OnLocalPreviewKeyDown;
+            _localKeyDownHandlerAttached = true;
+        }
+        LocalRegistrations[(modifier, key)] = action;
+        return true;
+    }
+
+    private bool RegisterLocalHoldHotKey(ModifierKeys modifier, Key key, Action pressAction, Action releaseAction)
+    {
+        bool result = RegisterLocalHotKey(modifier, key, pressAction);
+        if (result)
+        {
+            LocalHoldReleaseCallbacks[key] = releaseAction;
+            if (!_localKeyUpHandlerAttached)
+            {
+                _mainWindow.PreviewKeyUp += OnLocalPreviewKeyUp;
+                _localKeyUpHandlerAttached = true;
+            }
+        }
+        return result;
+    }
+
+    private void EnsureLowLevelHook()
+    {
+        if (_llHookHandle != IntPtr.Zero) return;
+
+        _llKeyboardProc = LowLevelKeyboardHook;
+        using var curProcess = System.Diagnostics.Process.GetCurrentProcess();
+        var mainModule = curProcess.MainModule;
+        _llHookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, Marshal.GetFunctionPointerForDelegate(_llKeyboardProc),
+            GetModuleHandle(mainModule?.ModuleName), 0);
+    }
+
+    private void RemoveLowLevelHook()
+    {
+        if (_llHookHandle == IntPtr.Zero) return;
+        UnhookWindowsHookEx(_llHookHandle);
+        _llHookHandle = IntPtr.Zero;
+        _llKeyboardProc = null;
+    }
+
+    private IntPtr LowLevelKeyboardHook(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (nCode >= 0 && (wParam.ToInt32() == WM_KEYUP || wParam.ToInt32() == WM_SYSKEYUP))
+        {
+            var hookStruct = Marshal.PtrToStructure<KBDLLHOOKSTRUCT>(lParam);
+            if (ActiveGlobalHoldVks.Remove(hookStruct.vkCode))
+            {
+                foreach (var hold in GlobalHoldRegistrations.Values)
+                {
+                    if (hold.Vk == hookStruct.vkCode)
+                    {
+                        hold.ReleaseAction.Invoke();
+                        break;
+                    }
+                }
+            }
+        }
+        return CallNextHookEx(_llHookHandle, nCode, wParam, lParam);
+    }
+
+    private void OnLocalPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.IsRepeat) return;
+
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        var modifier = Keyboard.Modifiers;
+
+        if (LocalRegistrations.TryGetValue((modifier, key), out var action))
+        {
+            if (LocalHoldReleaseCallbacks.ContainsKey(key))
+                ActiveLocalHoldKeys.Add(key);
+            action.Invoke();
+            e.Handled = true;
+        }
+    }
+
+    private void OnLocalPreviewKeyUp(object sender, KeyEventArgs e)
+    {
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        if (ActiveLocalHoldKeys.Remove(key) && LocalHoldReleaseCallbacks.TryGetValue(key, out var releaseAction))
+        {
+            releaseAction.Invoke();
         }
     }
 
@@ -73,15 +250,15 @@ public sealed class GlobalHotKeyManager : IGlobalHotKeyManager
     {
         const int WM_HOTKEY = 0x0312;
 
-        switch (msg)
+        if (msg == WM_HOTKEY)
         {
-            case WM_HOTKEY:
-                var hotKeyId = wParam.ToInt32();
-                if (RegisteredHotKeys.TryGetValue(hotKeyId, out var action))
-                {
-                    action.Invoke();
-                }
-                break;
+            var hotKeyId = wParam.ToInt32();
+            if (GlobalRegistrations.TryGetValue(hotKeyId, out var action))
+            {
+                if (GlobalHoldRegistrations.TryGetValue(hotKeyId, out var holdInfo))
+                    ActiveGlobalHoldVks.Add(holdInfo.Vk);
+                action.Invoke();
+            }
         }
         return IntPtr.Zero;
     }
@@ -90,7 +267,6 @@ public sealed class GlobalHotKeyManager : IGlobalHotKeyManager
     {
         HwndSource.RemoveHook(HwndHook);
         UnregisterAll();
-
         GC.SuppressFinalize(this);
     }
 }

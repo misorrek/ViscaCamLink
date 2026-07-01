@@ -40,6 +40,11 @@
                                  Value="True">
                         <Setter Property="IsEnabled" Value="False" />
                     </DataTrigger>
+                    <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
                     <DataTrigger Binding="{Binding IsMousePanning}" Value="True">
                         <Setter Property="IsEnabled" Value="False" />
                     </DataTrigger>
@@ -56,6 +61,11 @@
                                  Value="True">
                         <Setter Property="IsEnabled" Value="False" />
                     </DataTrigger>
+                    <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
                     <DataTrigger Binding="{Binding IsMousePanning}" Value="True">
                         <Setter Property="Background" Value="{StaticResource PrimaryHighlightBrush}" />
                         <Setter Property="BorderBrush" Value="{StaticResource PrimaryForegroundBrush}" />
@@ -68,6 +78,11 @@
                    BasedOn="{StaticResource BorderlessButton}">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection, 
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
                                                    RelativeSource={RelativeSource AncestorType=Window}}"
                                  Value="True">
                         <Setter Property="IsEnabled" Value="False" />

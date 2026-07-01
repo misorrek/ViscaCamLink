@@ -65,9 +65,27 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         set => settings.NumpadLayout = value;
     }
 
+    public bool GlobalHotKeys
+    {
+        get => settings.GlobalHotKeys;
+        set => settings.GlobalHotKeys = value;
+    }
+
+    public bool UsePresetGroups
+    {
+        get => settings.UsePresetGroups;
+        set => settings.UsePresetGroups = value;
+    }
+
+    public WindowPlacementData? WindowPlacement
+    {
+        get => settings.WindowPlacement;
+        set => settings.WindowPlacement = value;
+    }
+
     public void Save() => settingsRepository.Save(settings);
 
-    public void ApplyOptions(Language language, bool numpadLayout)
+    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups)
     {
         if (!Language.Equals(language))
         {
@@ -80,6 +98,20 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         if (NumpadLayout != numpadLayout)
         {
             NumpadLayout = numpadLayout;
+
+            Save();
+        }
+
+        if (GlobalHotKeys != globalHotKeys)
+        {
+            GlobalHotKeys = globalHotKeys;
+
+            Save();
+        }
+
+        if (UsePresetGroups != usePresetGroups)
+        {
+            UsePresetGroups = usePresetGroups;
 
             Save();
         }

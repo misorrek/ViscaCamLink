@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using ViscaCamLink.Repositories;
+using ViscaCamLink.Util;
 
 public sealed class HotKeyBindingItemViewModel : INotifyPropertyChanged
 {
@@ -17,6 +18,8 @@ public sealed class HotKeyBindingItemViewModel : INotifyPropertyChanged
         Action = binding.Action;
         _modifier = binding.Modifier;
         _key = binding.Key;
+
+        TranslationSource.Instance.LanguageChanged += OnLanguageChanged;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -74,9 +77,9 @@ public sealed class HotKeyBindingItemViewModel : INotifyPropertyChanged
         }
     }
 
-    public string GestureText => Modifier == ModifierKeys.None
-        ? Key.ToString()
-        : $"{Modifier}+{Key}";
+    public string GestureText => Key == Key.None
+        ? TranslationSource.Instance["HotKey_NotSet"]
+        : (Modifier == ModifierKeys.None ? Key.ToString() : $"{Modifier}+{Key}");
 
     public string ButtonText => IsCapturing ? "Press a key..." : GestureText;
 
@@ -90,5 +93,15 @@ public sealed class HotKeyBindingItemViewModel : INotifyPropertyChanged
     private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        NotifyPropertyChanged(nameof(ActionDisplayName));
+        if (_key == Key.None)
+        {
+            NotifyPropertyChanged(nameof(GestureText));
+            NotifyPropertyChanged(nameof(ButtonText));
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Services;
 using ViscaCamLink.Util;
 using ViscaCamLink.Visca.Types;
@@ -20,7 +21,8 @@ public class MovementViewModel : ViewModelBase
 
     public MovementViewModel(
         ICameraMovementService movementService,
-        ISettingsService settings)
+        ISettingsService settings,
+        IHotKeyService hotKeyService)
     {
         _movementService = movementService;
         _settings = settings;
@@ -32,6 +34,8 @@ public class MovementViewModel : ViewModelBase
         MoveSpeedIncreaseCommand = new Command(ExecuteMoveSpeedIncrease);
         MouseMovePanTiltCommand = new Command(ExecuteMouseMovePanTilt);
         MousePanEndCommand = new Command(ExecuteMousePanEnd);
+
+        hotKeyService.RegisterActions(CreateHotKeyActions());
     }
 
     public ICommand HomeCommand { get; }
@@ -196,5 +200,21 @@ public class MovementViewModel : ViewModelBase
         if (direction.HasFlag(PanTiltDirection.TiltUp)) return true;
         if (direction.HasFlag(PanTiltDirection.TiltDown)) return false;
         return null;
+    }
+
+    private IEnumerable<HotKeyActionRegistration> CreateHotKeyActions()
+    {
+        yield return new HotKeyActionRegistration(HotKeyAction.MoveUp,
+            () => _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.TiltUp, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))),
+            () => _ = TryCameraOperation(_movementService.StopPanTiltAsync()));
+        yield return new HotKeyActionRegistration(HotKeyAction.MoveDown,
+            () => _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.TiltDown, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))),
+            () => _ = TryCameraOperation(_movementService.StopPanTiltAsync()));
+        yield return new HotKeyActionRegistration(HotKeyAction.MoveLeft,
+            () => _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.PanLeft, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))),
+            () => _ = TryCameraOperation(_movementService.StopPanTiltAsync()));
+        yield return new HotKeyActionRegistration(HotKeyAction.MoveRight,
+            () => _ = TryCameraOperation(_movementService.PanTiltAsync(PanTiltDirection.PanRight, (byte)_settings.PanTiltSpeed, _movementService.GetProportionalTiltSpeed(_settings.PanTiltSpeed))),
+            () => _ = TryCameraOperation(_movementService.StopPanTiltAsync()));
     }
 }

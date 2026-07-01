@@ -10,8 +10,8 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:OptionsViewModel}"
         Title="{Binding [Common_AppTitle], Source={x:Static util:TranslationSource.Instance}}"
-        Height="420"
-        MinHeight="320"
+        Height="460"
+        MinHeight="360"
         Width="560"
         MinWidth="350"
         WindowStartupLocation="CenterScreen">
@@ -55,6 +55,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Column="0"
@@ -92,6 +93,22 @@
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
                                       IsChecked="{Binding NumpadLayout}" />
+
+                            <TextBlock Grid.Column="0"
+                                       Grid.Row="2"
+                                       Margin="0,8,0,0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding [Options_UsePresetGroups], Source={x:Static util:TranslationSource.Instance}}"
+                                       Style="{StaticResource BaseTextBlock}" />
+
+                            <CheckBox Grid.Column="1"
+                                      Grid.Row="2"
+                                      Margin="0,8,0,0"
+                                      HorizontalAlignment="Right"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding UsePresetGroups}" />
                         </Grid>
                     </ScrollViewer>
                 </TabItem>
@@ -100,11 +117,29 @@
                     <Grid Margin="{StaticResource ExtendedMargin}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0" Margin="0,0,0,4">
+                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding [Options_GlobalHotKeys], Source={x:Static util:TranslationSource.Instance}}"
+                                       Style="{StaticResource BaseTextBlock}" />
+
+                            <CheckBox Grid.Column="1"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding GlobalHotKeys}" />
+                        </Grid>
+
+                        <Grid Grid.Row="1" Margin="0,0,0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="160" />
@@ -120,7 +155,7 @@
                                        FontWeight="SemiBold" />
                         </Grid>
 
-                        <ListBox Grid.Row="1"
+                        <ListBox Grid.Row="2"
                                  ItemsSource="{Binding HotKeyBindings}"
                                  BorderThickness="0">
                             <ListBox.ItemTemplate>
@@ -164,7 +199,7 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
 
-                        <TextBlock Grid.Row="2"
+                        <TextBlock Grid.Row="3"
                                    Margin="0,6,0,0"
                                    Foreground="Tomato"
                                    Text="{Binding HotKeyValidationMessage}"

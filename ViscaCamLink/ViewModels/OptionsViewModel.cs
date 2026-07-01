@@ -32,6 +32,8 @@ public class OptionsViewModel : INotifyPropertyChanged
 
         _selectedLanguage = _settings.Language;
         _numpadLayout = _settings.NumpadLayout;
+        _globalHotKeys = _settings.GlobalHotKeys;
+        _usePresetGroups = _settings.UsePresetGroups;
         RefreshHotKeyValidation();
     }
 
@@ -95,10 +97,34 @@ public class OptionsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool GlobalHotKeys
+    {
+        get => _globalHotKeys;
+
+        set
+        {
+            _globalHotKeys = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public bool UsePresetGroups
+    {
+        get => _usePresetGroups;
+
+        set
+        {
+            _usePresetGroups = value;
+            NotifyPropertyChanged();
+        }
+    }
+
     private Action CloseHandler { get; }
 
     private Language _selectedLanguage;
     private bool _numpadLayout;
+    private bool _globalHotKeys;
+    private bool _usePresetGroups;
     private bool _hasHotKeyConflicts;
     private string _hotKeyValidationMessage = string.Empty;
     private HotKeyBindingItemViewModel? _capturingHotKey;
@@ -116,7 +142,7 @@ public class OptionsViewModel : INotifyPropertyChanged
             return;
         }
 
-        _settings.ApplyOptions(_selectedLanguage, _numpadLayout);
+        _settings.ApplyOptions(_selectedLanguage, _numpadLayout, _globalHotKeys, _usePresetGroups);
         _hotKeyService.ApplyBindings(HotKeyBindings.Select(binding => binding.ToBinding()).ToList());
 
         CloseHandler.Invoke();
@@ -191,6 +217,7 @@ public class OptionsViewModel : INotifyPropertyChanged
         }
 
         var duplicateGestures = HotKeyBindings
+            .Where(binding => binding.Key != Key.None)
             .GroupBy(binding => new { binding.Modifier, binding.Key })
             .Where(group => group.Count() > 1)
             .SelectMany(group => group)

@@ -40,6 +40,11 @@
                                  Value="True">
                         <Setter Property="IsEnabled" Value="False" />
                     </DataTrigger>
+                    <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
                 </Style.Triggers>
             </Style>
         </ResourceDictionary>

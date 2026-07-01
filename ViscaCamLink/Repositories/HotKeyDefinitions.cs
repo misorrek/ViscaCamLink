@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Repositories;
 
 using System.Windows.Input;
+using ViscaCamLink.Util;
 
 public static class HotKeyDefinitions
 {
@@ -18,6 +19,16 @@ public static class HotKeyDefinitions
         HotKeyAction.Preset9,
     ];
 
+    public static IReadOnlyList<HotKeyAction> MovementActions { get; } =
+    [
+        HotKeyAction.MoveUp,
+        HotKeyAction.MoveDown,
+        HotKeyAction.MoveLeft,
+        HotKeyAction.MoveRight,
+        HotKeyAction.ZoomIn,
+        HotKeyAction.ZoomOut,
+    ];
+
     public static IReadOnlyList<HotKeyBinding> CreateDefaultBindings() =>
     [
         CreateDefault(HotKeyAction.Preset0, Key.NumPad0),
@@ -30,6 +41,12 @@ public static class HotKeyDefinitions
         CreateDefault(HotKeyAction.Preset7, Key.NumPad7),
         CreateDefault(HotKeyAction.Preset8, Key.NumPad8),
         CreateDefault(HotKeyAction.Preset9, Key.NumPad9),
+        CreateDefault(HotKeyAction.MoveUp, Key.None),
+        CreateDefault(HotKeyAction.MoveDown, Key.None),
+        CreateDefault(HotKeyAction.MoveLeft, Key.None),
+        CreateDefault(HotKeyAction.MoveRight, Key.None),
+        CreateDefault(HotKeyAction.ZoomIn, Key.None),
+        CreateDefault(HotKeyAction.ZoomOut, Key.None),
     ];
 
     public static bool TryGetPresetPosition(HotKeyAction action, out byte presetPosition)
@@ -48,9 +65,21 @@ public static class HotKeyDefinitions
 
     public static string GetDisplayName(HotKeyAction action)
     {
-        return TryGetPresetPosition(action, out var presetPosition)
-            ? $"Preset {presetPosition}"
-            : action.ToString();
+        if (TryGetPresetPosition(action, out var presetPosition))
+        {
+            return string.Format(TranslationSource.Instance["HotKeyAction_Preset"], presetPosition);
+        }
+
+        return action switch
+        {
+            HotKeyAction.MoveUp => TranslationSource.Instance["HotKeyAction_MoveUp"],
+            HotKeyAction.MoveDown => TranslationSource.Instance["HotKeyAction_MoveDown"],
+            HotKeyAction.MoveLeft => TranslationSource.Instance["HotKeyAction_MoveLeft"],
+            HotKeyAction.MoveRight => TranslationSource.Instance["HotKeyAction_MoveRight"],
+            HotKeyAction.ZoomIn => TranslationSource.Instance["HotKeyAction_ZoomIn"],
+            HotKeyAction.ZoomOut => TranslationSource.Instance["HotKeyAction_ZoomOut"],
+            _ => action.ToString(),
+        };
     }
 
     private static HotKeyBinding CreateDefault(HotKeyAction action, Key key) => new()

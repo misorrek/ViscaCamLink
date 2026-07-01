@@ -13,12 +13,15 @@ public sealed class HotKeyServiceTests
 {
     private readonly Mock<IGlobalHotKeyManager> _hotKeyManager = new();
     private readonly Mock<IHotKeyRepository> _repository = new();
+    private readonly Mock<ISettingsService> _settings = new();
     private readonly HotKeyService _hotKeyService;
 
     public HotKeyServiceTests()
     {
         _repository.Setup(r => r.Load()).Returns(HotKeyDefinitions.CreateDefaultBindings());
-        _hotKeyService = new HotKeyService(_hotKeyManager.Object, _repository.Object);
+        _settings.Setup(s => s.GlobalHotKeys).Returns(true);
+        _hotKeyManager.SetupProperty(m => m.UseGlobalHotKeys, true);
+        _hotKeyService = new HotKeyService(_hotKeyManager.Object, _repository.Object, _settings.Object);
     }
 
     [Fact]

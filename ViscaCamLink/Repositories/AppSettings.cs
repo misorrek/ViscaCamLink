@@ -25,4 +25,10 @@ public sealed class AppSettings
     public int ZoomSpeed { get; set; } = 1;
 
     public bool NumpadLayout { get; set; } = true;
+
+    public bool GlobalHotKeys { get; set; } = true;
+
+    public bool UsePresetGroups { get; set; } = true;
+
+    public WindowPlacementData? WindowPlacement { get; set; }
 }

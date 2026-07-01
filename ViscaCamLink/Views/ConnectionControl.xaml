@@ -73,6 +73,9 @@
                         Width="24"
                         VerticalAlignment="Stretch"
                         Command="{Binding ConnectionEditCommand}"
+                        IsEnabled="{Binding DataContext.Presets.IsSettingMemory,
+                                            RelativeSource={RelativeSource AncestorType=Window},
+                                            Converter={StaticResource InverseBooleanConverter}}"
                         Visibility="{Binding IsEditingConnection,
                                              Converter={StaticResource TrueToCollapsedConverter}}"
                         ToolTip="{Binding [Connection_Edit], Source={x:Static util:TranslationSource.Instance}}"
@@ -146,6 +149,11 @@
                                 <DataTrigger Binding="{Binding IsEditingConnection}" Value="True">
                                     <Setter Property="IsEnabled" Value="False" />
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
+                                                               RelativeSource={RelativeSource AncestorType=Window}}"
+                                             Value="True">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Button.Style>
@@ -194,6 +202,9 @@
                                      Converter="{StaticResource InverseBooleanConverter}" />
                             <Binding Path="ConnectionStatus"
                                      Converter="{StaticResource ConnectionStatusOkToBoolConverter}" />
+                            <Binding Path="DataContext.Presets.IsSettingMemory"
+                                     RelativeSource="{RelativeSource AncestorType=Window}"
+                                     Converter="{StaticResource InverseBooleanConverter}" />
                         </MultiBinding>
                     </Button.IsEnabled>
                     <Path Data="{StaticResource Power}"

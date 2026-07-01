@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Services;
 using ViscaCamLink.Util;
 using ViscaCamLink.Visca.Types;
@@ -15,7 +16,8 @@ public class ZoomViewModel : ViewModelBase
 
     public ZoomViewModel(
         ICameraMovementService movementService,
-        ISettingsService settings)
+        ISettingsService settings,
+        IHotKeyService hotKeyService)
     {
         _movementService = movementService;
         _settings = settings;
@@ -23,6 +25,8 @@ public class ZoomViewModel : ViewModelBase
         ZoomCommand = new Command(ExecuteZoom);
         ZoomSpeedDecreaseCommand = new Command(ExecuteZoomSpeedDecrease);
         ZoomSpeedIncreaseCommand = new Command(ExecuteZoomSpeedIncrease);
+
+        hotKeyService.RegisterActions(CreateHotKeyActions());
     }
 
     public ICommand ZoomCommand { get; }
@@ -78,5 +82,15 @@ public class ZoomViewModel : ViewModelBase
             _settings.ZoomSpeed++;
             NotifyPropertyChanged(nameof(ZoomSpeed));
         }
+    }
+
+    private IEnumerable<HotKeyActionRegistration> CreateHotKeyActions()
+    {
+        yield return new HotKeyActionRegistration(HotKeyAction.ZoomIn,
+            () => _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.In, (byte)_settings.ZoomSpeed)),
+            () => _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.None, 0)));
+        yield return new HotKeyActionRegistration(HotKeyAction.ZoomOut,
+            () => _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.Out, (byte)_settings.ZoomSpeed)),
+            () => _ = TryCameraOperation(_movementService.ZoomAsync(ZoomDirection.None, 0)));
     }
 }

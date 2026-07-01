@@ -9,14 +9,17 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
 {
     private readonly IGlobalHotKeyManager _hotKeyManager;
     private readonly IHotKeyRepository _repository;
+    private readonly ISettingsService _settings;
     private readonly Dictionary<HotKeyAction, Action> _actions = [];
+    private readonly Dictionary<HotKeyAction, Action> _releaseActions = [];
 
     private List<HotKeyBinding> _bindings;
 
-    public HotKeyService(IGlobalHotKeyManager hotKeyManager, IHotKeyRepository repository)
+    public HotKeyService(IGlobalHotKeyManager hotKeyManager, IHotKeyRepository repository, ISettingsService settings)
     {
         _hotKeyManager = hotKeyManager;
         _repository = repository;
+        _settings = settings;
         _bindings = [.. _repository.Load().Select(binding => binding.Copy())];
     }
 
@@ -28,11 +31,13 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
     {
         ArgumentNullException.ThrowIfNull(registrations);
 
-        _actions.Clear();
-
         foreach (var registration in registrations)
         {
             _actions[registration.Action] = registration.Callback;
+            if (registration.ReleaseCallback is not null)
+                _releaseActions[registration.Action] = registration.ReleaseCallback;
+            else
+                _releaseActions.Remove(registration.Action);
         }
 
         RegisterConfiguredBindings();
@@ -47,11 +52,6 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
 
         var bindingList = bindings.ToList();
 
-        if (bindingList.Any(binding => binding.Key == Key.None))
-        {
-            return HotKeyBindingValidationResult.Invalid("Each action needs a key assignment.");
-        }
-
         var duplicateAction = bindingList
             .GroupBy(binding => binding.Action)
             .FirstOrDefault(group => group.Count() > 1);
@@ -62,6 +62,7 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
         }
 
         var duplicateGesture = bindingList
+            .Where(binding => binding.Key != Key.None)
             .GroupBy(binding => new { binding.Modifier, binding.Key })
             .FirstOrDefault(group => group.Count() > 1);
 
@@ -92,6 +93,7 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
 
     private void RegisterConfiguredBindings()
     {
+        _hotKeyManager.UseGlobalHotKeys = _settings.GlobalHotKeys;
         _hotKeyManager.UnregisterAll();
 
         var validation = ValidateBindings(_bindings);
@@ -103,9 +105,17 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
 
         foreach (var binding in _bindings)
         {
+            if (binding.Key == Key.None)
+            {
+                continue;
+            }
+
             if (_actions.TryGetValue(binding.Action, out var action))
             {
-                _hotKeyManager.RegisterHotKey(binding.Modifier, binding.Key, action);
+                if (_releaseActions.TryGetValue(binding.Action, out var releaseAction))
+                    _hotKeyManager.RegisterHoldHotKey(binding.Modifier, binding.Key, action, releaseAction);
+                else
+                    _hotKeyManager.RegisterHotKey(binding.Modifier, binding.Key, action);
             }
         }
     }

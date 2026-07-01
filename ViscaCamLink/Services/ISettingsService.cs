@@ -1,5 +1,6 @@
 namespace ViscaCamLink.Services;
 
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Util;
 
 public interface ISettingsService
@@ -24,7 +25,13 @@ public interface ISettingsService
 
     bool NumpadLayout { get; set; }
 
+    bool GlobalHotKeys { get; set; }
+
+    bool UsePresetGroups { get; set; }
+
+    WindowPlacementData? WindowPlacement { get; set; }
+
     void Save();
 
-    void ApplyOptions(Language language, bool numpadLayout);
+    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups);
 }

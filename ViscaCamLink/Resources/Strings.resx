@@ -183,8 +183,38 @@
   <data name="Options_NumpadLayout" xml:space="preserve">
     <value>Numpad preset layout</value>
   </data>
+  <data name="Options_UsePresetGroups" xml:space="preserve">
+    <value>Use preset groups</value>
+  </data>
   <data name="Options_Hotkeys" xml:space="preserve">
     <value>Hotkeys</value>
+  </data>
+  <data name="Options_GlobalHotKeys" xml:space="preserve">
+    <value>Use global hotkeys (active even when the app is not focused)</value>
+  </data>
+  <data name="HotKey_NotSet" xml:space="preserve">
+    <value>Not set</value>
+  </data>
+  <data name="HotKeyAction_Preset" xml:space="preserve">
+    <value>Preset {0}</value>
+  </data>
+  <data name="HotKeyAction_MoveUp" xml:space="preserve">
+    <value>Move Up</value>
+  </data>
+  <data name="HotKeyAction_MoveDown" xml:space="preserve">
+    <value>Move Down</value>
+  </data>
+  <data name="HotKeyAction_MoveLeft" xml:space="preserve">
+    <value>Move Left</value>
+  </data>
+  <data name="HotKeyAction_MoveRight" xml:space="preserve">
+    <value>Move Right</value>
+  </data>
+  <data name="HotKeyAction_ZoomIn" xml:space="preserve">
+    <value>Zoom In</value>
+  </data>
+  <data name="HotKeyAction_ZoomOut" xml:space="preserve">
+    <value>Zoom Out</value>
   </data>
   <data name="Options_HotKeyAction" xml:space="preserve">
     <value>Action</value>

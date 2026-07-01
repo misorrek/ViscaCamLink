@@ -2,4 +2,4 @@ using ViscaCamLink.Repositories;
 
 namespace ViscaCamLink.Services;
 
-public sealed record HotKeyActionRegistration(HotKeyAction Action, Action Callback);
+public sealed record HotKeyActionRegistration(HotKeyAction Action, Action Callback, Action? ReleaseCallback = null);

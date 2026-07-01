@@ -18,7 +18,7 @@ public sealed class HotKeyRepositoryTests : IDisposable
 
         var bindings = repository.Load();
 
-        bindings.Count.ShouldBe(10);
+        bindings.Count.ShouldBe(HotKeyDefinitions.CreateDefaultBindings().Count);
         bindings[0].Action.ShouldBe(HotKeyAction.Preset0);
         bindings[0].Key.ShouldBe(Key.NumPad0);
     }
@@ -74,7 +74,7 @@ public sealed class HotKeyRepositoryTests : IDisposable
         var repository = new HotKeyRepository(_filePath);
         var bindings = repository.Load();
 
-        bindings.Count.ShouldBe(10);
+        bindings.Count.ShouldBe(HotKeyDefinitions.CreateDefaultBindings().Count);
         bindings[0].Action.ShouldBe(HotKeyAction.Preset0);
         bindings[0].Modifier.ShouldBe(ModifierKeys.None);
         bindings[0].Key.ShouldBe(Key.NumPad0);

@@ -1,18 +1,38 @@
 namespace ViscaCamLink.Views;
 
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
+using ViscaCamLink.Services;
+using ViscaCamLink.Util;
 using ViscaCamLink.ViewModels;
 using WpfAnimatedGif;
 
 public partial class ViscaCamLinkView : Window
 {
-    public ViscaCamLinkView()
+    private readonly ISettingsService _settingsService;
+
+    public ViscaCamLinkView(ISettingsService settingsService)
     {
+        _settingsService = settingsService;
         InitializeComponent();
+        SourceInitialized += OnSourceInitialized;
+        Closing += OnClosing;
+    }
+
+    private void OnSourceInitialized(object? sender, EventArgs e)
+    {
+        if (_settingsService.WindowPlacement is { } placement)
+            WindowPlacementHelper.Restore(this, placement);
+    }
+
+    private void OnClosing(object? sender, CancelEventArgs e)
+    {
+        _settingsService.WindowPlacement = WindowPlacementHelper.Save(this);
+        _settingsService.Save();
     }
 
     private void Window_LayoutUpdated(object sender, EventArgs e)

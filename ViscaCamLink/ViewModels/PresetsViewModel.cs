@@ -18,6 +18,7 @@ public class PresetsViewModel : ViewModelBase
     private int _renamingSlotIndex = -1;
     private string _renamingText = string.Empty;
     private bool _isNumpadLayout;
+    private bool _usePresetGroups;
     private string _renamingGroupText = string.Empty;
 
     public PresetsViewModel(
@@ -30,6 +31,7 @@ public class PresetsViewModel : ViewModelBase
         _hotKeyService = hotKeyService;
 
         _isNumpadLayout = _settings.NumpadLayout;
+        _usePresetGroups = _settings.UsePresetGroups;
 
         _presetService.PresetsChanged += OnPresetsChanged;
         _presetService.GroupsChanged += OnGroupsChanged;
@@ -141,6 +143,18 @@ public class PresetsViewModel : ViewModelBase
 
     public ObservableCollection<PresetGroupViewModel> PresetGroups { get; private set; }
 
+    public bool UsePresetGroups
+    {
+        get => _usePresetGroups;
+        set
+        {
+            if (_usePresetGroups == value) return;
+            _usePresetGroups = value;
+            _settings.UsePresetGroups = value;
+            NotifyPropertyChanged();
+        }
+    }
+
     public bool HasMultipleGroups => PresetGroups.Count > 1;
 
     public string RenamingGroupText
@@ -168,6 +182,11 @@ public class PresetsViewModel : ViewModelBase
         if (_isNumpadLayout != _settings.NumpadLayout)
         {
             IsNumpadLayout = _settings.NumpadLayout;
+        }
+
+        if (_usePresetGroups != _settings.UsePresetGroups)
+        {
+            UsePresetGroups = _settings.UsePresetGroups;
         }
     }
 

@@ -253,7 +253,9 @@
             </Grid>
 
             <!-- Preset Groups (tab row) -->
-            <DockPanel Margin="0,6,0,0">
+            <DockPanel Margin="0,6,0,0"
+                       Visibility="{Binding UsePresetGroups,
+                                            Converter={StaticResource FalseToCollapsedConverter}}">
                 <StackPanel DockPanel.Dock="Right"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
@@ -261,6 +263,10 @@
                             Command="{Binding GroupAddCommand}"
                             Style="{StaticResource BorderlessButton}"
                             ToolTip="Add Group">
+                        <Button.IsEnabled>
+                            <Binding Path="IsSettingMemory"
+                                     Converter="{StaticResource InverseBooleanConverter}" />
+                        </Button.IsEnabled>
                         <Path Data="{StaticResource Plus}"
                               Style="{StaticResource Icon16Path}"
                               Width="10" Height="10" />
@@ -271,6 +277,10 @@
                             ToolTip="Remove Group"
                             Visibility="{Binding HasMultipleGroups,
                                                  Converter={StaticResource FalseToCollapsedConverter}}">
+                        <Button.IsEnabled>
+                            <Binding Path="IsSettingMemory"
+                                     Converter="{StaticResource InverseBooleanConverter}" />
+                        </Button.IsEnabled>
                         <Path Data="{StaticResource Trash}"
                               Style="{StaticResource Icon16Path}"
                               Width="10" Height="10" />
@@ -292,6 +302,11 @@
                                         FontSize="11"
                                         Visibility="{Binding IsRenaming,
                                                              Converter={StaticResource TrueToCollapsedConverter}}">
+                                    <Button.IsEnabled>
+                                        <Binding Path="DataContext.IsSettingMemory"
+                                                 RelativeSource="{RelativeSource AncestorType=ItemsControl}"
+                                                 Converter="{StaticResource InverseBooleanConverter}" />
+                                    </Button.IsEnabled>
                                     <Button.Style>
                                         <Style TargetType="Button"
                                                BasedOn="{StaticResource BaseButton}">

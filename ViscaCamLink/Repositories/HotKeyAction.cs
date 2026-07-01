@@ -12,4 +12,10 @@ public enum HotKeyAction
     Preset7,
     Preset8,
     Preset9,
+    MoveUp,
+    MoveDown,
+    MoveLeft,
+    MoveRight,
+    ZoomIn,
+    ZoomOut,
 }
