@@ -10,10 +10,12 @@ using System.Xml.Linq;
 public sealed class AppSettingsRepository
 {
     private readonly string _settingsFilePath;
+    private readonly string _legacySearchRoot;
 
-    public AppSettingsRepository(string settingsFilePath)
+    public AppSettingsRepository(string settingsFilePath, string legacySearchRoot)
     {
         _settingsFilePath = settingsFilePath;
+        _legacySearchRoot = legacySearchRoot;
     }
 
     public AppSettings Load()
@@ -61,7 +63,7 @@ public sealed class AppSettingsRepository
 
     private AppSettings? TryLoadLegacySettings()
     {
-        var legacyRoot = Path.GetDirectoryName(_settingsFilePath)!;
+        var legacyRoot = _legacySearchRoot;
         if (!Directory.Exists(legacyRoot))
         {
             return null;

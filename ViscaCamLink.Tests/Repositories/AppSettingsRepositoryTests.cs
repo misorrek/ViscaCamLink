@@ -21,7 +21,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
     [Fact]
     public void Load_WhenSettingsFileDoesNotExist_ReturnsDefaultsAndCreatesFile()
     {
-        var repository = new AppSettingsRepository(_settingsFilePath);
+        var repository = new AppSettingsRepository(_settingsFilePath, _rootDirectory);
 
         var settings = repository.Load();
 
@@ -34,7 +34,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
     [Fact]
     public void SaveAndLoad_RoundTripsValues()
     {
-        var repository = new AppSettingsRepository(_settingsFilePath);
+        var repository = new AppSettingsRepository(_settingsFilePath, _rootDirectory);
         var settings = new AppSettings
         {
             LogLevel = Microsoft.Extensions.Logging.LogLevel.Debug,
@@ -88,7 +88,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
             </configuration>
             """);
 
-        var repository = new AppSettingsRepository(_settingsFilePath);
+        var repository = new AppSettingsRepository(_settingsFilePath, _rootDirectory);
 
         var settings = repository.Load();
 
