@@ -10,18 +10,20 @@ using ViscaCamLink.Util;
 public sealed class AppSettingsRepositoryTests : IDisposable
 {
     private readonly string _rootDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+    private readonly string _legacyRoot;
     private readonly string _settingsFilePath;
 
     public AppSettingsRepositoryTests()
     {
-        Directory.CreateDirectory(_rootDirectory);
+        _legacyRoot = Path.Combine(_rootDirectory, "legacy");
+        Directory.CreateDirectory(_legacyRoot);
         _settingsFilePath = Path.Combine(_rootDirectory, "settings.json");
     }
 
     [Fact]
     public void Load_WhenSettingsFileDoesNotExist_ReturnsDefaultsAndCreatesFile()
     {
-        var repository = new AppSettingsRepository(_settingsFilePath, _rootDirectory);
+        var repository = new AppSettingsRepository(_settingsFilePath, _legacyRoot);
 
         var settings = repository.Load();
 
@@ -34,7 +36,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
     [Fact]
     public void SaveAndLoad_RoundTripsValues()
     {
-        var repository = new AppSettingsRepository(_settingsFilePath, _rootDirectory);
+        var repository = new AppSettingsRepository(_settingsFilePath, _legacyRoot);
         var settings = new AppSettings
         {
             LogLevel = Microsoft.Extensions.Logging.LogLevel.Debug,
@@ -67,7 +69,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
     [Fact]
     public void Load_WhenLegacyUserConfigExists_MigratesValues()
     {
-        var legacyRoot = Path.Combine(_rootDirectory, "ViscaCamLink_Url_test", "1.0.0.0");
+        var legacyRoot = Path.Combine(_legacyRoot, "ViscaCamLink_Url_test", "1.0.0.0");
         Directory.CreateDirectory(legacyRoot);
         File.WriteAllText(Path.Combine(legacyRoot, "user.config"), """
             <?xml version="1.0" encoding="utf-8"?>
@@ -88,7 +90,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
             </configuration>
             """);
 
-        var repository = new AppSettingsRepository(_settingsFilePath, _rootDirectory);
+        var repository = new AppSettingsRepository(_settingsFilePath, _legacyRoot);
 
         var settings = repository.Load();
 
@@ -102,6 +104,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         settings.Language.ShouldBe(Language.German);
         settings.NumpadLayout.ShouldBeFalse();
         File.Exists(_settingsFilePath).ShouldBeTrue();
+        Directory.Exists(_legacyRoot).ShouldBeFalse();
     }
 
     public void Dispose()

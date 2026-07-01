@@ -282,6 +282,20 @@
   <data name="Updater_NewVersionAvailable" xml:space="preserve">
     <value>Neue Version verfügbar!</value>
   </data>
+  <data name="Migration_Body" xml:space="preserve">
+    <value>ViscaCamLink wurde als Benutzer-App neu installiert und aktualisiert sich künftig automatisch.
+
+Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie jetzt oder später über Windows-Einstellungen → Apps entfernen.</value>
+  </data>
+  <data name="Migration_SkipButton" xml:space="preserve">
+    <value>Überspringen</value>
+  </data>
+  <data name="Migration_Title" xml:space="preserve">
+    <value>Willkommen bei ViscaCamLink 1.0.0</value>
+  </data>
+  <data name="Migration_UninstallButton" xml:space="preserve">
+    <value>Alte Version deinstallieren</value>
+  </data>
   <data name="Updater_Update" xml:space="preserve">
     <value>Aktualisieren</value>
   </data>

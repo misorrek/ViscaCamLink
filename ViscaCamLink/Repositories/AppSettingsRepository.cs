@@ -29,6 +29,7 @@ public sealed class AppSettingsRepository
         if (migratedSettings is not null)
         {
             Save(migratedSettings);
+            DeleteLegacyUserDataPath();
             return migratedSettings;
         }
 
@@ -149,5 +150,19 @@ public sealed class AppSettingsRepository
         }
 
         return Enum.TryParse(enumType, rawValue, ignoreCase: true, out var parsedValue) ? parsedValue : null;
+    }
+
+    private void DeleteLegacyUserDataPath()
+    {
+        try
+        {
+            if (Directory.Exists(_legacySearchRoot))
+            {
+                Directory.Delete(_legacySearchRoot, recursive: true);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
     }
 }

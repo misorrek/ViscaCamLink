@@ -6,6 +6,7 @@
 
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Win32;
 
     using ViscaCamLink.Services;
     using ViscaCamLink.Util;
@@ -42,6 +43,9 @@
             _ = startupUpdateCheckService.RunAsync(_updateCheckCts.Token);
 
             viscaCamLinkView.Show();
+
+            ShowMigrationDialogIfNeeded(appSettings, settingsRepository,
+                _serviceProvider.GetRequiredService<IDialogService>());
         }
 
         private static ServiceProvider ConfigureServices(AppSettings appSettings, AppSettingsRepository settingsRepository)
@@ -100,6 +104,60 @@
             }
 
             Current.Shutdown();
+        }
+
+        private static void ShowMigrationDialogIfNeeded(
+            AppSettings appSettings,
+            AppSettingsRepository settingsRepository,
+            IDialogService dialogService)
+        {
+            if (appSettings.WixUninstallPrompted)
+            {
+                return;
+            }
+
+            var uninstallString = FindWixUninstallString();
+
+            // Mark as prompted regardless of whether WiX was found so this
+            // code path only runs once per installation.
+            appSettings.WixUninstallPrompted = true;
+            settingsRepository.Save(appSettings);
+
+            if (uninstallString is not null)
+            {
+                dialogService.ShowMigrationDialog(uninstallString);
+            }
+        }
+
+        private static string? FindWixUninstallString()
+        {
+            string[] searchPaths =
+            [
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+                @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+            ];
+
+            foreach (var searchPath in searchPaths)
+            {
+                using var parent = Registry.LocalMachine.OpenSubKey(searchPath);
+                if (parent is null)
+                {
+                    continue;
+                }
+
+                foreach (var name in parent.GetSubKeyNames())
+                {
+                    using var key = parent.OpenSubKey(name);
+                    if (key?.GetValue("DisplayName") is string displayName
+                        && displayName.Equals("ViscaCamLink", StringComparison.OrdinalIgnoreCase)
+                        && key.GetValue("UninstallString") is string uninstallString)
+                    {
+                        return uninstallString;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

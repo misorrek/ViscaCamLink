@@ -29,6 +29,14 @@ public sealed class DialogService(
         */
     }
 
+    public void ShowMigrationDialog(string uninstallString)
+    {
+        var view = new MigrationView();
+        var viewModel = new MigrationViewModel(uninstallString, view.Close);
+        view.DataContext = viewModel;
+        view.ShowDialog();
+    }
+
     public void ShowUpdateDownloadDialog(UpdateInfo updateInfo)
     {
         /*

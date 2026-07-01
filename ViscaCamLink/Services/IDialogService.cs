@@ -9,4 +9,6 @@ public interface IDialogService
     void ShowUpdateDialog(UpdateInfo updateInfo);
 
     void ShowUpdateDownloadDialog(UpdateInfo updateInfo);
+
+    void ShowMigrationDialog(string uninstallString);
 }

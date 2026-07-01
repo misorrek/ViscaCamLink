@@ -31,4 +31,6 @@ public sealed class AppSettings
     public bool UsePresetGroups { get; set; } = true;
 
     public WindowPlacementData? WindowPlacement { get; set; }
+
+    public bool WixUninstallPrompted { get; set; } = false;
 }
