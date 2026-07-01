@@ -39,6 +39,7 @@ internal static class WindowPlacementHelper
 
     private const uint SW_SHOWNORMAL = 1;
     private const uint SW_SHOWMINIMIZED = 2;
+    private const uint SW_SHOWMAXIMIZED = 3;
 
     /// <summary>
     /// Reads the current Win32 placement and returns it as a serializable DTO.
@@ -64,17 +65,19 @@ internal static class WindowPlacementHelper
     }
 
     /// <summary>
-    /// Applies a saved placement to the window using SetWindowPlacement.
+    /// Restores the window's normal bounds via SetWindowPlacement (always as SW_SHOWNORMAL
+    /// to avoid DWM black flash during maximize animation) and returns the saved WindowState
+    /// so the caller can apply it via WPF after first render.
     /// Must be called from the <see cref="Window.SourceInitialized"/> event.
     /// </summary>
-    public static void Restore(Window window, WindowPlacementData data)
+    public static WindowState Restore(Window window, WindowPlacementData data)
     {
         var hwnd = new WindowInteropHelper(window).Handle;
         var wp = new WINDOWPLACEMENT
         {
             length = (uint)Marshal.SizeOf<WINDOWPLACEMENT>(),
             flags = 0,
-            showCmd = data.ShowCmd,
+            showCmd = SW_SHOWNORMAL, // Always restore normal rect without animation
             ptMinPosition = new POINT { X = -1, Y = -1 },
             ptMaxPosition = new POINT { X = -1, Y = -1 },
             rcNormalPosition = new RECT
@@ -86,5 +89,9 @@ internal static class WindowPlacementHelper
             }
         };
         SetWindowPlacement(hwnd, ref wp);
+
+        return data.ShowCmd == SW_SHOWMAXIMIZED
+            ? WindowState.Maximized
+            : WindowState.Normal;
     }
 }
