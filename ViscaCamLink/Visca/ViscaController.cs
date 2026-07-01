@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using ViscaCamLink.Visca.Types;
 
-public sealed partial class ViscaController(IViscaClient viscaClient, TimeSpan commandTimeout, ILogger logger) : IViscaController
+public sealed partial class ViscaController(IViscaClient viscaClient, ILogger logger) : IViscaController
 {
     private readonly Stopwatch performanceTimer = Stopwatch.StartNew();
 
@@ -148,7 +148,7 @@ public sealed partial class ViscaController(IViscaClient viscaClient, TimeSpan c
 
     private async Task<ViscaPacket> SendCommandAsync(ViscaPacket packet, CancellationToken cancellationToken, [CallerMemberName] string? commandName = null)
     {
-        using var timeoutSource = new CancellationTokenSource(commandTimeout);
+        using var timeoutSource = new CancellationTokenSource(ViscaProtocol.DefaultCommandTimeout);
         using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
         LogSendingCommand(logger, commandName);
 

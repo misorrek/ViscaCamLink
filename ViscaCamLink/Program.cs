@@ -1,5 +1,7 @@
 namespace ViscaCamLink;
 
+using System.Diagnostics;
+
 using Velopack;
 
 public static class Program
@@ -7,7 +9,16 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        VelopackApp.Build().Run();
+        VelopackApp.Build()
+            .OnAfterInstallFastCallback(_ =>
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = Environment.ProcessPath!,
+                    UseShellExecute = true,
+                });
+            })
+            .Run();
 
         var application = new App();
 

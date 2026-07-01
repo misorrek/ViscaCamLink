@@ -8,9 +8,7 @@ using ViscaCamLink.ViewModels;
 using ViscaCamLink.Views;
 
 public sealed class DialogService(
-    IOptionsViewModelFactory optionsViewModelFactory,
-    IUpdateViewModelFactory updateViewModelFactory,
-    IUpdateDownloadViewModelFactory updateDownloadViewModelFactory) : IDialogService
+    IOptionsViewModelFactory optionsViewModelFactory) : IDialogService
 {
     public void ShowOptionsDialog()
     {
@@ -22,15 +20,18 @@ public sealed class DialogService(
 
     public void ShowUpdateDialog(UpdateInfo updateInfo)
     {
+        /*
         var installedVersion = Assembly.GetEntryAssembly()?.GetName().Version;
         var view = new UpdateView();
         var viewModel = updateViewModelFactory.Create(updateInfo, installedVersion, () => view.Close(), ShowUpdateDownloadDialog);
         view.DataContext = viewModel;
         view.ShowDialog();
+        */
     }
 
     public void ShowUpdateDownloadDialog(UpdateInfo updateInfo)
     {
+        /*
         var assetUrl = BuildInfo.IsPortable && updateInfo.PortableAssetUrl is not null
             ? updateInfo.PortableAssetUrl
             : updateInfo.InstallerAssetUrl;
@@ -39,5 +40,6 @@ public sealed class DialogService(
         var viewModel = updateDownloadViewModelFactory.Create(assetUrl, () => view.Close());
         view.DataContext = viewModel;
         view.ShowDialog();
+        */
     }
 }

@@ -24,7 +24,7 @@
 
         private void Application_Startup(object sender, StartupEventArgs startupEventArgs)
         {
-            var settingsRepository = new AppSettingsRepository(AppPaths.Settings);
+            var settingsRepository = new AppSettingsRepository(AppPaths.Settings, AppPaths.LegacyUserDataRoot);
             var appSettings = settingsRepository.Load();
             LocalizationHelper.ApplyLocalization(appSettings.Language);
 
@@ -44,7 +44,7 @@
             viscaCamLinkView.Show();
         }
 
-        private static IServiceProvider ConfigureServices(AppSettings appSettings, AppSettingsRepository settingsRepository)
+        private static ServiceProvider ConfigureServices(AppSettings appSettings, AppSettingsRepository settingsRepository)
         {
             var services = new ServiceCollection();
 
@@ -62,7 +62,9 @@
             services.AddSingleton<IViscaClient>(sp => new TcpViscaClient(
                 appSettings.Ip, appSettings.Port,
                 sp.GetRequiredService<ILogger<TcpViscaClient>>()));
-            services.AddSingleton<IViscaController, ViscaController>();
+            services.AddSingleton<IViscaController>(sp => new ViscaController(
+                sp.GetRequiredService<IViscaClient>(),
+                sp.GetRequiredService<ILogger<ViscaController>>()));
             services.AddSingleton<ICameraConnectionService, CameraConnectionService>();
             services.AddSingleton<IPowerService, PowerService>();
             services.AddSingleton<IPresetService, PresetService>();
@@ -73,8 +75,6 @@
             services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<IOptionsViewModelFactory, OptionsViewModelFactory>();
-            services.AddSingleton<IUpdateViewModelFactory, UpdateViewModelFactory>();
-            services.AddSingleton<IUpdateDownloadViewModelFactory, UpdateDownloadViewModelFactory>();
             services.AddSingleton<IStartupUpdateCheckService>(sp =>
                 new StartupUpdateCheckService(sp.GetRequiredService<IUpdateService>()));
             services.AddSingleton<VelopackUpdateService>();

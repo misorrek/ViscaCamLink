@@ -66,10 +66,13 @@ if (-not (Test-Path $releasesDir)) {
 # Step 4: Package with vpk
 Write-Host "[2/3] Packaging with vpk..." -ForegroundColor Yellow
 vpk pack `
-    --packId "ViscaCamLink" `
+    --packId "ViscaCamLink.App" `
+    --packTitle "ViscaCamLink" `
+    --packAuthors "Max Groiser" `
     --packVersion $Version `
     --packDir $publishDir `
     --mainExe "ViscaCamLink.exe" `
+    --icon "$projectDir\Resources\program.ico" `
     --channel $Channel `
     --outputDir $releasesDir
 
