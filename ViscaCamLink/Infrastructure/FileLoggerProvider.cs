@@ -1,4 +1,4 @@
-namespace ViscaCamLink.Util;
+namespace ViscaCamLink.Infrastructure;
 
 using System.IO;
 using System.Threading;

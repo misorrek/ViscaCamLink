@@ -1,10 +1,9 @@
-﻿using ViscaCamLink.Util;
-
-namespace ViscaCamLink.Converters;
+﻿namespace ViscaCamLink.Converters;
 
 using System;
 using System.Globalization;
 using System.Windows.Data;
+using ViscaCamLink.Visca.Types;
 
 public class ConnectionStatusOkToBoolConverter : IValueConverter
 {

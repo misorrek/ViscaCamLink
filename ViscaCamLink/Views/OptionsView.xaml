@@ -4,12 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
-        xmlns:resources="clr-namespace:ViscaCamLink.Resources"
-        xmlns:util="clr-namespace:ViscaCamLink.Util"
+        xmlns:resources="clr-namespace:ViscaCamLink.Resources"    
+        xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:OptionsViewModel}"
-        Title="{Binding [Common_AppTitle], Source={x:Static util:TranslationSource.Instance}}"
+        Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"
         Height="460"
         MinHeight="360"
         Width="560"
@@ -19,7 +19,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+                <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -43,7 +43,7 @@
                 Style="{StaticResource BaseBorder}">
 
             <TabControl Margin="{StaticResource ExtendedMargin}">
-                <TabItem Header="{Binding [Options_General], Source={x:Static util:TranslationSource.Instance}}">
+                <TabItem Header="{Binding [Options_General], Source={x:Static localization:TranslationSource.Instance}}">
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Auto">
                         <Grid Margin="{StaticResource ExtendedMargin}">
@@ -63,7 +63,7 @@
                                        HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
                                        TextWrapping="Wrap"
-                                       Text="{Binding [Options_LanguageSelection], Source={x:Static util:TranslationSource.Instance}}"
+                                       Text="{Binding [Options_LanguageSelection], Source={x:Static localization:TranslationSource.Instance}}"
                                        Style="{StaticResource BaseTextBlock}" />
 
                             <ComboBox Grid.Column="1"
@@ -84,7 +84,7 @@
                                        HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
                                        TextWrapping="Wrap"
-                                       Text="{Binding [Options_NumpadLayout], Source={x:Static util:TranslationSource.Instance}}"
+                                       Text="{Binding [Options_NumpadLayout], Source={x:Static localization:TranslationSource.Instance}}"
                                        Style="{StaticResource BaseTextBlock}" />
 
                             <CheckBox Grid.Column="1"
@@ -100,7 +100,7 @@
                                        HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
                                        TextWrapping="Wrap"
-                                       Text="{Binding [Options_UsePresetGroups], Source={x:Static util:TranslationSource.Instance}}"
+                                       Text="{Binding [Options_UsePresetGroups], Source={x:Static localization:TranslationSource.Instance}}"
                                        Style="{StaticResource BaseTextBlock}" />
 
                             <CheckBox Grid.Column="1"
@@ -113,7 +113,7 @@
                     </ScrollViewer>
                 </TabItem>
 
-                <TabItem Header="{Binding [Options_Hotkeys], Source={x:Static util:TranslationSource.Instance}}">
+                <TabItem Header="{Binding [Options_Hotkeys], Source={x:Static localization:TranslationSource.Instance}}">
                     <Grid Margin="{StaticResource ExtendedMargin}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -131,7 +131,7 @@
                             <TextBlock Grid.Column="0"
                                        VerticalAlignment="Center"
                                        TextWrapping="Wrap"
-                                       Text="{Binding [Options_GlobalHotKeys], Source={x:Static util:TranslationSource.Instance}}"
+                                       Text="{Binding [Options_GlobalHotKeys], Source={x:Static localization:TranslationSource.Instance}}"
                                        Style="{StaticResource BaseTextBlock}" />
 
                             <CheckBox Grid.Column="1"
@@ -146,11 +146,11 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock Grid.Column="0"
-                                       Text="{Binding [Options_HotKeyAction], Source={x:Static util:TranslationSource.Instance}}"
+                                       Text="{Binding [Options_HotKeyAction], Source={x:Static localization:TranslationSource.Instance}}"
                                        Style="{StaticResource BaseTextBlock}"
                                        FontWeight="SemiBold" />
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding [Options_HotKeyBinding], Source={x:Static util:TranslationSource.Instance}}"
+                                       Text="{Binding [Options_HotKeyBinding], Source={x:Static localization:TranslationSource.Instance}}"
                                        Style="{StaticResource BaseTextBlock}"
                                        FontWeight="SemiBold" />
                         </Grid>
@@ -217,7 +217,7 @@
                     Orientation="Horizontal">
             <Button Height="32"
                     Width="120"
-                    Content="{Binding [Common_OK], Source={x:Static util:TranslationSource.Instance}}"
+                    Content="{Binding [Common_OK], Source={x:Static localization:TranslationSource.Instance}}"
                     Background="{StaticResource PrimaryForegroundBrush}"
                     Foreground="{StaticResource PrimaryBackgroundBrush}"
                     Command="{Binding OkCommand}"
@@ -226,7 +226,7 @@
             <Button Height="32"
                     Width="120"
                     Margin="4,0,0,0"
-                    Content="{Binding [Common_Cancel], Source={x:Static util:TranslationSource.Instance}}" 
+                    Content="{Binding [Common_Cancel], Source={x:Static localization:TranslationSource.Instance}}" 
                     Command="{Binding CancelCommand}"
                     Style="{StaticResource DialogButton}" />
         </StackPanel>    

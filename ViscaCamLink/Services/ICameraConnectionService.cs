@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Services;
 
-using ViscaCamLink.Util;
+using ViscaCamLink.Visca.Types;
 
 public interface ICameraConnectionService : IDisposable
 {

@@ -2,7 +2,7 @@ namespace ViscaCamLink.Repositories.HotKeys;
 
 using System.IO;
 using System.Text.Json;
-using ViscaCamLink.Util;
+using ViscaCamLink.Infrastructure;
 
 public sealed class HotKeyRepository(string filePath) : IHotKeyRepository
 {

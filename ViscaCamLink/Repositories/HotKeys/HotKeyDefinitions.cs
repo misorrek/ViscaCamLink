@@ -1,7 +1,7 @@
 namespace ViscaCamLink.Repositories.HotKeys;
 
 using System.Windows.Input;
-using ViscaCamLink.Util;
+using ViscaCamLink.Infrastructure.Localization;
 
 public static class HotKeyDefinitions
 {

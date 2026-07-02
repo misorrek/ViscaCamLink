@@ -3,7 +3,7 @@ namespace ViscaCamLink.ViewModels;
 using System.Diagnostics;
 using System.Windows.Input;
 
-using ViscaCamLink.Util;
+using ViscaCamLink.Infrastructure.Interface;
 
 public sealed class MigrationViewModel : ViewModelBase
 {

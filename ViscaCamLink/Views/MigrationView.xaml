@@ -3,11 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:util="clr-namespace:ViscaCamLink.Util"
+        xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:MigrationViewModel}"
-        Title="{Binding [Common_AppTitle], Source={x:Static util:TranslationSource.Instance}}"
+        Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"
         Width="480"
         Height="Auto"
         SizeToContent="Height"
@@ -17,19 +17,19 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+                <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
 
     <StackPanel Margin="24,24,24,20">
 
-        <TextBlock Text="{Binding [Migration_Title], Source={x:Static util:TranslationSource.Instance}}"
+        <TextBlock Text="{Binding [Migration_Title], Source={x:Static localization:TranslationSource.Instance}}"
                    Style="{StaticResource HeaderTextBlock}"
                    TextWrapping="Wrap"
                    Margin="0,0,0,16" />
 
-        <TextBlock Text="{Binding [Migration_Body], Source={x:Static util:TranslationSource.Instance}}"
+        <TextBlock Text="{Binding [Migration_Body], Source={x:Static localization:TranslationSource.Instance}}"
                    Style="{StaticResource BaseTextBlock}"
                    TextWrapping="Wrap"
                    Margin="0,0,0,24" />
@@ -37,14 +37,14 @@
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right">
 
-            <Button Content="{Binding [Migration_SkipButton], Source={x:Static util:TranslationSource.Instance}}"
+            <Button Content="{Binding [Migration_SkipButton], Source={x:Static localization:TranslationSource.Instance}}"
                     Command="{Binding CloseCommand}"
                     Style="{StaticResource DialogButton}"
                     Width="120"
                     Height="30"
                     Margin="0,0,8,0" />
 
-            <Button Content="{Binding [Migration_UninstallButton], Source={x:Static util:TranslationSource.Instance}}"
+            <Button Content="{Binding [Migration_UninstallButton], Source={x:Static localization:TranslationSource.Instance}}"
                     Command="{Binding UninstallCommand}"
                     Style="{StaticResource DialogButton}"
                     Width="160"

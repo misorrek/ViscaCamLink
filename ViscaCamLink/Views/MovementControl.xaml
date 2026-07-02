@@ -4,7 +4,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:util="clr-namespace:ViscaCamLink.Util"
+             xmlns:interface="clr-namespace:ViscaCamLink.Infrastructure.Interface"   
+             xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
              xmlns:types="clr-namespace:ViscaCamLink.Visca.Types"
              xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
              mc:Ignorable="d"
@@ -13,23 +14,23 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+                <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <util:Triggers x:Key="MoveTriggers" x:Shared="False">
+            <interface:Triggers x:Key="MoveTriggers" x:Shared="False">
                 <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
                     <behaviors:InvokeCommandAction Command="{Binding MoveBeginCommand}" PassEventArgsToCommand="True" />
                 </behaviors:EventTrigger>
                 <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
                     <behaviors:InvokeCommandAction Command="{Binding MoveEndCommand}" PassEventArgsToCommand="True" />
                 </behaviors:EventTrigger>
-            </util:Triggers>
+            </interface:Triggers>
 
             <Style x:Key="MoveButton"
                    TargetType="{x:Type Button}"
                    BasedOn="{StaticResource LargeButton}">
                 <Setter Property="Margin" Value="4,4,0,0" />
-                <Setter Property="util:SupplementaryInteraction.Triggers"
+                <Setter Property="interface:SupplementaryInteraction.Triggers"
                         Value="{StaticResource MoveTriggers}" />
                 <Style.Triggers>
                     <Trigger Property="Grid.Column" Value="0">
@@ -160,14 +161,14 @@
                        Height="24"
                        LastChildFill="False">
                 <TextBlock VerticalAlignment="Stretch"
-                           Text="{Binding [Control_ContainerTitle], Source={x:Static util:TranslationSource.Instance}}"
+                           Text="{Binding [Control_ContainerTitle], Source={x:Static localization:TranslationSource.Instance}}"
                            Style="{StaticResource HeaderTextBlock}" />
 
                 <Button DockPanel.Dock="Right"
                         Width="24"
                         VerticalAlignment="Stretch"
                         Command="{Binding HomeCommand}"
-                        ToolTip="{Binding [Control_Home], Source={x:Static util:TranslationSource.Instance}}"
+                        ToolTip="{Binding [Control_Home], Source={x:Static localization:TranslationSource.Instance}}"
                         Style="{StaticResource HomeButton}">
                     <Path Data="{StaticResource Home}"
                           Style="{StaticResource Icon16Path}" />
@@ -217,7 +218,7 @@
 
             <Button Grid.Column="1" Grid.Row="2"
                     Cursor="SizeAll"
-                    ToolTip="{Binding [Control_MousePan], Source={x:Static util:TranslationSource.Instance}}"
+                    ToolTip="{Binding [Control_MousePan], Source={x:Static localization:TranslationSource.Instance}}"
                     Style="{StaticResource MousePadButton}">
                 <behaviors:Interaction.Triggers>
                     <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">

@@ -1,7 +1,7 @@
 namespace ViscaCamLink.Services;
 
+using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Repositories;
-using ViscaCamLink.Util;
 
 public interface ISettingsService
 {

@@ -3,10 +3,9 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-
+using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Updater;
-using ViscaCamLink.Util;
 
 public class UpdateViewModel : INotifyPropertyChanged
 {

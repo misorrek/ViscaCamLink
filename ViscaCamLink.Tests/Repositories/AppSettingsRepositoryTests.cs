@@ -3,9 +3,8 @@ namespace ViscaCamLink.Tests.Repositories;
 using System.IO;
 
 using Shouldly;
-
-using ViscaCamLink.Repositories;
-using ViscaCamLink.Util;
+using ViscaCamLink.Infrastructure.Localization;
+using ViscaCamLink.Repositories.AppSettings;
 
 public sealed class AppSettingsRepositoryTests : IDisposable
 {

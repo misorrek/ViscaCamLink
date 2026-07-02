@@ -1,11 +1,11 @@
 namespace ViscaCamLink.ViewModels;
 
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+
+using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Services;
-using ViscaCamLink.Util;
 using ViscaCamLink.Visca.Types;
 
 public class ZoomViewModel : ViewModelBase

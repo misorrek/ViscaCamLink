@@ -1,8 +1,8 @@
-﻿namespace ViscaCamLink.Util;
+﻿namespace ViscaCamLink.Infrastructure.Localization;
 
 using System.Globalization;
 using System.Threading;
-
+using ViscaCamLink.Extensions;
 using ViscaCamLink.Resources;
 
 public static class LocalizationHelper

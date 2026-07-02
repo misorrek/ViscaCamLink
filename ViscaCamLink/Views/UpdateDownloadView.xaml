@@ -4,11 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:resources="clr-namespace:ViscaCamLink.Resources"
-        xmlns:util="clr-namespace:ViscaCamLink.Util"
+        xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:UpdateDownloadViewModel}"
-        Title="{Binding [Common_AppTitle], Source={x:Static util:TranslationSource.Instance}}"
+        Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"
         Width="400"
         Height="160"
         ResizeMode="NoResize"
@@ -18,7 +18,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+                <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -35,7 +35,7 @@
 
                 <!-- Downloading panel -->
                 <StackPanel Visibility="{Binding IsDownloading, Converter={StaticResource FalseToCollapsedConverter}}">
-                    <TextBlock Text="{Binding [Updater_Downloading], Source={x:Static util:TranslationSource.Instance}}"
+                    <TextBlock Text="{Binding [Updater_Downloading], Source={x:Static localization:TranslationSource.Instance}}"
                                Style="{StaticResource HeaderTextBlock}" />
                     <TextBlock Text="{Binding AssetName}"
                                Margin="0,4,0,0"
@@ -49,7 +49,7 @@
 
                 <!-- Error panel -->
                 <StackPanel Visibility="{Binding HasError, Converter={StaticResource FalseToCollapsedConverter}}">
-                    <TextBlock Text="{Binding [Updater_DownloadError], Source={x:Static util:TranslationSource.Instance}}"
+                    <TextBlock Text="{Binding [Updater_DownloadError], Source={x:Static localization:TranslationSource.Instance}}"
                                Style="{StaticResource HeaderTextBlock}" />
                     <TextBlock Text="{Binding ErrorMessage}"
                                Margin="0,4,0,0"
@@ -65,13 +65,13 @@
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
             <Button Width="80"
-                    Content="{Binding [Updater_Retry], Source={x:Static util:TranslationSource.Instance}}"
+                    Content="{Binding [Updater_Retry], Source={x:Static localization:TranslationSource.Instance}}"
                     Visibility="{Binding HasError, Converter={StaticResource FalseToCollapsedConverter}}"
                     Command="{Binding RetryCommand}"
                     Style="{StaticResource DialogButton}" />
             <Button Width="80"
                     Margin="4,0,0,0"
-                    Content="{Binding [Common_Cancel], Source={x:Static util:TranslationSource.Instance}}"
+                    Content="{Binding [Common_Cancel], Source={x:Static localization:TranslationSource.Instance}}"
                     Command="{Binding CancelCommand}"
                     Style="{StaticResource DialogButton}" />
         </StackPanel>

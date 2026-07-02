@@ -1,4 +1,4 @@
-﻿namespace ViscaCamLink.Util;
+﻿namespace ViscaCamLink.Infrastructure.Interface;
 
 using System.Collections.Generic;
 using System.Runtime.InteropServices;

@@ -9,13 +9,15 @@
     using Microsoft.Win32;
 
     using ViscaCamLink.Services;
-    using ViscaCamLink.Util;
     using ViscaCamLink.ViewModels;
     using ViscaCamLink.Views;
     using ViscaCamLink.Visca;
     using ViscaCamLink.Repositories.AppSettings;
     using ViscaCamLink.Repositories.HotKeys;
     using ViscaCamLink.Repositories.Presets;
+    using ViscaCamLink.Infrastructure;
+    using ViscaCamLink.Infrastructure.Localization;
+    using ViscaCamLink.Infrastructure.Interface;
 
     /// <summary>
     /// Interaction logic for App.xaml

@@ -2,10 +2,10 @@ namespace ViscaCamLink.ViewModels;
 
 using System.Windows;
 using System.Windows.Input;
-
+using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Services;
 using ViscaCamLink.Updater;
-using ViscaCamLink.Util;
 
 public class ViscaCamLinkViewModel : ViewModelBase
 {

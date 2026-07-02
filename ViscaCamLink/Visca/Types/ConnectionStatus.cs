@@ -1,4 +1,4 @@
-﻿namespace ViscaCamLink.Util;
+﻿namespace ViscaCamLink.Visca.Types;
 
 public enum ConnectionStatus
 {

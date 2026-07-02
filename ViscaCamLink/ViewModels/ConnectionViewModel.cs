@@ -1,10 +1,9 @@
 namespace ViscaCamLink.ViewModels;
 
 using System.Windows.Input;
-
+using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
-using ViscaCamLink.Util;
 using ViscaCamLink.Visca.Types;
 
 public class ConnectionViewModel : ViewModelBase

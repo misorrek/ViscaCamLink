@@ -3,11 +3,12 @@ namespace ViscaCamLink.ViewModels;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
-using ViscaCamLink.Util;
 using ViscaCamLink.Visca.Types;
 using ViscaCamLink.Repositories.HotKeys;
+using ViscaCamLink.Infrastructure.Interface;
 
 public class PresetsViewModel : ViewModelBase
 {

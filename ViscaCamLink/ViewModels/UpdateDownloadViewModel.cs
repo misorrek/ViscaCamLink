@@ -5,9 +5,8 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
-
+using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Updater;
-using ViscaCamLink.Util;
 
 public class UpdateDownloadViewModel : INotifyPropertyChanged
 {

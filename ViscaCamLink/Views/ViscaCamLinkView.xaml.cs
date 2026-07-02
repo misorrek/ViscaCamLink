@@ -5,9 +5,8 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-
+using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Services;
-using ViscaCamLink.Util;
 using ViscaCamLink.ViewModels;
 using WpfAnimatedGif;
 

@@ -5,9 +5,9 @@ using Shouldly;
 using Moq;
 
 using ViscaCamLink.Services;
-using ViscaCamLink.Util;
 using ViscaCamLink.ViewModels;
 using ViscaCamLink.Visca.Types;
+using ViscaCamLink.Infrastructure.Interface;
 
 public sealed class ConnectionViewModelTests
 {

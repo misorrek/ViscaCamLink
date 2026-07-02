@@ -1,7 +1,7 @@
 namespace ViscaCamLink.Services;
 
-using ViscaCamLink.Util;
 using ViscaCamLink.Visca;
+using ViscaCamLink.Visca.Types;
 
 public sealed class CameraConnectionService(
     IViscaController viscaController,

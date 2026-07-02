@@ -1,4 +1,4 @@
-namespace ViscaCamLink.Util;
+namespace ViscaCamLink.Infrastructure;
 
 /// <summary>
 /// Exposes compile-time build configuration flags baked in via pre-processor symbols.

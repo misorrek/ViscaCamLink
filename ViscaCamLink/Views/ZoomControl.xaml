@@ -4,7 +4,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:util="clr-namespace:ViscaCamLink.Util"
+             xmlns:interface="clr-namespace:ViscaCamLink.Infrastructure.Interface"   
+             xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
              xmlns:types="clr-namespace:ViscaCamLink.Visca.Types"
              xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
              mc:Ignorable="d"
@@ -13,23 +14,23 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+                <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <util:Triggers x:Key="ZoomTriggers" x:Shared="False">
+            <interface:Triggers x:Key="ZoomTriggers" x:Shared="False">
                 <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
                     <behaviors:InvokeCommandAction Command="{Binding ZoomCommand}" PassEventArgsToCommand="True" />
                 </behaviors:EventTrigger>
                 <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
                     <behaviors:InvokeCommandAction Command="{Binding ZoomCommand}" PassEventArgsToCommand="True" />
                 </behaviors:EventTrigger>
-            </util:Triggers>
+            </interface:Triggers>
 
             <Style x:Key="ZoomButton"
                    TargetType="{x:Type Button}"
                    BasedOn="{StaticResource LargeButton}">
                 <Setter Property="Margin" Value="4,4,0,0" />
-                <Setter Property="util:SupplementaryInteraction.Triggers"
+                <Setter Property="interface:SupplementaryInteraction.Triggers"
                         Value="{StaticResource ZoomTriggers}" />
                 <Style.Triggers>
                     <Trigger Property="Grid.Column" Value="0">
@@ -101,7 +102,7 @@
             <TextBlock Grid.Column="0"
                        Grid.ColumnSpan="2"
                        Grid.Row="0"
-                       Text="{Binding [Zoom_ContainerTitle], Source={x:Static util:TranslationSource.Instance}}"
+                       Text="{Binding [Zoom_ContainerTitle], Source={x:Static localization:TranslationSource.Instance}}"
                        Style="{StaticResource HeaderTextBlock}" />
 
             <!-- Zoom Control -->

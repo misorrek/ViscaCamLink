@@ -1,4 +1,4 @@
-﻿namespace ViscaCamLink.Util;
+﻿namespace ViscaCamLink.Infrastructure.Localization;
 
 using System;
 using System.ComponentModel;

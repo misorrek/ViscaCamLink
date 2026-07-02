@@ -1,9 +1,9 @@
-﻿namespace ViscaCamLink.Util;
+﻿namespace ViscaCamLink.Extensions;
 
 using System;
 using System.ComponentModel;
 
-public static class EnumHelper
+public static class EnumExtension
 {
     public static String GetDescription<T>(this T enumerationValue)
     {

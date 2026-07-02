@@ -5,7 +5,6 @@ using Shouldly;
 using Moq;
 
 using ViscaCamLink.Services;
-using ViscaCamLink.Util;
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
 

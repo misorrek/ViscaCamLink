@@ -5,9 +5,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-
+using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Services;
-using ViscaCamLink.Util;
 
 public class OptionsViewModel : INotifyPropertyChanged
 {

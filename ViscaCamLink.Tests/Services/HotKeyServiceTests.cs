@@ -6,8 +6,8 @@ using Shouldly;
 
 using Moq;
 using ViscaCamLink.Services;
-using ViscaCamLink.Util;
 using ViscaCamLink.Repositories.HotKeys;
+using ViscaCamLink.Infrastructure.Interface;
 
 public sealed class HotKeyServiceTests
 {

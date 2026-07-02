@@ -2,7 +2,7 @@ namespace ViscaCamLink.Repositories.AppSettings;
 
 using Microsoft.Extensions.Logging;
 
-using ViscaCamLink.Util;
+using ViscaCamLink.Infrastructure.Localization;
 
 public sealed class AppSettings
 {

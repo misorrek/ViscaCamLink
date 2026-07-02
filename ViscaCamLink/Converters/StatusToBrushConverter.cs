@@ -4,7 +4,6 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
-using ViscaCamLink.Util;
 using ViscaCamLink.Visca.Types;
 
 public static class StatusBrushConstants

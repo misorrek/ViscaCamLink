@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:converters="clr-namespace:ViscaCamLink.Converters"
-             xmlns:util="clr-namespace:ViscaCamLink.Util"
+             xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
              xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:PresetsViewModel}">
@@ -13,7 +13,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+                <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <converters:IntEqualsToCollapsedConverter x:Key="IntEqualsToCollapsedConverter" />
@@ -44,7 +44,7 @@
             <DockPanel Height="24"
                        LastChildFill="False">
                 <TextBlock VerticalAlignment="Stretch"
-                           Text="{Binding [Presets_ContainerTitle], Source={x:Static util:TranslationSource.Instance}}"
+                           Text="{Binding [Presets_ContainerTitle], Source={x:Static localization:TranslationSource.Instance}}"
                            Style="{StaticResource HeaderTextBlock}" />
 
                 <Button x:Name="MemorySetButton"
@@ -52,7 +52,7 @@
                         Width="24"
                         VerticalAlignment="Stretch"
                         Command="{Binding MemorySetCommand}"
-                        ToolTip="{Binding [Presets_Save], Source={x:Static util:TranslationSource.Instance}}">
+                        ToolTip="{Binding [Presets_Save], Source={x:Static localization:TranslationSource.Instance}}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource BorderlessButton}">
                             <Style.Triggers>

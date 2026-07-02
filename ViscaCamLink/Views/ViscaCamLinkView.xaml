@@ -4,12 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
-        xmlns:util="clr-namespace:ViscaCamLink.Util"
+        xmlns:extensions="clr-namespace:ViscaCamLink.Extensions"
+        xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
         xmlns:views="clr-namespace:ViscaCamLink.Views"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:ViscaCamLinkViewModel}"
-        Title="{Binding [Common_AppTitle], Source={x:Static util:TranslationSource.Instance}}"
+        Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"
         Width="350"
         SizeToContent="Height"
         ResizeMode="CanResize"
@@ -20,7 +21,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+                <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <Style x:Key="SidebarButton"
@@ -38,9 +39,9 @@
                                             BorderThickness="0"
                                             Background="{StaticResource PrimaryHighlightBrush}"
                                             Visibility="{Binding RelativeSource={RelativeSource TemplatedParent},
-                                                                 Path=(util:SidebarButtonExtension.BorderVisibility)}"/>
+                                                                 Path=(extensions:SidebarButtonExtension.BorderVisibility)}"/>
                                     <Path Data="{Binding RelativeSource={RelativeSource TemplatedParent},
-                                                         Path=(util:SidebarButtonExtension.PathData)}"
+                                                         Path=(extensions:SidebarButtonExtension.PathData)}"
                                           Style="{StaticResource IconSidebarPath}" />
                                 </StackPanel>
                             </Border>
@@ -76,9 +77,9 @@
                         BorderThickness="0"
                         Command="{Binding SidebarCommand}"
                         CommandParameter="Memory"
-                        util:SidebarButtonExtension.BorderVisibility="{Binding MemoryContainerVisible,
+                        extensions:SidebarButtonExtension.BorderVisibility="{Binding MemoryContainerVisible,
                                                                                Converter={StaticResource FalseToHiddenConverter}}"
-                        util:SidebarButtonExtension.PathData="{StaticResource Numpad}"
+                        extensions:SidebarButtonExtension.PathData="{StaticResource Numpad}"
                         Style="{StaticResource SidebarButton}" />
 
                 <Button DockPanel.Dock="Top"
@@ -86,9 +87,9 @@
                         BorderThickness="0"
                         Command="{Binding SidebarCommand}"
                         CommandParameter="Move"
-                        util:SidebarButtonExtension.BorderVisibility="{Binding MoveContainerVisible,
+                        extensions:SidebarButtonExtension.BorderVisibility="{Binding MoveContainerVisible,
                                                                                Converter={StaticResource FalseToHiddenConverter}}"
-                        util:SidebarButtonExtension.PathData="{StaticResource MoveArrows}"
+                        extensions:SidebarButtonExtension.PathData="{StaticResource MoveArrows}"
                         Style="{StaticResource SidebarButton}" />
 
                 <Button DockPanel.Dock="Top"
@@ -96,17 +97,17 @@
                         BorderThickness="0"
                         Command="{Binding SidebarCommand}"
                         CommandParameter="Zoom"
-                        util:SidebarButtonExtension.BorderVisibility="{Binding ZoomContainerVisible,
+                        extensions:SidebarButtonExtension.BorderVisibility="{Binding ZoomContainerVisible,
                                                                                Converter={StaticResource FalseToHiddenConverter}}"
-                        util:SidebarButtonExtension.PathData="{StaticResource Zoom}"
+                        extensions:SidebarButtonExtension.PathData="{StaticResource Zoom}"
                         Style="{StaticResource SidebarButton}" />
 
                 <Button DockPanel.Dock="Bottom"
                         Width="40" Height="40"
                         BorderThickness="0"
                         Command="{Binding OptionsCommand}"
-                        util:SidebarButtonExtension.BorderVisibility="Hidden"
-                        util:SidebarButtonExtension.PathData="{StaticResource Options}"
+                        extensions:SidebarButtonExtension.BorderVisibility="Hidden"
+                        extensions:SidebarButtonExtension.PathData="{StaticResource Options}"
                         Style="{StaticResource SidebarButton}" />
 
                 <Button DockPanel.Dock="Bottom"
