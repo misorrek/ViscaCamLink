@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Services;
 
 using ViscaCamLink.Repositories;
+using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Util;
 
 public sealed class SettingsService(AppSettings settings, AppSettingsRepository settingsRepository, Action<Language> applyLocalization) : ISettingsService

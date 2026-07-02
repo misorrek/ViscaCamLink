@@ -1,4 +1,4 @@
-namespace ViscaCamLink.Repositories;
+namespace ViscaCamLink.Repositories.AppSettings;
 
 using System.Globalization;
 using System.IO;

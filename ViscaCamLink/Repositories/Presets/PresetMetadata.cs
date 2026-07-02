@@ -1,4 +1,4 @@
-namespace ViscaCamLink.Repositories;
+namespace ViscaCamLink.Repositories.Presets;
 
 using System.Text.Json.Serialization;
 

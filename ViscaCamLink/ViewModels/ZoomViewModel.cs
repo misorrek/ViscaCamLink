@@ -3,8 +3,7 @@ namespace ViscaCamLink.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-
-using ViscaCamLink.Repositories;
+using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Services;
 using ViscaCamLink.Util;
 using ViscaCamLink.Visca.Types;

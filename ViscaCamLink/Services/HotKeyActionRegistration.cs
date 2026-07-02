@@ -1,4 +1,4 @@
-using ViscaCamLink.Repositories;
+using ViscaCamLink.Repositories.HotKeys;
 
 namespace ViscaCamLink.Services;
 

@@ -1,4 +1,4 @@
-namespace ViscaCamLink.Repositories;
+namespace ViscaCamLink.Repositories.AppSettings;
 
 using Microsoft.Extensions.Logging;
 

@@ -6,6 +6,7 @@ using Moq;
 using ViscaCamLink.Repositories;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca;
+using ViscaCamLink.Repositories.Presets;
 
 public sealed class PresetServiceTests
 {

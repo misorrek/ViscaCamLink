@@ -1,8 +1,7 @@
 namespace ViscaCamLink.Services;
 
 using System.Windows.Input;
-
-using ViscaCamLink.Repositories;
+using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Util;
 
 public sealed class HotKeyService : IHotKeyService, IDisposable

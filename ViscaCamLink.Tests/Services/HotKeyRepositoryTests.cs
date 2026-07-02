@@ -5,6 +5,7 @@ using System.Windows.Input;
 
 using Shouldly;
 using ViscaCamLink.Repositories;
+using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Services;
 
 public sealed class HotKeyRepositoryTests : IDisposable

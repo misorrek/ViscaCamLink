@@ -1,4 +1,4 @@
-namespace ViscaCamLink.Repositories;
+namespace ViscaCamLink.Repositories.HotKeys;
 
 using System.Windows.Input;
 using ViscaCamLink.Util;

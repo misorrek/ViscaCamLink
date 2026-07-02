@@ -5,9 +5,9 @@ using System.Windows.Input;
 using Shouldly;
 
 using Moq;
-using ViscaCamLink.Repositories;
 using ViscaCamLink.Services;
 using ViscaCamLink.Util;
+using ViscaCamLink.Repositories.HotKeys;
 
 public sealed class HotKeyServiceTests
 {
