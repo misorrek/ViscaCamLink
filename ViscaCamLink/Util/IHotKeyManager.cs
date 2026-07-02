@@ -2,7 +2,7 @@ namespace ViscaCamLink.Util;
 
 using System.Windows.Input;
 
-public interface IGlobalHotKeyManager : IDisposable
+public interface IHotKeyManager : IDisposable
 {
     bool UseGlobalHotKeys { get; set; }
 

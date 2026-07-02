@@ -73,7 +73,7 @@
             services.AddSingleton<IPowerService, PowerService>();
             services.AddSingleton<IPresetService, PresetService>();
             services.AddSingleton<ICameraMovementService, CameraMovementService>();
-            services.AddSingleton<IGlobalHotKeyManager>(sp => new GlobalHotKeyManager(sp.GetRequiredService<ViscaCamLinkView>()));
+            services.AddSingleton<IHotKeyManager>(sp => new HotKeyManager(sp.GetRequiredService<ViscaCamLinkView>()));
             services.AddSingleton<IHotKeyRepository, HotKeyRepository>();
             services.AddSingleton<IHotKeyService, HotKeyService>();
             services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();

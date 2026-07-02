@@ -11,7 +11,7 @@ using ViscaCamLink.Util;
 
 public sealed class HotKeyServiceTests
 {
-    private readonly Mock<IGlobalHotKeyManager> _hotKeyManager = new();
+    private readonly Mock<IHotKeyManager> _hotKeyManager = new();
     private readonly Mock<IHotKeyRepository> _repository = new();
     private readonly Mock<ISettingsService> _settings = new();
     private readonly HotKeyService _hotKeyService;

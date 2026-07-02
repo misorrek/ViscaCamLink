@@ -7,7 +7,7 @@ using ViscaCamLink.Util;
 
 public sealed class HotKeyService : IHotKeyService, IDisposable
 {
-    private readonly IGlobalHotKeyManager _hotKeyManager;
+    private readonly IHotKeyManager _hotKeyManager;
     private readonly IHotKeyRepository _repository;
     private readonly ISettingsService _settings;
     private readonly Dictionary<HotKeyAction, Action> _actions = [];
@@ -15,7 +15,7 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
 
     private List<HotKeyBinding> _bindings;
 
-    public HotKeyService(IGlobalHotKeyManager hotKeyManager, IHotKeyRepository repository, ISettingsService settings)
+    public HotKeyService(IHotKeyManager hotKeyManager, IHotKeyRepository repository, ISettingsService settings)
     {
         _hotKeyManager = hotKeyManager;
         _repository = repository;
