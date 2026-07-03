@@ -3,8 +3,7 @@ namespace ViscaCamLink.Infrastructure.Interface;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
-
-using ViscaCamLink.Repositories;
+using ViscaCamLink.Repositories.AppSettings;
 
 internal static class WindowPlacementHelper
 {

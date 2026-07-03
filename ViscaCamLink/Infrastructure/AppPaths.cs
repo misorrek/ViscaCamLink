@@ -16,9 +16,11 @@ public static class AppPaths
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "ViscaCamLink");
 
+    private static readonly string PresetsBase = Path.Combine(RoamingBase, "presets");
+
     public static string Settings => Path.Combine(RoamingBase, "settings.json");
 
-    public static string Presets => Path.Combine(RoamingBase, "presets.json");
+    public static string PresetsForCamera(Guid cameraId) => Path.Combine(PresetsBase, $"presets-{cameraId:N}.json");
 
     public static string HotKeys => Path.Combine(RoamingBase, "hotkeys.json");
 

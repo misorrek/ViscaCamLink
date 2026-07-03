@@ -96,8 +96,8 @@ public sealed class AppSettingsRepository
                 .Where(item => !string.IsNullOrWhiteSpace(item.Name))
                 .ToDictionary(item => item.Name!, item => item.Value ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
-            ApplyLegacyValue(settings, values, nameof(AppSettings.Ip));
-            ApplyLegacyValue(settings, values, nameof(AppSettings.Port));
+            MigrateCameraProfile(settings, values);
+
             ApplyLegacyValue(settings, values, nameof(AppSettings.MemoryContainerVisible));
             ApplyLegacyValue(settings, values, nameof(AppSettings.MoveContainerVisible));
             ApplyLegacyValue(settings, values, nameof(AppSettings.ZoomContainerVisible));
@@ -114,7 +114,26 @@ public sealed class AppSettingsRepository
         }
     }
 
-    private static void ApplyLegacyValue(AppSettings settings, IReadOnlyDictionary<string, string> values, string propertyName)
+    private static void MigrateCameraProfile(AppSettings settings, Dictionary<string, string> values)
+    {
+        var profile = new CameraProfile { Name = "Camera 1" };
+
+        if (values.TryGetValue("Ip", out var legacyIp) && !string.IsNullOrWhiteSpace(legacyIp))
+        {
+            profile.Ip = legacyIp;
+        }
+
+        if (values.TryGetValue("Port", out var legacyPort)
+            && int.TryParse(legacyPort, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var legacyPortInt))
+        {
+            profile.Port = legacyPortInt;
+        }
+
+        settings.CameraProfiles.Add(profile);
+        settings.ActiveCameraId = profile.Id;
+    }
+
+    private static void ApplyLegacyValue(AppSettings settings, Dictionary<string, string> values, string propertyName)
     {
         if (!values.TryGetValue(propertyName, out var rawValue))
         {

@@ -10,9 +10,9 @@ public sealed class AppSettings
 
     public Language Language { get; set; } = Language.System;
 
-    public string Ip { get; set; } = "192.168.0.1";
+    public List<CameraProfile> CameraProfiles { get; set; } = [];
 
-    public int Port { get; set; } = 5678;
+    public Guid ActiveCameraId { get; set; } = Guid.Empty;
 
     public bool MemoryContainerVisible { get; set; } = true;
 
@@ -29,6 +29,8 @@ public sealed class AppSettings
     public bool GlobalHotKeys { get; set; } = true;
 
     public bool UsePresetGroups { get; set; } = true;
+
+    public bool UseMultipleCameras { get; set; } = false;
 
     public WindowPlacementData? WindowPlacement { get; set; }
 
