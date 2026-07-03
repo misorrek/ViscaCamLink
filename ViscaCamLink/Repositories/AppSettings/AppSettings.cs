@@ -12,7 +12,7 @@ public sealed class AppSettings
 
     public List<CameraProfile> CameraProfiles { get; set; } = [];
 
-    public Guid ActiveCameraId { get; set; } = Guid.Empty;
+    public Guid ActiveCameraProfileId { get; set; } = Guid.Empty;
 
     public bool MemoryContainerVisible { get; set; } = true;
 
@@ -30,7 +30,7 @@ public sealed class AppSettings
 
     public bool UsePresetGroups { get; set; } = true;
 
-    public bool UseMultipleCameras { get; set; } = false;
+    public bool UseMultipleCameraProfiles { get; set; } = false;
 
     public WindowPlacementData? WindowPlacement { get; set; }
 

@@ -7,9 +7,11 @@ public interface ISettingsService
 {
     Microsoft.Extensions.Logging.LogLevel LogLevel { get; }
 
-    string Ip { get; set; }
+    IReadOnlyList<CameraProfile> CameraProfiles { get; }
 
-    int Port { get; set; }
+    CameraProfile? ActiveCameraProfile { get; }
+
+    Guid ActiveCameraProfileId { get; }
 
     bool MemoryContainerVisible { get; set; }
 
@@ -29,9 +31,18 @@ public interface ISettingsService
 
     bool UsePresetGroups { get; set; }
 
+    bool UseMultipleCameraProfiles { get; set; }
+
     WindowPlacementData? WindowPlacement { get; set; }
+
+    void AddCameraProfile(CameraProfile profile);
+
+    void RemoveCameraProfile(Guid id);
+
+    void UpdateCameraProfile(CameraProfile profile);
+
+    void SetActiveCameraProfile(Guid id);
 
     void Save();
 
-    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups);
-}
+    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameras);

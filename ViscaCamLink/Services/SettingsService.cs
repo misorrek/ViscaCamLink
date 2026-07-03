@@ -17,16 +17,18 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         set => settings.Language = value;
     }
 
-    public string Ip
-    {
-        get => settings.Ip;
-        set => settings.Ip = value;
-    }
+    public IReadOnlyList<CameraProfile> CameraProfiles => settings.CameraProfiles;
 
-    public int Port
+    public CameraProfile? ActiveCameraProfile =>
+        settings.CameraProfiles.FirstOrDefault(c => c.Id == settings.ActiveCameraProfileId)
+        ?? settings.CameraProfiles.FirstOrDefault();
+
+    public Guid ActiveCameraId => ActiveCameraProfile?.Id ?? Guid.Empty;
+
+    public bool UseMultipleCameraProfiles
     {
-        get => settings.Port;
-        set => settings.Port = value;
+        get => settings.UseMultipleCameraProfiles;
+        set => settings.UseMultipleCameraProfiles = value;
     }
 
     public bool MemoryContainerVisible
@@ -83,9 +85,67 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         set => settings.WindowPlacement = value;
     }
 
+    // TODO: Check if id is still in the collection?
+    public void AddCameraProfile(CameraProfile profile)
+    {
+        settings.CameraProfiles.Add(profile);
+
+        if (settings.ActiveCameraProfileId == Guid.Empty)
+        {
+            settings.ActiveCameraProfileId = profile.Id;
+        }
+
+        Save();
+    }
+
+    public void RemoveCameraProfile(Guid id)
+    {
+        var profileToDelete = settings.CameraProfiles.FirstOrDefault(c => c.Id == id);
+
+        if (profileToDelete is null)
+        {
+            return;
+        }
+
+        settings.CameraProfiles.Remove(profileToDelete);
+
+        if (settings.ActiveCameraProfileId == id)
+        {
+            settings.ActiveCameraProfileId = settings.CameraProfiles.FirstOrDefault()?.Id ?? Guid.Empty;
+        }
+
+        Save();
+    }
+
+    public void UpdateCameraProfile(CameraProfile profile)
+    {
+        var index = settings.CameraProfiles.FindIndex(c => c.Id == profile.Id);
+
+        if (index < 0)
+        {
+            return;
+        }
+
+        settings.CameraProfiles[index] = profile;
+
+        Save();
+    }
+
+    public void SetActiveCameraProfile(Guid id)
+    {
+        if (settings.CameraProfiles.All(c => c.Id != id))
+        {
+            return;
+        }
+
+        settings.ActiveCameraProfileId = id;
+
+        Save();
+    }
+
     public void Save() => settingsRepository.Save(settings);
 
-    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups)
+    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameraProfiles)
     {
         if (!Language.Equals(language))
         {
@@ -112,6 +172,13 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         if (UsePresetGroups != usePresetGroups)
         {
             UsePresetGroups = usePresetGroups;
+
+            Save();
+        }
+
+        if (UseMultipleCameraProfiles != useMultipleCameraProfiles)
+        {
+            UseMultipleCameraProfiles = useMultipleCameraProfiles;
 
             Save();
         }
