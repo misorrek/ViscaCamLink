@@ -31,6 +31,17 @@
         {
             var settingsRepository = new AppSettingsRepository(AppPaths.Settings, AppPaths.LegacyUserDataRoot);
             var appSettings = settingsRepository.Load();
+
+            // Ensure there is always at least one camera profile.
+            if (appSettings.CameraProfiles.Count == 0)
+            {
+                var defaultCamera = new CameraProfile();
+
+                appSettings.CameraProfiles.Add(defaultCamera);
+                appSettings.ActiveCameraProfileId = defaultCamera.Id;
+                settingsRepository.Save(appSettings);
+            }
+
             LocalizationHelper.ApplyLocalization(appSettings.Language);
 
             _serviceProvider = ConfigureServices(appSettings, settingsRepository);
@@ -52,6 +63,7 @@
                 _serviceProvider.GetRequiredService<IDialogService>());
         }
 
+        // TODO Maybe use IInjectable?
         private static ServiceProvider ConfigureServices(AppSettings appSettings, AppSettingsRepository settingsRepository)
         {
             var services = new ServiceCollection();
@@ -67,15 +79,28 @@
                 sp.GetRequiredService<AppSettingsRepository>(),
                 LocalizationHelper.ApplyLocalization));
             services.AddSingleton<IPresetRepository, PresetRepository>();
-            services.AddSingleton<IViscaClient>(sp => new TcpViscaClient(
-                appSettings.Ip, appSettings.Port,
-                sp.GetRequiredService<ILogger<TcpViscaClient>>()));
+            services.AddSingleton<IViscaClient>(sp =>
+            {
+                var settings = sp.GetRequiredService<ISettingsService>();
+                var camera = settings.ActiveCameraProfile;
+
+                return new TcpViscaClient(
+                    camera?.Ip ?? CameraProfile.DefaultIp,
+                    camera?.Port ?? CameraProfile.DefaultPort,
+                    sp.GetRequiredService<ILogger<TcpViscaClient>>());
+            });
             services.AddSingleton<IViscaController>(sp => new ViscaController(
                 sp.GetRequiredService<IViscaClient>(),
                 sp.GetRequiredService<ILogger<ViscaController>>()));
-            services.AddSingleton<ICameraConnectionService, CameraConnectionService>();
+            services.AddSingleton<ICameraConnectionService>(sp => new CameraConnectionService(
+                sp.GetRequiredService<IViscaController>(),
+                sp.GetRequiredService<ISettingsService>(),
+                sp.GetRequiredService<IPresetService>()));
             services.AddSingleton<IPowerService, PowerService>();
-            services.AddSingleton<IPresetService, PresetService>();
+            services.AddSingleton<IPresetService>(sp => new PresetService(
+                sp.GetRequiredService<IViscaController>(),
+                sp.GetRequiredService<IPresetRepository>(),
+                sp.GetRequiredService<ISettingsService>()));
             services.AddSingleton<ICameraMovementService, CameraMovementService>();
             services.AddSingleton<IHotKeyManager>(sp => new HotKeyManager(sp.GetRequiredService<ViscaCamLinkView>()));
             services.AddSingleton<IHotKeyRepository, HotKeyRepository>();

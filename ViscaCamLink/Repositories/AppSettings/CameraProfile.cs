@@ -1,13 +1,21 @@
-﻿namespace ViscaCamLink.Repositories.AppSettings
+﻿using ViscaCamLink.Infrastructure.Localization;
+using ViscaCamLink.Resources;
+
+namespace ViscaCamLink.Repositories.AppSettings
 {
     public sealed class CameraProfile
     {
+        public const string DefaultIp = "192.168.0.1";
+        public const int DefaultPort = 5678;
+
+        private const int DefaultCameraProfileNumber = 1;
+
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        public string Name { get; set; } = "Camera";
+        public string Name { get; set; } = string.Format(TranslationSource.Instance[Strings.CameraProfile_DefaultName], DefaultCameraProfileNumber);
 
-        public string Ip { get; set; } = "192.168.0.1";
+        public string Ip { get; set; } = DefaultIp;
 
-        public int Port { get; set; } = 5678;
+        public int Port { get; set; } = DefaultPort;
     }
 }

@@ -308,4 +308,7 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="Zoom_IncreaseSpeed" xml:space="preserve">
     <value>Increase zoom speed</value>
   </data>
+  <data name="CameraProfile_DefaultName" xml:space="preserve">
+    <value>Camera {0}</value>
+  </data>
 </root>

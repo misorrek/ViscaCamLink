@@ -308,4 +308,7 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="Zoom_IncreaseSpeed" xml:space="preserve">
     <value>Zoomgeschwindigkeit erhöhen</value>
   </data>
+  <data name="CameraProfile_DefaultName" xml:space="preserve">
+    <value>Kamera {0}</value>
+  </data>
 </root>

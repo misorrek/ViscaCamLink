@@ -56,6 +56,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Column="0"
@@ -109,6 +110,22 @@
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
                                       IsChecked="{Binding UsePresetGroups}" />
+
+                            <TextBlock Grid.Column="0"
+                                       Grid.Row="3"
+                                       Margin="0,8,0,0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding [Options_UseMultipleCameras], Source={x:Static localization:TranslationSource.Instance}}"
+                                       Style="{StaticResource BaseTextBlock}" />
+
+                            <CheckBox Grid.Column="1"
+                                      Grid.Row="3"
+                                      Margin="0,8,0,0"
+                                      HorizontalAlignment="Right"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding UseMultipleCameraProfiles}" />
                         </Grid>
                     </ScrollViewer>
                 </TabItem>

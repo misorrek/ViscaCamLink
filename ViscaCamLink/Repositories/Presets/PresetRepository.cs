@@ -4,14 +4,27 @@ using System.IO;
 using System.Text.Json;
 using ViscaCamLink.Infrastructure;
 
-public sealed class PresetRepository(string filePath) : IPresetRepository
+public sealed class PresetRepository : IPresetRepository
 {
     private const int MaxCameraSlots = 256;
 
-    public PresetRepository() : this(GetDefaultFilePath()) { }
+    private readonly Func<Guid, string> _pathForCamera;
 
-    public PresetData Load()
+    public PresetRepository() : this(AppPaths.PresetsForCamera) { }
+
+    // TODO : PathProvider to not duplicate path logic
+    public PresetRepository(string directory)
+        : this(id => Path.Combine(directory, $"presets-{id:N}.json")) { }
+
+    private PresetRepository(Func<Guid, string> pathForCamera)
     {
+        _pathForCamera = pathForCamera;
+    }
+
+    public PresetData LoadForCamera(Guid cameraId)
+    {
+        var filePath = _pathForCamera(cameraId);
+
         if (!File.Exists(filePath))
         {
             return CreateDefault();
@@ -32,13 +45,14 @@ public sealed class PresetRepository(string filePath) : IPresetRepository
             // Invalid user-local state should not prevent the app from starting.
         }
 
-        BackupRejectedFile();
+        BackupRejectedFile(filePath);
 
         return CreateDefault();
     }
 
-    public void Save(PresetData data)
+    public void SaveForCameraProfile(Guid cameraId, PresetData presetData)
     {
+        var filePath = _pathForCamera(cameraId);
         var directory = Path.GetDirectoryName(filePath);
 
         if (!string.IsNullOrEmpty(directory))
@@ -101,7 +115,7 @@ public sealed class PresetRepository(string filePath) : IPresetRepository
         return true;
     }
 
-    private void BackupRejectedFile()
+    private static void BackupRejectedFile(string filePath)
     {
         try
         {
@@ -117,8 +131,6 @@ public sealed class PresetRepository(string filePath) : IPresetRepository
     {
         try { File.Delete(path); } catch { /* best effort */ }
     }
-
-    private static string GetDefaultFilePath() => AppPaths.Presets;
 
     private static PresetData CreateDefault()
     {

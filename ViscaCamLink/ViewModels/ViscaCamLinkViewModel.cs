@@ -131,6 +131,7 @@ public class ViscaCamLinkViewModel : ViewModelBase
         Connection.CancelEditMode();
         Presets.CancelEditMode();
         _dialogService.ShowOptionsDialog();
+        Connection.RefreshMultipleCameraMode();
         Presets.RefreshLayout();
     }
 

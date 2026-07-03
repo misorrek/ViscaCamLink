@@ -2,7 +2,7 @@ namespace ViscaCamLink.Repositories.Presets;
 
 public interface IPresetRepository
 {
-    PresetData Load();
+    PresetData LoadForCameraProfile(Guid profileId);
 
-    void Save(PresetData data);
+    void SaveForCameraProfile(Guid profileId, PresetData presetData);
 }

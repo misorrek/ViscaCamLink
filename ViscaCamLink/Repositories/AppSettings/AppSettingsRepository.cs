@@ -116,7 +116,7 @@ public sealed class AppSettingsRepository
 
     private static void MigrateCameraProfile(AppSettings settings, Dictionary<string, string> values)
     {
-        var profile = new CameraProfile { Name = "Camera 1" };
+        var profile = new CameraProfile();
 
         if (values.TryGetValue("Ip", out var legacyIp) && !string.IsNullOrWhiteSpace(legacyIp))
         {

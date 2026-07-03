@@ -1,5 +1,6 @@
 namespace ViscaCamLink.Services;
 
+using System.Windows.Markup;
 using ViscaCamLink.Repositories.Presets;
 using ViscaCamLink.Visca;
 
@@ -10,21 +11,23 @@ public sealed class PresetService : IPresetService
 
     private readonly IViscaController _viscaController;
     private readonly IPresetRepository _repository;
-    private readonly PresetData _data;
+    private readonly ISettingsService _settingsService;
 
+    private PresetData _presetData;
     private string _activeGroupId;
 
-    public PresetService(IViscaController viscaController, IPresetRepository repository)
+    public PresetService(IViscaController viscaController, IPresetRepository repository, ISettingsService settingsService)
     {
         _viscaController = viscaController;
         _repository = repository;
-        _data = _repository.Load();
-        _activeGroupId = _data.Groups[0].Id;
+        _settingsService = settingsService;
+        _presetData = _repository.LoadForCameraProfile(_settingsService.ActiveCameraProfileId);
+        _activeGroupId = _presetData.Groups[0].Id;
     }
 
     public IReadOnlyList<PresetMetadata> Presets => ActiveGroup.Presets;
 
-    public IReadOnlyList<PresetGroup> Groups => _data.Groups;
+    public IReadOnlyList<PresetGroup> Groups => _presetData.Groups;
 
     public string ActiveGroupId => _activeGroupId;
 
@@ -32,7 +35,7 @@ public sealed class PresetService : IPresetService
 
     public event Action? GroupsChanged;
 
-    private PresetGroup ActiveGroup => _data.Groups.First(g => g.Id == _activeGroupId);
+    private PresetGroup ActiveGroup => _presetData.Groups.First(g => g.Id == _activeGroupId);
 
     public Task SetMemoryAsync(byte slot) => _viscaController.MemorySet(slot);
 
@@ -56,13 +59,13 @@ public sealed class PresetService : IPresetService
 
         preset.Name = name;
 
-        _repository.Save(_data);
+        SavePresetData();
         PresetsChanged?.Invoke();
     }
 
     public void SwitchGroup(string groupId)
     {
-        if (_data.Groups.All(g => g.Id != groupId))
+        if (_presetData.Groups.All(g => g.Id != groupId))
         {
             return;
         }
@@ -74,7 +77,7 @@ public sealed class PresetService : IPresetService
 
     public void AddGroup(string name)
     {
-        var usedSlots = _data.Groups
+        var usedSlots = _presetData.Groups
             .SelectMany(g => g.Presets)
             .Select(p => p.SlotIndex)
             .ToHashSet();
@@ -106,46 +109,46 @@ public sealed class PresetService : IPresetService
             });
         }
 
-        _data.Groups.Add(new PresetGroup
+        _presetData.Groups.Add(new PresetGroup
         {
             Id = groupId,
             Name = name,
             Presets = presets,
         });
 
-        _repository.Save(_data);
+        SavePresetData();
         GroupsChanged?.Invoke();
     }
 
     public void RemoveGroup(string groupId)
     {
-        if (_data.Groups.Count <= 1)
+        if (_presetData.Groups.Count <= 1)
         {
             return; // Cannot remove the last group
         }
 
-        var group = _data.Groups.FirstOrDefault(g => g.Id == groupId);
+        var group = _presetData.Groups.FirstOrDefault(g => g.Id == groupId);
 
         if (group is null)
         {
             return;
         }
 
-        _data.Groups.Remove(group);
+        _presetData.Groups.Remove(group);
 
         if (_activeGroupId == groupId)
         {
-            _activeGroupId = _data.Groups[0].Id;
+            _activeGroupId = _presetData.Groups[0].Id;
             PresetsChanged?.Invoke();
         }
 
-        _repository.Save(_data);
+        SavePresetData();
         GroupsChanged?.Invoke();
     }
 
     public void RenameGroup(string groupId, string name)
     {
-        var group = _data.Groups.FirstOrDefault(g => g.Id == groupId);
+        var group = _presetData.Groups.FirstOrDefault(g => g.Id == groupId);
 
         if (group is null)
         {
@@ -154,9 +157,21 @@ public sealed class PresetService : IPresetService
 
         group.Name = name;
 
-        _repository.Save(_data);
+        SavePresetData();
         GroupsChanged?.Invoke();
     }
+
+    public void SwitchCameraProfile(Guid profileId)
+    {
+        _presetData = _repository.LoadForCameraProfile(profileId);
+        _activeGroupId = _presetData.Groups[0].Id;
+
+        GroupsChanged?.Invoke();
+        PresetsChanged?.Invoke();
+    }
+
+    private void SavePresetData() =>
+        _repository.SaveForCameraProfile(_settingsService.ActiveCameraProfileId, _presetData);
 
     private static int FindNextAvailableBaseSlot(HashSet<int> usedSlots)
     {

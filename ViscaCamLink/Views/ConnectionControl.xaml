@@ -39,14 +39,61 @@
             Style="{StaticResource BaseBorder}">
         <Grid Margin="{StaticResource DefaultMargin}">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
+            <!-- Multi-camera navigation row (visible when UseMultipleCameras = true) -->
             <DockPanel Grid.Row="0"
                        Height="24"
-                       LastChildFill="False">
+                       Margin="0,0,0,4"
+                       LastChildFill="True"
+                       Visibility="{Binding UseMultipleCameras, Converter={StaticResource FalseToCollapsedConverter}}">
+                <Button DockPanel.Dock="Left"
+                        Width="24"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding PrevCameraCommand}"
+                        IsEnabled="{Binding IsSwitching, Converter={StaticResource InverseBooleanConverter}}"
+                        Style="{StaticResource BorderlessButton}">
+                    <Path Data="{StaticResource Angle}"
+                          Style="{StaticResource Icon16Path}" />
+                </Button>
+                <Button DockPanel.Dock="Right"
+                        Width="24"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding ManageCamerasCommand}"
+                        Style="{StaticResource BorderlessButton}"
+                        ToolTip="{Binding [CameraManager_Title], Source={x:Static localization:TranslationSource.Instance}}">
+                    <Path Data="{StaticResource Options}"
+                          Style="{StaticResource Icon16Path}" />
+                </Button>
+                <Button DockPanel.Dock="Right"
+                        Width="24"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding NextCameraCommand}"
+                        IsEnabled="{Binding IsSwitching, Converter={StaticResource InverseBooleanConverter}}"
+                        Style="{StaticResource BorderlessButton}">
+                    <Path Data="{StaticResource Angle}"
+                          Style="{StaticResource Icon16Path}">
+                        <Path.RenderTransform>
+                            <ScaleTransform ScaleX="-1" ScaleY="1" CenterX="12" CenterY="12" />
+                        </Path.RenderTransform>
+                    </Path>
+                </Button>
+                <TextBlock HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Text="{Binding ActiveCameraName}"
+                           FontWeight="SemiBold"
+                           Style="{StaticResource HeaderTextBlock}" />
+            </DockPanel>
+
+            <!-- IP:Port row (hidden in multi-camera mode, visible in single-camera mode) -->
+            <DockPanel Grid.Row="1"
+                       Height="24"
+                       LastChildFill="False"
+                       Visibility="{Binding UseMultipleCameras, Converter={StaticResource TrueToCollapsedConverter}}">
                 <TextBox DockPanel.Dock="Left"
                          BorderBrush="{StaticResource DefaultBorderBrush}"
                          Text="{Binding Ip}"
@@ -111,7 +158,7 @@
                 </Button>
             </DockPanel>
 
-            <DockPanel Grid.Row="1"
+            <DockPanel Grid.Row="2"
                        Height="24"
                        Margin="0,4,0,0"
                        LastChildFill="False">
@@ -163,7 +210,7 @@
                 </Button>
             </DockPanel>
 
-            <DockPanel Grid.Row="2"
+            <DockPanel Grid.Row="3"
                        Height="24"
                        Margin="0,4,0,0"
                        LastChildFill="False">

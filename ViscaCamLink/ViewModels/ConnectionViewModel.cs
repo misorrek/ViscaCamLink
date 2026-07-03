@@ -1,7 +1,9 @@
 namespace ViscaCamLink.ViewModels;
 
 using System.Windows.Input;
+
 using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca.Types;
@@ -12,6 +14,7 @@ public class ConnectionViewModel : ViewModelBase
     private readonly ICameraConnectionService _connectionService;
     private readonly IPowerService _powerService;
     private readonly IUiDispatcher _uiDispatcher;
+    private readonly IDialogService _dialogService;
 
     private string _ip = string.Empty;
     private string _port = string.Empty;
@@ -21,20 +24,23 @@ public class ConnectionViewModel : ViewModelBase
     private PowerStatus _powerStatus = PowerStatus.Unknown;
     private bool _changingPowerStatus;
     private string _powerInfo = string.Empty;
+    private string _activeCameraName = string.Empty;
+    private bool _isSwitching;
 
     public ConnectionViewModel(
         ISettingsService settings,
         ICameraConnectionService connectionService,
         IPowerService powerService,
-        IUiDispatcher uiDispatcher)
+        IUiDispatcher uiDispatcher,
+        IDialogService dialogService)
     {
         _settings = settings;
         _connectionService = connectionService;
         _powerService = powerService;
         _uiDispatcher = uiDispatcher;
+        _dialogService = dialogService;
 
-        _ip = _settings.Ip;
-        _port = _settings.Port.ToString();
+        RefreshFromActiveCamera();
 
         _connectionService.ConnectionStatusChanged += OnConnectionStatusChanged;
         _powerService.PowerStatusChanged += OnPowerStatusChanged;
@@ -43,6 +49,9 @@ public class ConnectionViewModel : ViewModelBase
         ConnectionEditCommand = new Command(ExecuteConnectionEdit);
         ReconnectCommand = new Command(ExecuteReconnect);
         PowerSwitchCommand = new Command(ExecutePowerSwitch);
+        PrevCameraCommand = new Command(ExecutePrevCamera, CanCycleCamera);
+        NextCameraCommand = new Command(ExecuteNextCamera, CanCycleCamera);
+        ManageCamerasCommand = new Command(ExecuteManageCameras);
     }
 
     public ICommand ConnectionEditCommand { get; }
@@ -50,6 +59,12 @@ public class ConnectionViewModel : ViewModelBase
     public ICommand ReconnectCommand { get; }
 
     public ICommand PowerSwitchCommand { get; }
+
+    public ICommand PrevCameraCommand { get; }
+
+    public ICommand NextCameraCommand { get; }
+
+    public ICommand ManageCamerasCommand { get; }
 
     public string Ip
     {
@@ -135,6 +150,30 @@ public class ConnectionViewModel : ViewModelBase
         }
     }
 
+    public string ActiveCameraName
+    {
+        get => _activeCameraName;
+        private set
+        {
+            _activeCameraName = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public bool IsSwitching
+    {
+        get => _isSwitching;
+        private set
+        {
+            _isSwitching = value;
+            NotifyPropertyChanged();
+            ((Command)PrevCameraCommand).Invalidate();
+            ((Command)NextCameraCommand).Invalidate();
+        }
+    }
+
+    public bool UseMultipleCameras => _settings.UseMultipleCameraProfiles;
+
     public void Initialize()
     {
         ExecuteReconnect();
@@ -144,8 +183,7 @@ public class ConnectionViewModel : ViewModelBase
     {
         if (IsEditingConnection)
         {
-            Ip = _settings.Ip;
-            Port = _settings.Port.ToString();
+            RefreshFromActiveCamera();
             IsEditingConnection = false;
         }
     }
@@ -154,6 +192,22 @@ public class ConnectionViewModel : ViewModelBase
     {
         UpdateConnectionInfo();
         UpdatePowerInfo();
+    }
+
+    public void RefreshMultipleCameraMode()
+    {
+        NotifyPropertyChanged(nameof(UseMultipleCameras));
+        RefreshFromActiveCamera();
+        ((Command)PrevCameraCommand).Invalidate();
+        ((Command)NextCameraCommand).Invalidate();
+    }
+
+    private void RefreshFromActiveCamera()
+    {
+        var camera = _settings.ActiveCameraProfile;
+        Ip = camera?.Ip ?? string.Empty;
+        Port = camera?.Port.ToString() ?? string.Empty;
+        ActiveCameraName = camera?.Name ?? string.Empty;
     }
 
     private void UpdateConnectionInfo()
@@ -169,7 +223,11 @@ public class ConnectionViewModel : ViewModelBase
 
     private async void OnConnectionStatusChanged(object? sender, ConnectionStatus status)
     {
-        await _uiDispatcher.InvokeAsync(() => ConnectionStatus = status);
+        await _uiDispatcher.InvokeAsync(() =>
+        {
+            ConnectionStatus = status;
+            IsSwitching = _connectionService.IsSwitchingCameraProfile;
+        });
 
         if (status == ConnectionStatus.Ok)
         {
@@ -223,8 +281,7 @@ public class ConnectionViewModel : ViewModelBase
         {
             if (parameter is bool editingCanceled && editingCanceled)
             {
-                Ip = _settings.Ip;
-                Port = _settings.Port.ToString();
+                RefreshFromActiveCamera();
             }
             else
             {
@@ -250,5 +307,46 @@ public class ConnectionViewModel : ViewModelBase
     private async void ExecutePowerSwitch()
     {
         await TryCameraOperation(_powerService.SwitchPowerAsync());
+    }
+
+    private bool CanCycleCamera() => !IsSwitching && _settings.CameraProfiles.Count > 1;
+
+    private async void ExecutePrevCamera()
+    {
+        var target = GetAdjacentCamera(-1);
+        if (target is null) return;
+        IsSwitching = true;
+        await _connectionService.SwitchCameraProfileAsync(target);
+        RefreshFromActiveCamera();
+        IsSwitching = false;
+    }
+
+    private async void ExecuteNextCamera()
+    {
+        var target = GetAdjacentCamera(+1);
+        if (target is null) return;
+        IsSwitching = true;
+        await _connectionService.SwitchCameraProfileAsync(target);
+        RefreshFromActiveCamera();
+        IsSwitching = false;
+    }
+
+    private CameraProfile? GetAdjacentCamera(int direction)
+    {
+        var cameras = _settings.CameraProfiles;
+        if (cameras.Count <= 1) return null;
+
+        var currentIndex = cameras.ToList().FindIndex(c => c.Id == _settings.ActiveCameraProfileId);
+        if (currentIndex < 0) return cameras[0];
+
+        var nextIndex = (currentIndex + direction + cameras.Count) % cameras.Count;
+        return cameras[nextIndex];
+    }
+
+    private void ExecuteManageCameras()
+    {
+        // TODO _dialogService.ShowCameraManagerDialog();
+        RefreshFromActiveCamera();
+        RefreshMultipleCameraMode();
     }
 }

@@ -1,11 +1,13 @@
 namespace ViscaCamLink.Services;
 
+using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
 
 public sealed class CameraConnectionService(
     IViscaController viscaController,
     ISettingsService settingsService,
+    IPresetService presetService,
     TimeSpan? healthCheckInterval = null) : ICameraConnectionService, IDisposable
 {
     private static readonly TimeSpan DefaultHealthCheckInterval = TimeSpan.FromSeconds(10);
@@ -19,6 +21,8 @@ public sealed class CameraConnectionService(
 
     public ConnectionStatus Status { get; private set; } = ConnectionStatus.Failed;
 
+    public bool IsSwitchingCameraProfile { get; private set; }
+
     public void Dispose()
     {
         _healthCheckCts.Cancel();
@@ -30,11 +34,60 @@ public sealed class CameraConnectionService(
         StopHealthCheck();
         OnConnectionStatusChanged(ConnectionStatus.Working);
 
+        await Connect();
+    }
+
+    public async Task SwitchCameraProfileAsync(CameraProfile camera)
+    {
+        IsSwitchingCameraProfile = true;
+
         try
         {
+            StopHealthCheck();
+            OnConnectionStatusChanged(ConnectionStatus.Working);
+
+            settingsService.SetActiveCameraProfile(camera.Id);
+            presetService.SwitchCameraProfile(camera.Id);
+
+            await Connect();
+        }
+        finally
+        {
+            IsSwitchingCameraProfile = false;
+        }
+    }
+
+    public void CommitConnectionSettings(string ip, int port)
+    {
+        var active = settingsService.ActiveCameraProfile;
+
+        if (active is null)
+        {
+            return;
+        }
+
+        var updatedProfile = new CameraProfile
+        {
+            Id = active.Id,
+            Name = active.Name,
+            Ip = ip,
+            Port = port,
+        };
+
+        settingsService.UpdateCameraProfile(updatedProfile);
+    }
+
+    private async Task Connect()
+    {
+        try
+        {
+            var camera = settingsService.ActiveCameraProfile;
+            var ip = camera?.Ip ?? CameraProfile.DefaultIp;
+            var port = camera?.Port ?? CameraProfile.DefaultPort;
+
             using var cts = new CancellationTokenSource();
 
-            await viscaController.Reconnect(cts.Token, settingsService.Ip, settingsService.Port).ConfigureAwait(false);
+            await viscaController.Reconnect(cts.Token, ip, port).ConfigureAwait(false);
         }
         catch
         {
@@ -49,12 +102,6 @@ public sealed class CameraConnectionService(
         {
             StartHealthCheck();
         }
-    }
-
-    public void CommitConnectionSettings(string ip, int port)
-    {
-        settingsService.Ip = ip;
-        settingsService.Port = port;
     }
 
     private void StartHealthCheck()
