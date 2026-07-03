@@ -46,3 +46,4 @@ public interface ISettingsService
     void Save();
 
     void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameras);
+}

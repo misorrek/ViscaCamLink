@@ -1,9 +1,8 @@
 namespace ViscaCamLink.Tests.Services;
 
 using Shouldly;
-
 using Moq;
-using ViscaCamLink.Repositories;
+
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca;
 using ViscaCamLink.Repositories.Presets;
@@ -12,12 +11,15 @@ public sealed class PresetServiceTests
 {
     private readonly Mock<IViscaController> _viscaController = new();
     private readonly Mock<IPresetRepository> _repository = new();
+    private readonly Mock<ISettingsService> _settingsService = new();
+    private readonly Guid _cameraId = Guid.NewGuid();
     private readonly PresetService _presetService;
 
     public PresetServiceTests()
     {
-        _repository.Setup(r => r.Load()).Returns(CreateDefaultPresetData());
-        _presetService = new PresetService(_viscaController.Object, _repository.Object);
+        _settingsService.Setup(s => s.ActiveCameraProfileId).Returns(_cameraId);
+        _repository.Setup(r => r.LoadForCameraProfile(_cameraId)).Returns(CreateDefaultPresetData());
+        _presetService = new PresetService(_viscaController.Object, _repository.Object, _settingsService.Object);
     }
 
     [Theory]
@@ -76,7 +78,7 @@ public sealed class PresetServiceTests
         _presetService.RenamePreset(0, "Home");
 
         _presetService.GetPresetName(0).ShouldBe("Home");
-        _repository.Verify(r => r.Save(It.IsAny<PresetData>()), Times.Once);
+        _repository.Verify(r => r.SaveForCameraProfile(_cameraId, It.IsAny<PresetData>()), Times.Once);
     }
 
     [Fact]
@@ -95,7 +97,7 @@ public sealed class PresetServiceTests
     {
         _presetService.RenamePreset(99, "Unknown");
 
-        _repository.Verify(r => r.Save(It.IsAny<PresetData>()), Times.Never);
+        _repository.Verify(r => r.SaveForCameraProfile(_cameraId, It.IsAny<PresetData>()), Times.Never);
     }
 
     [Fact]
@@ -180,7 +182,7 @@ public sealed class PresetServiceTests
     {
         _presetService.AddGroup("Second");
 
-        _repository.Verify(r => r.Save(It.IsAny<PresetData>()), Times.Once);
+        _repository.Verify(r => r.SaveForCameraProfile(_cameraId, It.IsAny<PresetData>()), Times.Once);
     }
 
     [Fact]
@@ -252,7 +254,7 @@ public sealed class PresetServiceTests
     {
         _presetService.RenameGroup("default", "Main Camera");
 
-        _repository.Verify(r => r.Save(It.IsAny<PresetData>()), Times.Once);
+        _repository.Verify(r => r.SaveForCameraProfile(_cameraId, It.IsAny<PresetData>()), Times.Once);
     }
 
     [Fact]
@@ -271,7 +273,7 @@ public sealed class PresetServiceTests
     {
         _presetService.RenameGroup("nonexistent", "Whatever");
 
-        _repository.Verify(r => r.Save(It.IsAny<PresetData>()), Times.Never);
+        _repository.Verify(r => r.SaveForCameraProfile(_cameraId, It.IsAny<PresetData>()), Times.Never);
     }
 
     [Fact]

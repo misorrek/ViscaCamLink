@@ -21,7 +21,7 @@ public sealed class PresetRepository : IPresetRepository
         _pathForCamera = pathForCamera;
     }
 
-    public PresetData LoadForCamera(Guid cameraId)
+    public PresetData LoadForCameraProfile(Guid cameraId)
     {
         var filePath = _pathForCamera(cameraId);
 
@@ -66,7 +66,7 @@ public sealed class PresetRepository : IPresetRepository
         {
             using (var stream = File.Create(tempPath))
             {
-                JsonSerializer.Serialize(stream, data, RepositoryJsonContext.Default.PresetData);
+                JsonSerializer.Serialize(stream, presetData, RepositoryJsonContext.Default.PresetData);
             }
 
             File.Move(tempPath, filePath, overwrite: true);

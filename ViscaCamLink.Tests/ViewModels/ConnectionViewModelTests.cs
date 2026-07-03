@@ -1,13 +1,12 @@
 namespace ViscaCamLink.Tests.ViewModels;
 
-using Shouldly;
-
 using Moq;
-
+using Shouldly;
+using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;
 using ViscaCamLink.Visca.Types;
-using ViscaCamLink.Infrastructure.Interface;
 
 public sealed class ConnectionViewModelTests
 {
@@ -15,11 +14,15 @@ public sealed class ConnectionViewModelTests
     private readonly Mock<ICameraConnectionService> _connectionService = new();
     private readonly Mock<IPowerService> _powerService = new();
     private readonly Mock<IUiDispatcher> _uiDispatcher = new();
+    private readonly Mock<IDialogService> _dialogService = new();
+    private readonly CameraProfile _activeCameraProfile = new() { Name = "Cam", Ip = "192.168.0.1", Port = 5678 };
 
     public ConnectionViewModelTests()
     {
-        _settings.SetupGet(s => s.Ip).Returns("192.168.0.1");
-        _settings.SetupGet(s => s.Port).Returns(5678);
+        _settings.SetupGet(s => s.ActiveCameraProfile).Returns(_activeCameraProfile);
+        _settings.SetupGet(s => s.ActiveCameraProfileId).Returns(_activeCameraProfile.Id);
+        _settings.SetupGet(s => s.CameraProfiles).Returns(new List<CameraProfile> { _activeCameraProfile });
+        _settings.SetupGet(s => s.UseMultipleCameraProfiles).Returns(false);
 
         _uiDispatcher
             .Setup(d => d.InvokeAsync(It.IsAny<Action>()))
@@ -78,5 +81,5 @@ public sealed class ConnectionViewModelTests
     }
 
     private ConnectionViewModel CreateViewModel() =>
-        new(_settings.Object, _connectionService.Object, _powerService.Object, _uiDispatcher.Object);
+        new(_settings.Object, _connectionService.Object, _powerService.Object, _uiDispatcher.Object, _dialogService.Object);
 }

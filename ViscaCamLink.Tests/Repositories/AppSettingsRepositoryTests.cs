@@ -26,8 +26,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
 
         var settings = repository.Load();
 
-        settings.Ip.ShouldBe("192.168.0.1");
-        settings.Port.ShouldBe(5678);
+        settings.CameraProfiles.ShouldBeEmpty();
         settings.Language.ShouldBe(Language.System);
         File.Exists(_settingsFilePath).ShouldBeTrue();
     }
@@ -36,11 +35,12 @@ public sealed class AppSettingsRepositoryTests : IDisposable
     public void SaveAndLoad_RoundTripsValues()
     {
         var repository = new AppSettingsRepository(_settingsFilePath, _legacyRoot);
+        var camera = new CameraProfile { Name = "Test", Ip = "10.1.2.3", Port = 1234 };
         var settings = new AppSettings
         {
             LogLevel = Microsoft.Extensions.Logging.LogLevel.Debug,
-            Ip = "10.1.2.3",
-            Port = 1234,
+            CameraProfiles = [camera],
+            ActiveCameraProfileId = camera.Id,
             MemoryContainerVisible = false,
             MoveContainerVisible = false,
             ZoomContainerVisible = false,
@@ -54,8 +54,9 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         var loadedSettings = repository.Load();
 
         loadedSettings.LogLevel.ShouldBe(Microsoft.Extensions.Logging.LogLevel.Debug);
-        loadedSettings.Ip.ShouldBe("10.1.2.3");
-        loadedSettings.Port.ShouldBe(1234);
+        loadedSettings.CameraProfiles.Count.ShouldBe(1);
+        loadedSettings.CameraProfiles[0].Ip.ShouldBe("10.1.2.3");
+        loadedSettings.CameraProfiles[0].Port.ShouldBe(1234);
         loadedSettings.MemoryContainerVisible.ShouldBeFalse();
         loadedSettings.MoveContainerVisible.ShouldBeFalse();
         loadedSettings.ZoomContainerVisible.ShouldBeFalse();
@@ -93,8 +94,10 @@ public sealed class AppSettingsRepositoryTests : IDisposable
 
         var settings = repository.Load();
 
-        settings.Ip.ShouldBe("172.16.0.10");
-        settings.Port.ShouldBe(4321);
+        settings.CameraProfiles.Count.ShouldBe(1);
+        settings.CameraProfiles[0].Ip.ShouldBe("172.16.0.10");
+        settings.CameraProfiles[0].Port.ShouldBe(4321);
+        settings.ActiveCameraProfileId.ShouldBe(settings.CameraProfiles[0].Id);
         settings.MemoryContainerVisible.ShouldBeFalse();
         settings.MoveContainerVisible.ShouldBeTrue();
         settings.ZoomContainerVisible.ShouldBeFalse();

@@ -130,7 +130,7 @@ public sealed class AppSettingsRepository
         }
 
         settings.CameraProfiles.Add(profile);
-        settings.ActiveCameraId = profile.Id;
+        settings.ActiveCameraProfileId = profile.Id;
     }
 
     private static void ApplyLegacyValue(AppSettings settings, Dictionary<string, string> values, string propertyName)

@@ -23,7 +23,7 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         settings.CameraProfiles.FirstOrDefault(c => c.Id == settings.ActiveCameraProfileId)
         ?? settings.CameraProfiles.FirstOrDefault();
 
-    public Guid ActiveCameraId => ActiveCameraProfile?.Id ?? Guid.Empty;
+    public Guid ActiveCameraProfileId => ActiveCameraProfile?.Id ?? Guid.Empty;
 
     public bool UseMultipleCameraProfiles
     {

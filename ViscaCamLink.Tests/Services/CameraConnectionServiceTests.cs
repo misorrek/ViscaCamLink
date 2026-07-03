@@ -1,9 +1,8 @@
 namespace ViscaCamLink.Tests.Services;
 
-using Shouldly;
-
 using Moq;
-
+using Shouldly;
+using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
@@ -15,15 +14,16 @@ public sealed class CameraConnectionServiceTests
 
     private readonly Mock<IViscaController> _viscaController = new();
     private readonly Mock<ISettingsService> _settings = new();
+    private readonly Mock<IPresetService> _presetService = new();
+    private readonly CameraProfile _activeCamera = new() { Name = "Cam", Ip = "192.168.1.100", Port = 5678 };
 
     public CameraConnectionServiceTests()
     {
-        _settings.Setup(s => s.Ip).Returns("192.168.1.100");
-        _settings.Setup(s => s.Port).Returns(5678);
+        _settings.Setup(s => s.ActiveCameraProfile).Returns(_activeCamera);
     }
 
     private CameraConnectionService CreateService(TimeSpan? interval = null) =>
-        new(_viscaController.Object, _settings.Object, interval);
+        new(_viscaController.Object, _settings.Object, _presetService.Object, interval);
 
     // ── Existing tests ────────────────────────────────────────────────────────
 
@@ -109,13 +109,17 @@ public sealed class CameraConnectionServiceTests
     }
 
     [Fact]
-    public void CommitConnectionSettings_UpdatesSettings()
+    public void CommitConnectionSettings_UpdatesCamera()
     {
+        _settings.Setup(s => s.ActiveCameraProfile).Returns(_activeCamera);
+
         using var svc = CreateService();
         svc.CommitConnectionSettings("10.0.0.1", 1234);
 
-        _settings.VerifySet(s => s.Ip = "10.0.0.1");
-        _settings.VerifySet(s => s.Port = 1234);
+        _settings.Verify(s => s.UpdateCameraProfile(It.Is<CameraProfile>(p =>
+            p.Id == _activeCamera.Id &&
+            p.Ip == "10.0.0.1" &&
+            p.Port == 1234)), Times.Once);
     }
 
     // ── Health-check tests ────────────────────────────────────────────────────
