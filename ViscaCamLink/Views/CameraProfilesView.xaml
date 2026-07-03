@@ -1,0 +1,175 @@
+﻿<Window x:Class="ViscaCamLink.Views.CameraProfilesView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:ViscaCamLink.Converters"
+        xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
+        xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewmodels:CameraProfilesViewModel}"
+        Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"
+        Width="480"
+        Height="Auto"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ViscaCamLink;component/Util/CommonStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <converters:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter"
+                                                  TrueValue="Visible"
+                                                  FalseValue="Collapsed" />
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <StackPanel Margin="16,16,16,12">
+
+        <!-- Title row -->
+        <TextBlock Text="{Binding [CameraProfiles_Title], Source={x:Static localization:TranslationSource.Instance}}"
+                   Style="{StaticResource HeaderTextBlock}"
+                   Margin="0,0,0,12" />
+
+        <!-- Camera list -->
+        <Border Style="{StaticResource BaseBorder}"
+                Height="160"
+                Margin="0,0,0,8">
+            <ListBox ItemsSource="{Binding Cameras}"
+                     SelectedItem="{Binding SelectedCamera}"
+                     BorderThickness="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type viewmodels:CameraProfileItemViewModel}">
+                        <Grid Margin="4,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding Name}"
+                                       Style="{StaticResource BaseTextBlock}" />
+                            <TextBlock Grid.Column="1"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource SecondaryForegroundBrush}"
+                                       Text="{Binding Ip, StringFormat={}{0}}"
+                                       Style="{StaticResource BaseTextBlock}"
+                                       Margin="8,0,0,0" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <!-- List action buttons -->
+        <StackPanel Orientation="Horizontal"
+                    Margin="0,0,0,12"
+                    IsEnabled="{Binding IsEditing, Converter={StaticResource InverseBooleanConverter}}">
+
+            <Button Content="{Binding [Common_Add], Source={x:Static localization:TranslationSource.Instance}}"
+                    Command="{Binding AddCommand}"
+                    Style="{StaticResource DialogButton}"
+                    Width="80"
+                    Height="28"
+                    Margin="0,0,6,0" />
+
+            <Button Content="{Binding [Common_Edit], Source={x:Static localization:TranslationSource.Instance}}"
+                    Command="{Binding EditCommand}"
+                    Style="{StaticResource DialogButton}"
+                    Width="80"
+                    Height="28"
+                    Margin="0,0,6,0" />
+
+            <Button Content="{Binding [Common_Delete], Source={x:Static localization:TranslationSource.Instance}}"
+                    Command="{Binding DeleteCommand}"
+                    Style="{StaticResource DialogButton}"
+                    Width="80"
+                    Height="28" />
+        </StackPanel>
+
+        <!-- Edit panel -->
+        <Border Style="{StaticResource BaseBorder}"
+                Padding="12"
+                Margin="0,0,0,12"
+                Visibility="{Binding IsEditing, Converter={StaticResource FalseToCollapsedConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="{Binding [CameraProfile_Name], Source={x:Static localization:TranslationSource.Instance}}"
+                           Style="{StaticResource BaseTextBlock}" />
+                <TextBox Grid.Row="0" Grid.Column="1"
+                         Height="28"
+                         Margin="0,0,0,6"
+                         Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource BaseTextBox}" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="{Binding [CameraProfile_Ip], Source={x:Static localization:TranslationSource.Instance}}"
+                           Style="{StaticResource BaseTextBlock}" />
+                <TextBox Grid.Row="1" Grid.Column="1"
+                         Height="28"
+                         Margin="0,0,0,6"
+                         Text="{Binding EditIp, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource BaseTextBox}" />
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="{Binding [CameraProfile_Port], Source={x:Static localization:TranslationSource.Instance}}"
+                           Style="{StaticResource BaseTextBlock}" />
+                <TextBox Grid.Row="2" Grid.Column="1"
+                         Height="28"
+                         Margin="0,0,0,10"
+                         Text="{Binding EditPort, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource BaseTextBox}" />
+
+                <StackPanel Grid.Row="3" Grid.Column="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Content="{Binding [Common_Cancel], Source={x:Static localization:TranslationSource.Instance}}"
+                            Command="{Binding CancelEditCommand}"
+                            Style="{StaticResource DialogButton}"
+                            Width="80"
+                            Height="28"
+                            Margin="0,0,6,0" />
+                    <Button Content="{Binding [Common_Save], Source={x:Static localization:TranslationSource.Instance}}"
+                            Command="{Binding SaveEditCommand}"
+                            Style="{StaticResource DialogButton}"
+                            Width="80"
+                            Height="28" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Bottom buttons -->
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="{Binding [Connection_Reconnect], Source={x:Static localization:TranslationSource.Instance}}"
+                    Command="{Binding ConnectCommand}"
+                    Style="{StaticResource DialogButton}"
+                    Width="100"
+                    Height="30"
+                    Margin="0,0,8,0" />
+            <Button Content="{Binding [Common_OK], Source={x:Static localization:TranslationSource.Instance}}"
+                    Command="{Binding CloseCommand}"
+                    Style="{StaticResource DialogButton}"
+                    Width="80"
+                    Height="30" />
+        </StackPanel>
+
+    </StackPanel>
+</Window>

@@ -345,7 +345,7 @@ public class ConnectionViewModel : ViewModelBase
 
     private void ExecuteManageCameras()
     {
-        // TODO _dialogService.ShowCameraManagerDialog();
+        _dialogService.ShowCameraProfilesDialog();
         RefreshFromActiveCamera();
         RefreshMultipleCameraMode();
     }

@@ -5,12 +5,22 @@ using ViscaCamLink.ViewModels;
 using ViscaCamLink.Views;
 
 public sealed class DialogService(
-    IOptionsViewModelFactory optionsViewModelFactory) : IDialogService
+    IOptionsViewModelFactory optionsViewModelFactory,
+    ISettingsService settingsService,
+    ICameraConnectionService connectionService) : IDialogService
 {
     public void ShowOptionsDialog()
     {
         var view = new OptionsView();
         var viewModel = optionsViewModelFactory.Create(() => view.Close());
+        view.DataContext = viewModel;
+        view.ShowDialog();
+    }
+
+    public void ShowCameraProfilesDialog()
+    {
+        var view = new CameraProfilesView();
+        var viewModel = new CameraProfilesViewModel(settingsService, connectionService, () => view.Close());
         view.DataContext = viewModel;
         view.ShowDialog();
     }

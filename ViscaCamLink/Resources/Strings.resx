@@ -311,4 +311,22 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="CameraProfile_DefaultName" xml:space="preserve">
     <value>Camera {0}</value>
   </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Common_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="CameraProfile_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="CameraProfile_Ip" xml:space="preserve">
+    <value>Ip address</value>
+  </data>
+  <data name="CameraProfile_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
 </root>

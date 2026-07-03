@@ -311,4 +311,22 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="CameraProfile_DefaultName" xml:space="preserve">
     <value>Kamera {0}</value>
   </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
+  <data name="Common_Edit" xml:space="preserve">
+    <value>Anpassen</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="CameraProfile_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="CameraProfile_Ip" xml:space="preserve">
+    <value>IP-Adresse</value>
+  </data>
+  <data name="CameraProfile_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
 </root>
