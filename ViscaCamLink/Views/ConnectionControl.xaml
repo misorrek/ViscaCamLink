@@ -63,23 +63,14 @@
                 <Button DockPanel.Dock="Right"
                         Width="24"
                         VerticalAlignment="Stretch"
-                        Command="{Binding ManageCamerasCommand}"
-                        Style="{StaticResource BorderlessButton}"
-                        ToolTip="{Binding [CameraManager_Title], Source={x:Static localization:TranslationSource.Instance}}">
-                    <Path Data="{StaticResource Options}"
-                          Style="{StaticResource Icon16Path}" />
-                </Button>
-                <Button DockPanel.Dock="Right"
-                        Width="24"
-                        VerticalAlignment="Stretch"
                         Command="{Binding NextCameraCommand}"
                         IsEnabled="{Binding IsSwitching, Converter={StaticResource InverseBooleanConverter}}"
                         Style="{StaticResource BorderlessButton}">
                     <Path Data="{StaticResource Angle}"
                           Style="{StaticResource Icon16Path}">
-                        <Path.RenderTransform>
-                            <ScaleTransform ScaleX="-1" ScaleY="1" CenterX="12" CenterY="12" />
-                        </Path.RenderTransform>
+                        <Path.LayoutTransform>
+                            <RotateTransform Angle="180" />
+                        </Path.LayoutTransform>
                     </Path>
                 </Button>
                 <TextBlock HorizontalAlignment="Center"
@@ -186,6 +177,17 @@
                 <Label Margin="4,0,0,0"
                        Content="{Binding ConnectionInfo}"
                        Style="{StaticResource BaseLabel}"/>
+
+                <Button DockPanel.Dock="Right"
+                        Width="24"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding ManageCamerasCommand}"
+                        Style="{StaticResource BorderlessButton}"
+                        Visibility="{Binding UseMultipleCameras, Converter={StaticResource FalseToCollapsedConverter}}"
+                        ToolTip="{Binding [CameraManager_Title], Source={x:Static localization:TranslationSource.Instance}}">
+                    <Path Data="{StaticResource Options}"
+                          Style="{StaticResource Icon16Path}" />
+                </Button>
 
                 <Button DockPanel.Dock="Right"
                         Width="24"
