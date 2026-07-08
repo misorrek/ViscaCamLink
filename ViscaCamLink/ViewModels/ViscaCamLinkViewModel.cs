@@ -110,19 +110,46 @@ public class ViscaCamLinkViewModel : ViewModelBase
             switch (container)
             {
                 case "Connection":
-                    ConnectionContainerVisible = !ConnectionContainerVisible;
+                    ConnectionContainerVisible = ToggleContainer(ConnectionContainerVisible);
                     break;
                 case "Memory":
-                    MemoryContainerVisible = !MemoryContainerVisible;
+                    MemoryContainerVisible = ToggleContainer(MemoryContainerVisible);
                     break;
                 case "Move":
-                    MoveContainerVisible = !MoveContainerVisible;
+                    MoveContainerVisible = ToggleContainer(MoveContainerVisible);
                     break;
                 case "Zoom":
-                    ZoomContainerVisible = !ZoomContainerVisible;
+                    ZoomContainerVisible = ToggleContainer(ZoomContainerVisible);
                     break;
             }
         }
+    }
+
+    private bool ToggleContainer(bool currentVisibility)
+    {
+        if (currentVisibility)
+        {
+            var visibleCount = CountVisibleContainers();
+
+            if (visibleCount <= 1)
+            {
+                return true;
+            }
+        }
+
+        return !currentVisibility;
+    }
+
+    private int CountVisibleContainers()
+    {
+        var count = 0;
+
+        if (ConnectionContainerVisible) count++;
+        if (MemoryContainerVisible) count++;
+        if (MoveContainerVisible) count++;
+        if (ZoomContainerVisible) count++;
+
+        return count;
     }
 
     private void OnUpdateAvailable(object? sender, UpdateInfo info)
