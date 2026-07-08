@@ -35,6 +35,10 @@ public interface ISettingsService
 
     WindowPlacementData? WindowPlacement { get; set; }
 
+    bool MinimizeToCompactWindow { get; set; }
+
+    WindowPlacementData? CompactWindowPlacement { get; set; }
+
     void AddCameraProfile(CameraProfile profile);
 
     void RemoveCameraProfile(Guid id);
@@ -45,5 +49,5 @@ public interface ISettingsService
 
     void Save();
 
-    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameras);
+    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameras, bool minimizeToCompactWindow);
 }

@@ -85,6 +85,18 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         set => settings.WindowPlacement = value;
     }
 
+    public bool MinimizeToCompactWindow
+    {
+        get => settings.MinimizeToCompactWindow;
+        set => settings.MinimizeToCompactWindow = value;
+    }
+
+    public WindowPlacementData? CompactWindowPlacement
+    {
+        get => settings.CompactWindowPlacement;
+        set => settings.CompactWindowPlacement = value;
+    }
+
     // TODO: Check if id is still in the collection?
     public void AddCameraProfile(CameraProfile profile)
     {
@@ -145,7 +157,7 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
 
     public void Save() => settingsRepository.Save(settings);
 
-    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameraProfiles)
+    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameraProfiles, bool minimizeToCompactWindow)
     {
         if (!Language.Equals(language))
         {
@@ -179,6 +191,13 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         if (UseMultipleCameraProfiles != useMultipleCameraProfiles)
         {
             UseMultipleCameraProfiles = useMultipleCameraProfiles;
+
+            Save();
+        }
+
+        if (MinimizeToCompactWindow != minimizeToCompactWindow)
+        {
+            MinimizeToCompactWindow = minimizeToCompactWindow;
 
             Save();
         }
