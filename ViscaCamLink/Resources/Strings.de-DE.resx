@@ -329,4 +329,10 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="CameraProfile_Port" xml:space="preserve">
     <value>Port</value>
   </data>
+  <data name="Options_UseMultipleCameras" xml:space="preserve">
+    <value>Mehrere Kamera-Profile verwenden</value>
+  </data>
+  <data name="Options_MinimizeToCompactWindow" xml:space="preserve">
+    <value>Kompakte Ansicht beim Minimieren verwenden</value>
+  </data>
 </root>

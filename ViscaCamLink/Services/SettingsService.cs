@@ -91,12 +91,6 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         set => settings.MinimizeToCompactWindow = value;
     }
 
-    public WindowPlacementData? CompactWindowPlacement
-    {
-        get => settings.CompactWindowPlacement;
-        set => settings.CompactWindowPlacement = value;
-    }
-
     // TODO: Check if id is still in the collection?
     public void AddCameraProfile(CameraProfile profile)
     {

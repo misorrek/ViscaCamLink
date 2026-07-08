@@ -329,4 +329,10 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="CameraProfile_Port" xml:space="preserve">
     <value>Port</value>
   </data>
+  <data name="Options_UseMultipleCameras" xml:space="preserve">
+    <value>Use multiple camera profiles</value>
+  </data>
+  <data name="Options_MinimizeToCompactWindow" xml:space="preserve">
+    <value>Use compact view when minimizing</value>
+  </data>
 </root>

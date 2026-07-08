@@ -36,7 +36,5 @@ public sealed class AppSettings
 
     public bool MinimizeToCompactWindow { get; set; } = true;
 
-    public WindowPlacementData? CompactWindowPlacement { get; set; }
-
     public bool WixUninstallPrompted { get; set; } = false;
 }

@@ -37,8 +37,6 @@ public interface ISettingsService
 
     bool MinimizeToCompactWindow { get; set; }
 
-    WindowPlacementData? CompactWindowPlacement { get; set; }
-
     void AddCameraProfile(CameraProfile profile);
 
     void RemoveCameraProfile(Guid id);

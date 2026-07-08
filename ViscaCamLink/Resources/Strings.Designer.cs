@@ -459,6 +459,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Use compact view when minimizing ähnelt.
+        /// </summary>
+        public static string Options_MinimizeToCompactWindow {
+            get {
+                return ResourceManager.GetString("Options_MinimizeToCompactWindow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Numpad preset layout ähnelt.
         /// </summary>
         public static string Options_NumpadLayout {
@@ -473,6 +482,15 @@ namespace ViscaCamLink.Resources {
         public static string Options_RestartNeeded {
             get {
                 return ResourceManager.GetString("Options_RestartNeeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Use multiple camera profiles ähnelt.
+        /// </summary>
+        public static string Options_UseMultipleCameras {
+            get {
+                return ResourceManager.GetString("Options_UseMultipleCameras", resourceCulture);
             }
         }
         
