@@ -7,6 +7,8 @@ public sealed class CameraMovementService(IViscaController viscaController) : IC
 {
     public int MaxPanTiltSpeed => viscaController.MaxPanSpeed;
 
+    public int MaxProportionalTiltSpeed => viscaController.MaxTiltSpeed;
+
     public int MaxZoomSpeed => viscaController.MaxZoomSpeed;
 
     public byte GetProportionalTiltSpeed(int panTiltSpeed)

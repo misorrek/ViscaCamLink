@@ -6,6 +6,8 @@ public interface ICameraMovementService
 {
     int MaxPanTiltSpeed { get; }
 
+    int MaxProportionalTiltSpeed { get; }
+
     int MaxZoomSpeed { get; }
 
     byte GetProportionalTiltSpeed(int panTiltSpeed);

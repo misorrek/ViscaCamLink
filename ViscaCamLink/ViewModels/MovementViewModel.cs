@@ -15,8 +15,22 @@ public class MovementViewModel : ViewModelBase
 
     private DateTime _lastMousePanTiltTime = DateTime.MinValue;
     private bool _isMousePanning;
+    private Point? _mousePanStartPosition;
 
-    private static readonly TimeSpan MousePanTiltThrottle = TimeSpan.FromMilliseconds(100);
+    private const int MousePanTiltThrottleMilliseconds = 100;
+    private static readonly TimeSpan MousePanTiltThrottle = TimeSpan.FromMilliseconds(MousePanTiltThrottleMilliseconds);
+
+    /// <summary>
+    /// Horizontal drag distance (in device-independent pixels) required to reach maximum pan speed.
+    /// Increase to make the mouse pad less sensitive; decrease to make it more responsive.
+    /// </summary>
+    private const double MousePanSensitivity = 200.0;
+
+    /// <summary>
+    /// Vertical drag distance (in device-independent pixels) required to reach maximum tilt speed.
+    /// Increase to make the mouse pad less sensitive; decrease to make it more responsive.
+    /// </summary>
+    private const double MouseTiltSensitivity = 200.0;
 
     public MovementViewModel(
         ICameraMovementService movementService,
@@ -113,6 +127,20 @@ public class MovementViewModel : ViewModelBase
 
         IsMousePanning = true;
 
+        var position = eventArgs.GetPosition(element);
+
+        if (parameter is MouseButtonEventArgs)
+        {
+            _mousePanStartPosition = position;
+            _lastMousePanTiltTime = DateTime.UtcNow - MousePanTiltThrottle;
+            return;
+        }
+
+        if (_mousePanStartPosition is null)
+        {
+            return;
+        }
+
         var now = DateTime.UtcNow;
         if (now - _lastMousePanTiltTime < MousePanTiltThrottle)
             return;
@@ -120,9 +148,10 @@ public class MovementViewModel : ViewModelBase
         _lastMousePanTiltTime = now;
         MovementStarted?.Invoke();
 
-        var position = eventArgs.GetPosition(element);
-        var panSpeed = NormalizeSpeed(position.X, element.ActualWidth, _movementService.MaxPanTiltSpeed);
-        var tiltSpeed = -NormalizeSpeed(position.Y, element.ActualHeight, _movementService.MaxPanTiltSpeed);
+        var deltaX = position.X - _mousePanStartPosition.Value.X;
+        var deltaY = position.Y - _mousePanStartPosition.Value.Y;
+        var panSpeed = NormalizeSpeedFromDelta(deltaX, MousePanSensitivity, _movementService.MaxPanTiltSpeed);
+        var tiltSpeed = -NormalizeSpeedFromDelta(deltaY, MouseTiltSensitivity, _movementService.MaxProportionalTiltSpeed);
         var panTiltDirection = GetPanTiltDirectionFromSpeed(panSpeed, tiltSpeed);
 
         await TryCameraOperation(_movementService.PanTiltAsync(panTiltDirection, AbsSpeed(panSpeed), AbsSpeed(tiltSpeed)));
@@ -132,6 +161,7 @@ public class MovementViewModel : ViewModelBase
     {
         IsMousePanning = false;
         _lastMousePanTiltTime = DateTime.MinValue;
+        _mousePanStartPosition = null;
         await TryCameraOperation(_movementService.StopPanTiltAsync());
     }
 
@@ -142,7 +172,8 @@ public class MovementViewModel : ViewModelBase
 
     private void ExecuteMoveSpeedDecrease()
     {
-        if (_settings.PanTiltSpeed > 1)
+        const int MinimumPanTiltSpeed = 1;
+        if (_settings.PanTiltSpeed > MinimumPanTiltSpeed)
         {
             _settings.PanTiltSpeed--;
             NotifyPropertyChanged(nameof(PanTiltSpeed));
@@ -158,12 +189,17 @@ public class MovementViewModel : ViewModelBase
         }
     }
 
-    private static byte AbsSpeed(int speed) => (byte)Math.Max(Math.Abs(speed), 1);
-
-    private static int NormalizeSpeed(double position, double visualScale, int maxValue)
+    private static byte AbsSpeed(int speed)
     {
-        double scaledPosition = (position / visualScale) * 2 - 1;
-        int speed = (int)(scaledPosition * (maxValue + 1));
+        const int MinimumSpeed = 1;
+        return (byte)Math.Max(Math.Abs(speed), MinimumSpeed);
+    }
+
+    private static int NormalizeSpeedFromDelta(double delta, double sensitivity, int maxValue)
+    {
+        const int SpeedScaleFactor = 1;
+        double scaledDelta = delta / sensitivity;
+        int speed = (int)(scaledDelta * (maxValue + SpeedScaleFactor));
         speed = Math.Min(speed, maxValue);
         speed = Math.Max(speed, -maxValue);
 
