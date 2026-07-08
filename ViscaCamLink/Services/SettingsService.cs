@@ -31,6 +31,12 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         set => settings.UseMultipleCameraProfiles = value;
     }
 
+    public bool ConnectionContainerVisible
+    {
+        get => settings.ConnectionContainerVisible;
+        set => settings.ConnectionContainerVisible = value;
+    }
+
     public bool MemoryContainerVisible
     {
         get => settings.MemoryContainerVisible;

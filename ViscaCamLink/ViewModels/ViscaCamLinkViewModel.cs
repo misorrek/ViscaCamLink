@@ -63,6 +63,16 @@ public class ViscaCamLinkViewModel : ViewModelBase
 
     public ICommand OptionsCommand { get; }
 
+    public bool ConnectionContainerVisible
+    {
+        get => _settings.ConnectionContainerVisible;
+        set
+        {
+            _settings.ConnectionContainerVisible = value;
+            NotifyPropertyChanged();
+        }
+    }
+
     public bool MemoryContainerVisible
     {
         get => _settings.MemoryContainerVisible;
@@ -99,6 +109,9 @@ public class ViscaCamLinkViewModel : ViewModelBase
         {
             switch (container)
             {
+                case "Connection":
+                    ConnectionContainerVisible = !ConnectionContainerVisible;
+                    break;
                 case "Memory":
                     MemoryContainerVisible = !MemoryContainerVisible;
                     break;

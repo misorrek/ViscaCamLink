@@ -78,6 +78,16 @@
                         Width="40" Height="40"
                         BorderThickness="0"
                         Command="{Binding SidebarCommand}"
+                        CommandParameter="Connection"
+                        extensions:SidebarButtonExtension.BorderVisibility="{Binding ConnectionContainerVisible,
+                                                                               Converter={StaticResource FalseToHiddenConverter}}"
+                        extensions:SidebarButtonExtension.PathData="{StaticResource Connection}"
+                        Style="{StaticResource SidebarButton}" />
+
+                <Button DockPanel.Dock="Top"
+                        Width="40" Height="40"
+                        BorderThickness="0"
+                        Command="{Binding SidebarCommand}"
                         CommandParameter="Memory"
                         extensions:SidebarButtonExtension.BorderVisibility="{Binding MemoryContainerVisible,
                                                                                Converter={StaticResource FalseToHiddenConverter}}"
@@ -145,7 +155,10 @@
         <StackPanel Grid.Column="1"
                     Orientation="Vertical">
 
-            <views:ConnectionControl DataContext="{Binding Connection}" />
+            <views:ConnectionControl DataContext="{Binding Connection}"
+                                     Visibility="{Binding DataContext.ConnectionContainerVisible,
+                                                           RelativeSource={RelativeSource AncestorType=Window},
+                                                           Converter={StaticResource FalseToCollapsedConverter}}" />
 
             <views:PresetsControl DataContext="{Binding Presets}"
                                   Visibility="{Binding DataContext.MemoryContainerVisible,

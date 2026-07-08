@@ -13,6 +13,8 @@ public interface ISettingsService
 
     Guid ActiveCameraProfileId { get; }
 
+    bool ConnectionContainerVisible { get; set; }
+
     bool MemoryContainerVisible { get; set; }
 
     bool MoveContainerVisible { get; set; }

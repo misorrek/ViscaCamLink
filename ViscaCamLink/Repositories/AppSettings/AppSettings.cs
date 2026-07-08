@@ -14,6 +14,8 @@ public sealed class AppSettings
 
     public Guid ActiveCameraProfileId { get; set; } = Guid.Empty;
 
+    public bool ConnectionContainerVisible { get; set; } = true;
+
     public bool MemoryContainerVisible { get; set; } = true;
 
     public bool MoveContainerVisible { get; set; } = true;
