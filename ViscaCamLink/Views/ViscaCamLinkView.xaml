@@ -12,6 +12,8 @@
         d:DataContext="{d:DesignInstance Type=viewmodels:ViscaCamLinkViewModel}"
         Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"
         Width="350"
+        MinWidth="250"
+        MaxWidth="500"
         SizeToContent="Height"
         ResizeMode="CanResize"
         LayoutUpdated="Window_LayoutUpdated"
