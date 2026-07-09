@@ -85,7 +85,7 @@
                        LastChildFill="False"
                        Visibility="{Binding UseMultipleCameras, Converter={StaticResource TrueToCollapsedConverter}}">
                 <TextBox DockPanel.Dock="Left"
-                         BorderBrush="{StaticResource DefaultBorderBrush}"
+                         BorderBrush="{DynamicResource DefaultBorderBrush}"
                          Text="{Binding Ip}"
                          IsReadOnly="{Binding IsEditingConnection, 
                                               Converter={StaticResource InverseBooleanConverter}}"
@@ -99,7 +99,7 @@
                            Style="{StaticResource HeaderTextBlock}" />
 
                 <TextBox DockPanel.Dock="Left"
-                         BorderBrush="{StaticResource DefaultBorderBrush}"
+                         BorderBrush="{DynamicResource DefaultBorderBrush}"
                          Text="{Binding Port}"
                          IsReadOnly="{Binding IsEditingConnection,
                                               Converter={StaticResource InverseBooleanConverter}}"

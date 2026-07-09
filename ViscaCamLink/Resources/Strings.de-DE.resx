@@ -171,6 +171,15 @@
   <data name="Language_System" xml:space="preserve">
     <value>Systembasiert</value>
   </data>
+  <data name="Theme_System" xml:space="preserve">
+    <value>Systembasiert</value>
+  </data>
+  <data name="Theme_Light" xml:space="preserve">
+    <value>Hell</value>
+  </data>
+  <data name="Theme_Dark" xml:space="preserve">
+    <value>Dunkel</value>
+  </data>
   <data name="Options_Availability" xml:space="preserve">
     <value>Bald verfügbar!</value>
   </data>
@@ -179,6 +188,9 @@
   </data>
   <data name="Options_LanguageSelection" xml:space="preserve">
     <value>Wähle die Anzeigesprache</value>
+  </data>
+  <data name="Options_ThemeSelection" xml:space="preserve">
+    <value>Design auswählen</value>
   </data>
   <data name="Options_NumpadLayout" xml:space="preserve">
     <value>Numpad-Anordnung der Presets</value>

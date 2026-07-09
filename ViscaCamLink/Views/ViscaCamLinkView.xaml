@@ -29,7 +29,7 @@
             <Style x:Key="SidebarButton"
                    TargetType="{x:Type interface:SidebarButton}">
                 <Setter Property="Background"
-                        Value="{StaticResource SecondaryBackgroundBrush}"/>
+                        Value="{DynamicResource SecondaryBackgroundBrush}"/>
                 <Setter Property="Width" Value="40"/>
                 <Setter Property="Height" Value="40"/>
                 <Setter Property="BorderThickness" Value="0"/>
@@ -42,7 +42,7 @@
                                             Width="3"
                                             CornerRadius="1"
                                             BorderThickness="0"
-                                            Background="{StaticResource PrimaryHighlightBrush}"
+                                            Background="{DynamicResource PrimaryHighlightBrush}"
                                             Visibility="{Binding IsActive,
                                                                  RelativeSource={RelativeSource TemplatedParent},
                                                                  Converter={StaticResource FalseToHiddenConverter}}"/>
@@ -57,7 +57,7 @@
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background"
-                                Value="{StaticResource PrimaryForegroundBrush}" />
+                                Value="{DynamicResource PrimaryForegroundBrush}" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -73,10 +73,10 @@
         <!-- Side pane -->
         <Border Grid.Column="0"
                 BorderThickness="0,0,1,0"
-                BorderBrush="{StaticResource DefaultBorderBrush}">
+                BorderBrush="{DynamicResource DefaultBorderBrush}">
 
             <DockPanel LastChildFill="False"
-                       Background="{StaticResource SecondaryBackgroundBrush}">
+                       Background="{DynamicResource SecondaryBackgroundBrush}">
 
                 <interface:SidebarButton DockPanel.Dock="Top"
                                          Command="{Binding SidebarCommand}"

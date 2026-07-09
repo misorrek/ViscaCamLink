@@ -85,8 +85,8 @@
 
             <Button Width="140"
                     Content="{Binding [Updater_Update], Source={x:Static localization:TranslationSource.Instance}}"
-                    Background="{StaticResource PrimaryForegroundBrush}"
-                    Foreground="{StaticResource PrimaryBackgroundBrush}"
+                    Background="{DynamicResource PrimaryForegroundBrush}"
+                    Foreground="{DynamicResource PrimaryBackgroundBrush}"
                     Command="{Binding UpdateCommand}"
                     Style="{StaticResource DialogButton}" />
 

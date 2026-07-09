@@ -171,6 +171,15 @@
   <data name="Language_System" xml:space="preserve">
     <value>System based</value>
   </data>
+  <data name="Theme_System" xml:space="preserve">
+    <value>System based</value>
+  </data>
+  <data name="Theme_Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Theme_Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
   <data name="Options_Availability" xml:space="preserve">
     <value>Available soon!</value>
   </data>
@@ -179,6 +188,9 @@
   </data>
   <data name="Options_LanguageSelection" xml:space="preserve">
     <value>Choose the display language </value>
+  </data>
+  <data name="Options_ThemeSelection" xml:space="preserve">
+    <value>Choose the app theme</value>
   </data>
   <data name="Options_NumpadLayout" xml:space="preserve">
     <value>Numpad preset layout</value>

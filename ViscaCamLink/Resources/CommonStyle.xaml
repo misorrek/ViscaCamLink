@@ -5,6 +5,7 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/ViscaCamLink;component/Resources/Icons.xaml" />
+        <!-- Theme dictionary is injected at runtime by ThemeHelper into Application.Resources -->
     </ResourceDictionary.MergedDictionaries>
     
     <!--#region Constants-->    
@@ -16,40 +17,6 @@
     <FontFamily x:Key="DefaultFontFamily">Segoe UI</FontFamily>
     <FontWeight x:Key="DefaultFontWeight">Normal</FontWeight>
     <FontWeight x:Key="HeaderFontWeight">SemiBold</FontWeight>
-
-    <Color x:Key="PrimaryBackgroundColor">#FFFFFF</Color>
-    <Color x:Key="SecondaryBackgroundColor">#33214E</Color>
-    <Color x:Key="PrimaryForegroundColor">#51367B</Color>
-    <Color x:Key="SecondaryForegroundColor">#FFFFFF</Color>
-    <Color x:Key="PrimaryHighlightColor">#BAADF4</Color>
-    <Color x:Key="SecondaryHighlightColor">#D3CCF9</Color>
-    <Color x:Key="PrimaryPressedColor">#9770E4</Color>
-    <Color x:Key="SecondaryPressedColor">#A58CED</Color>
-    <Color x:Key="PrimaryDisabledColor">#E6E3FC</Color>
-    <Color x:Key="SecondaryDisabledColor">#F2F0FD</Color>
-    <Color x:Key="DefaultBorderColor">#D3D3D3</Color>
-    <Color x:Key="DefaultFontColor">#000000</Color>
-
-    <SolidColorBrush x:Key="PrimaryBackgroundBrush"
-                     Color="{StaticResource PrimaryBackgroundColor}" />
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush"
-                     Color="{StaticResource SecondaryBackgroundColor}" />
-    <SolidColorBrush x:Key="PrimaryForegroundBrush"
-                     Color="{StaticResource PrimaryForegroundColor}" />
-    <SolidColorBrush x:Key="SecondaryForegroundBrush"
-                     Color="{StaticResource SecondaryForegroundColor}" />
-    <SolidColorBrush x:Key="PrimaryHighlightBrush"
-                     Color="{StaticResource PrimaryHighlightColor}" />
-    <SolidColorBrush x:Key="SecondaryHighlightBrush"
-                     Color="{StaticResource SecondaryHighlightColor}" />
-    <SolidColorBrush x:Key="PrimaryPressedBrush"
-                     Color="{StaticResource PrimaryPressedColor}" />
-    <SolidColorBrush x:Key="SecondaryPressedBrush"
-                     Color="{StaticResource SecondaryPressedColor}" />
-    <SolidColorBrush x:Key="DefaultBorderBrush"
-                     Color="{StaticResource DefaultBorderColor}" />
-    <SolidColorBrush x:Key="DefaultFontBrush"
-                     Color="{StaticResource DefaultFontColor}" />
 
     <Thickness x:Key="DefaultMargin"
                Left="4"
@@ -120,7 +87,7 @@
         <Setter Property="BorderThickness"
                 Value="{StaticResource DefaultBorderThickness}" />
         <Setter Property="BorderBrush"
-                Value="{StaticResource DefaultBorderBrush}" />
+                Value="{DynamicResource DefaultBorderBrush}" />
         <Setter Property="CornerRadius"
                 Value="{StaticResource DefaultCornerRadius}" />
     </Style>
@@ -133,7 +100,7 @@
         <Setter Property="Background"
                 Value="Transparent" />
         <Setter Property="Foreground"
-                Value="{StaticResource DefaultFontBrush}" />
+                Value="{DynamicResource DefaultFontBrush}" />
         <Setter Property="FontSize"
                 Value="{StaticResource DefaultFontSize}" />
         <Setter Property="FontFamily"
@@ -150,7 +117,7 @@
         <Setter Property="Background"
                 Value="Transparent" />
         <Setter Property="Foreground"
-                Value="{StaticResource DefaultFontBrush}" />
+                Value="{DynamicResource DefaultFontBrush}" />
         <Setter Property="FontSize"
                 Value="{StaticResource DefaultFontSize}" />
         <Setter Property="FontFamily"
@@ -165,7 +132,7 @@
         <Setter Property="Background"
                 Value="Transparent" />
         <Setter Property="Foreground"
-                Value="{StaticResource DefaultFontBrush}" />
+                Value="{DynamicResource DefaultFontBrush}" />
         <Setter Property="FontSize"
                 Value="{StaticResource DefaultFontSize}" />
         <Setter Property="FontFamily"
@@ -202,14 +169,14 @@
                                  Value="True">
                             <Setter Property="BorderBrush" 
                                     TargetName="Border" 
-                                    Value="{StaticResource SecondaryHighlightBrush}"/>
+                                    Value="{DynamicResource SecondaryHighlightBrush}"/>
                         </Trigger>
                         
                         <Trigger Property="IsFocused" 
                                  Value="True">
                             <Setter Property="BorderBrush"
                                     TargetName="Border" 
-                                    Value="{StaticResource PrimaryHighlightBrush}"/>
+                                    Value="{DynamicResource PrimaryHighlightBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -221,11 +188,11 @@
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="Background"
-                Value="{StaticResource PrimaryBackgroundBrush}" />
+                Value="{DynamicResource PrimaryBackgroundBrush}" />
         <Setter Property="Foreground"
-                Value="{StaticResource DefaultFontBrush}" />
+                Value="{DynamicResource DefaultFontBrush}" />
         <Setter Property="BorderBrush"
-                Value="{StaticResource DefaultBorderBrush}" />
+                Value="{DynamicResource DefaultBorderBrush}" />
         <Setter Property="FontSize"
                 Value="{StaticResource DefaultFontSize}" />
         <Setter Property="FontFamily"
@@ -264,19 +231,19 @@
                         <Trigger Property="IsMouseOver" 
                                  Value="True">
                             <Setter Property="Background"
-                                    Value="{StaticResource SecondaryHighlightBrush}" />
+                                    Value="{DynamicResource SecondaryHighlightBrush}" />
                             <Setter Property="BorderBrush" 
                                     TargetName="Border" 
-                                    Value="{StaticResource PrimaryHighlightBrush}"/>
+                                    Value="{DynamicResource PrimaryHighlightBrush}"/>
                         </Trigger>
 
                         <Trigger Property="IsPressed"
                                  Value="True">
                             <Setter Property="Background"
-                                    Value="{StaticResource PrimaryHighlightBrush}" />
+                                    Value="{DynamicResource PrimaryHighlightBrush}" />
                             <Setter Property="BorderBrush" 
                                     TargetName="Border" 
-                                    Value="{StaticResource PrimaryForegroundBrush}"/>
+                                    Value="{DynamicResource PrimaryForegroundBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -296,7 +263,7 @@
         <Setter Property="Background"
                 Value="Transparent" />
         <Setter Property="Foreground"
-                Value="{StaticResource PrimaryForegroundBrush}" />
+                Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="FontSize"
                 Value="{StaticResource PrimaryHeaderFontSize}" />
         <Setter Property="FontWeight"
@@ -307,7 +274,7 @@
            TargetType="{x:Type TextBox}"
            BasedOn="{StaticResource BaseTextBox}">
         <Setter Property="Foreground"
-                Value="{StaticResource PrimaryForegroundBrush}" />
+                Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="BorderThickness"
                 Value="0,0,0,2" />
         <Setter Property="FontSize"
@@ -333,7 +300,7 @@
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource BaseButton}">
         <Setter Property="Foreground"
-                Value="{StaticResource PrimaryForegroundBrush}" />
+                Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="FontSize"
                 Value="{StaticResource SecondaryHeaderFontSize}" />
     </Style>
@@ -342,7 +309,7 @@
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource BaseButton}">
         <Setter Property="Foreground"
-                Value="{StaticResource PrimaryForegroundBrush}" />
+                Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="FontSize"
                 Value="{StaticResource PrimaryHeaderFontSize}" />
     </Style>
@@ -356,7 +323,7 @@
         <Setter Property="Stretch"
                 Value="Uniform" />
         <Setter Property="Fill"
-                Value="{StaticResource PrimaryForegroundBrush}" />
+                Value="{DynamicResource PrimaryForegroundBrush}" />
     </Style>
 
     <Style x:Key="Icon12Path"
@@ -385,7 +352,7 @@
         <Setter Property="Width"
                 Value="20" />
         <Setter Property="Fill"
-                Value="{StaticResource PrimaryBackgroundBrush}" />
+                Value="{DynamicResource PrimaryBackgroundBrush}" />
     </Style>
 
     <!--#endregion-->
@@ -408,8 +375,8 @@
                     <Border Height="4"
                             BorderThickness="1,1,0,1"                            
                             CornerRadius="1"
-                            BorderBrush="LightGray"
-                            Background="White" />
+                            BorderBrush="{DynamicResource DefaultBorderBrush}"
+                            Background="{DynamicResource PrimaryBackgroundBrush}" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -431,8 +398,8 @@
                     <Border Height="4"
                             BorderThickness="0,1,1,1"
                             CornerRadius="1" 
-                            BorderBrush="LightGray"
-                            Background="White" />
+                            BorderBrush="{DynamicResource DefaultBorderBrush}"
+                            Background="{DynamicResource PrimaryBackgroundBrush}" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -445,7 +412,7 @@
         <Setter Property="OverridesDefaultStyle" 
                 Value="true" />
         <Setter Property="Foreground"
-                Value="{StaticResource PrimaryForegroundBrush}" />
+                Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
@@ -459,7 +426,7 @@
             <Trigger Property="IsMouseOver"
                      Value="True">
                 <Setter Property="Foreground"
-                        Value="{StaticResource PrimaryHighlightBrush}" />
+                        Value="{DynamicResource PrimaryHighlightBrush}" />
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -551,9 +518,9 @@
             <Border x:Name="Border"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
-                    Background="{StaticResource PrimaryBackgroundBrush}"
+                    Background="{DynamicResource PrimaryBackgroundBrush}"
                     BorderThickness="{StaticResource DefaultBorderThickness}"
-                    BorderBrush="{StaticResource DefaultBorderBrush}"
+                    BorderBrush="{DynamicResource DefaultBorderBrush}"
                     CornerRadius="{StaticResource DefaultCornerRadius}" />
 
             <Path x:Name="Arrow"
@@ -575,7 +542,7 @@
                      Value="True">
                 <Setter TargetName="Border"
                         Property="Background"
-                        Value="{StaticResource SecondaryHighlightBrush}" />
+                        Value="{DynamicResource SecondaryHighlightBrush}" />
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -621,9 +588,9 @@
                                   MinWidth="{TemplateBinding ActualWidth}"
                                   MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border x:Name="DropDownBorder"
-                                       Background="{StaticResource PrimaryBackgroundBrush}"
+                                       Background="{DynamicResource PrimaryBackgroundBrush}"
                                        BorderThickness="{StaticResource DefaultBorderThickness}"
-                                       BorderBrush="{StaticResource DefaultBorderBrush}"
+                                       BorderBrush="{DynamicResource DefaultBorderBrush}"
                                        CornerRadius="{StaticResource DefaultCornerRadius}" />
                                 <ScrollViewer Margin="4,6,4,6"
                                               SnapsToDevicePixels="True">

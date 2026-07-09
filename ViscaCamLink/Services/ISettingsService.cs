@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Services;
 
 using ViscaCamLink.Infrastructure.Localization;
+using ViscaCamLink.Infrastructure.Theming;
 using ViscaCamLink.Repositories.AppSettings;
 
 public interface ISettingsService
@@ -27,6 +28,8 @@ public interface ISettingsService
 
     Language Language { get; set; }
 
+    Theme Theme { get; set; }
+
     bool NumpadLayout { get; set; }
 
     bool GlobalHotKeys { get; set; }
@@ -49,5 +52,5 @@ public interface ISettingsService
 
     void Save();
 
-    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameras, bool minimizeToCompactWindow);
+    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameras, bool minimizeToCompactWindow, Theme theme);
 }

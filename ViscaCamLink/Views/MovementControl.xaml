@@ -68,8 +68,8 @@
                         <Setter Property="IsEnabled" Value="False" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding IsMousePanning}" Value="True">
-                        <Setter Property="Background" Value="{StaticResource PrimaryHighlightBrush}" />
-                        <Setter Property="BorderBrush" Value="{StaticResource PrimaryForegroundBrush}" />
+                        <Setter Property="Background" Value="{DynamicResource PrimaryHighlightBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryForegroundBrush}" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>

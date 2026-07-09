@@ -3,12 +3,15 @@ namespace ViscaCamLink.Repositories.AppSettings;
 using Microsoft.Extensions.Logging;
 
 using ViscaCamLink.Infrastructure.Localization;
+using ViscaCamLink.Infrastructure.Theming;
 
 public sealed class AppSettings
 {
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
     public Language Language { get; set; } = Language.System;
+
+    public Theme Theme { get; set; } = Theme.System;
 
     public List<CameraProfile> CameraProfiles { get; set; } = [];
 

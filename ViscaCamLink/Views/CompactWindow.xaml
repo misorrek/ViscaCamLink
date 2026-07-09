@@ -43,7 +43,7 @@
             <Style x:Key="TitleBarIconPath"
                    TargetType="{x:Type Path}"
                    BasedOn="{StaticResource Icon12Path}">
-                <Setter Property="Fill" Value="{StaticResource SecondaryForegroundBrush}" />
+                <Setter Property="Fill" Value="{DynamicResource SecondaryForegroundBrush}" />
             </Style>
 
             <!-- Movement triggers (x:Shared="False" → each button gets its own instance) -->
@@ -87,8 +87,8 @@
                         <Setter Property="IsEnabled" Value="False" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding IsMousePanning}" Value="True">
-                        <Setter Property="Background" Value="{StaticResource PrimaryHighlightBrush}" />
-                        <Setter Property="BorderBrush" Value="{StaticResource PrimaryForegroundBrush}" />
+                        <Setter Property="Background" Value="{DynamicResource PrimaryHighlightBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryForegroundBrush}" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -125,7 +125,7 @@
     <!-- Root border: rounded corners + drop shadow -->
     <Border CornerRadius="12"
             Margin="4"
-            Background="{StaticResource PrimaryBackgroundBrush}">
+            Background="{DynamicResource PrimaryBackgroundBrush}">
         <Border.Effect>
             <DropShadowEffect ShadowDepth="2"
                               BlurRadius="8"
@@ -137,7 +137,7 @@
             <!-- Title bar (draggable region) -->
             <Border DockPanel.Dock="Top"
                     Height="28"
-                    Background="{StaticResource SecondaryBackgroundBrush}"
+                    Background="{DynamicResource SecondaryBackgroundBrush}"
                     CornerRadius="12,12,0,0"
                     MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                 <DockPanel LastChildFill="False"
@@ -179,7 +179,7 @@
                             Style="{StaticResource TitleBarButton}">
                         <Border Width="10"
                                 Height="10"
-                                BorderBrush="{StaticResource SecondaryForegroundBrush}"
+                                BorderBrush="{DynamicResource SecondaryForegroundBrush}"
                                 BorderThickness="1.5" />
                     </Button>
 
@@ -190,7 +190,7 @@
                             Style="{StaticResource TitleBarButton}">
                         <Rectangle Width="10"
                                    Height="2"
-                                   Fill="{StaticResource SecondaryForegroundBrush}" />
+                                   Fill="{DynamicResource SecondaryForegroundBrush}" />
                     </Button>
                 </DockPanel>
             </Border>

@@ -358,6 +358,33 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die System based ähnelt.
+        /// </summary>
+        public static string Theme_System {
+            get {
+                return ResourceManager.GetString("Theme_System", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Light ähnelt.
+        /// </summary>
+        public static string Theme_Light {
+            get {
+                return ResourceManager.GetString("Theme_Light", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dark ähnelt.
+        /// </summary>
+        public static string Theme_Dark {
+            get {
+                return ResourceManager.GetString("Theme_Dark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ViscaCamLink has been reinstalled as a per-user app and will keep itself up to date automatically.
         ///
         ///The previous system-wide installation is no longer needed. You can remove it now — or later via Windows Settings → Apps. ähnelt.
@@ -455,6 +482,15 @@ namespace ViscaCamLink.Resources {
         public static string Options_LanguageSelection {
             get {
                 return ResourceManager.GetString("Options_LanguageSelection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Choose the app theme ähnelt.
+        /// </summary>
+        public static string Options_ThemeSelection {
+            get {
+                return ResourceManager.GetString("Options_ThemeSelection", resourceCulture);
             }
         }
         

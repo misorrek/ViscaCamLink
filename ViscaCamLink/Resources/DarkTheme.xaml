@@ -1,0 +1,38 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="PrimaryBackgroundColor">#1E1B2E</Color>
+    <Color x:Key="SecondaryBackgroundColor">#2D2456</Color>
+    <Color x:Key="PrimaryForegroundColor">#9B7FE8</Color>
+    <Color x:Key="SecondaryForegroundColor">#FFFFFF</Color>
+    <Color x:Key="PrimaryHighlightColor">#6B52C8</Color>
+    <Color x:Key="SecondaryHighlightColor">#3D3567</Color>
+    <Color x:Key="PrimaryPressedColor">#5040A8</Color>
+    <Color x:Key="SecondaryPressedColor">#4D4490</Color>
+    <Color x:Key="PrimaryDisabledColor">#3D3567</Color>
+    <Color x:Key="SecondaryDisabledColor">#2D2456</Color>
+    <Color x:Key="DefaultBorderColor">#4A4466</Color>
+    <Color x:Key="DefaultFontColor">#E8E8F0</Color>
+
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush"     
+                     Color="{StaticResource PrimaryBackgroundColor}" />
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush"   
+                     Color="{StaticResource SecondaryBackgroundColor}" />
+    <SolidColorBrush x:Key="PrimaryForegroundBrush"     
+                     Color="{StaticResource PrimaryForegroundColor}" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush"
+                     Color="{StaticResource SecondaryForegroundColor}" />
+    <SolidColorBrush x:Key="PrimaryHighlightBrush"      
+                     Color="{StaticResource PrimaryHighlightColor}" />
+    <SolidColorBrush x:Key="SecondaryHighlightBrush"
+                     Color="{StaticResource SecondaryHighlightColor}" />
+    <SolidColorBrush x:Key="PrimaryPressedBrush"
+                     Color="{StaticResource PrimaryPressedColor}" />
+    <SolidColorBrush x:Key="SecondaryPressedBrush"      
+                     Color="{StaticResource SecondaryPressedColor}" />
+    <SolidColorBrush x:Key="DefaultBorderBrush"         
+                     Color="{StaticResource DefaultBorderColor}" />
+    <SolidColorBrush x:Key="DefaultFontBrush"           
+                     Color="{StaticResource DefaultFontColor}" />
+
+</ResourceDictionary>

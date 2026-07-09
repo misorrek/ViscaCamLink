@@ -1,9 +1,10 @@
 namespace ViscaCamLink.Services;
 
 using ViscaCamLink.Infrastructure.Localization;
+using ViscaCamLink.Infrastructure.Theming;
 using ViscaCamLink.Repositories.AppSettings;
 
-public sealed class SettingsService(AppSettings settings, AppSettingsRepository settingsRepository, Action<Language> applyLocalization) : ISettingsService
+public sealed class SettingsService(AppSettings settings, AppSettingsRepository settingsRepository, Action<Language> applyLocalization, Action<Theme> applyTheme) : ISettingsService
 {
     public Microsoft.Extensions.Logging.LogLevel LogLevel
     {
@@ -15,6 +16,12 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
     {
         get => settings.Language;
         set => settings.Language = value;
+    }
+
+    public Theme Theme
+    {
+        get => settings.Theme;
+        set => settings.Theme = value;
     }
 
     public IReadOnlyList<CameraProfile> CameraProfiles => settings.CameraProfiles;
@@ -157,7 +164,7 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
 
     public void Save() => settingsRepository.Save(settings);
 
-    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameraProfiles, bool minimizeToCompactWindow)
+    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameraProfiles, bool minimizeToCompactWindow, Theme theme)
     {
         if (!Language.Equals(language))
         {
@@ -200,6 +207,14 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
             MinimizeToCompactWindow = minimizeToCompactWindow;
 
             Save();
+        }
+
+        if (Theme != theme)
+        {
+            Theme = theme;
+
+            Save();
+            applyTheme(theme);
         }
     }
 }

@@ -44,6 +44,7 @@
             }
 
             LocalizationHelper.ApplyLocalization(appSettings.Language);
+            ThemeHelper.ApplyTheme(appSettings.Theme);
 
             _serviceProvider = ConfigureServices(appSettings, settingsRepository);
 
@@ -85,7 +86,8 @@
             services.AddSingleton<ISettingsService>(sp => new SettingsService(
                 sp.GetRequiredService<AppSettings>(),
                 sp.GetRequiredService<AppSettingsRepository>(),
-                LocalizationHelper.ApplyLocalization));
+                LocalizationHelper.ApplyLocalization,
+                ThemeHelper.ApplyTheme));
             services.AddSingleton<IPresetRepository, PresetRepository>();
             services.AddSingleton<IViscaClient>(sp =>
             {

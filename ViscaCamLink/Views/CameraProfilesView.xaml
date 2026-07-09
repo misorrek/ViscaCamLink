@@ -54,7 +54,7 @@
                                        Style="{StaticResource BaseTextBlock}" />
                             <TextBlock Grid.Column="1"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource SecondaryForegroundBrush}"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
                                        Text="{Binding Ip, StringFormat={}{0}}"
                                        Style="{StaticResource BaseTextBlock}"
                                        Margin="8,0,0,0" />

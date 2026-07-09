@@ -95,8 +95,8 @@
                    StaysOpen="True"
                    AllowsTransparency="True"
                    PopupAnimation="Fade">
-                <Border Background="{StaticResource PrimaryBackgroundBrush}"
-                        BorderBrush="{StaticResource DefaultBorderBrush}"
+                <Border Background="{DynamicResource PrimaryBackgroundBrush}"
+                        BorderBrush="{DynamicResource DefaultBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="4"
                         Padding="8,4">
@@ -104,7 +104,7 @@
                         <DropShadowEffect ShadowDepth="2" BlurRadius="6" Opacity="0.2" />
                     </Border.Effect>
                     <TextBlock Text="{Binding MemoryInfo}"
-                               Foreground="{StaticResource DefaultFontBrush}"
+                               Foreground="{DynamicResource DefaultFontBrush}"
                                FontSize="{StaticResource DefaultFontSize}"
                                FontFamily="{StaticResource DefaultFontFamily}"
                                FontWeight="{StaticResource DefaultFontWeight}" />
@@ -156,8 +156,8 @@
                         </Style>
                     </Ellipse.Style>
                 </Ellipse>
-                <Border Background="{StaticResource PrimaryBackgroundBrush}"
-                        BorderBrush="{StaticResource PrimaryHighlightBrush}"
+                <Border Background="{DynamicResource PrimaryBackgroundBrush}"
+                        BorderBrush="{DynamicResource PrimaryHighlightBrush}"
                         BorderThickness="1" CornerRadius="4" Margin="0,4,0,0">
                     <Border.Visibility>
                         <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
@@ -168,7 +168,7 @@
                     <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
                              Margin="4,0" BorderThickness="0" Background="Transparent"
-                             Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20"
+                             Foreground="{DynamicResource PrimaryForegroundBrush}" MaxLength="20"
                              IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                 </Border>
             </Grid>
@@ -235,8 +235,8 @@
                                     </Style>
                                 </Ellipse.Style>
                             </Ellipse>
-                            <Border Background="{StaticResource PrimaryBackgroundBrush}"
-                                    BorderBrush="{StaticResource PrimaryHighlightBrush}"
+                            <Border Background="{DynamicResource PrimaryBackgroundBrush}"
+                                    BorderBrush="{DynamicResource PrimaryHighlightBrush}"
                                     BorderThickness="1" CornerRadius="4">
                                 <Border.Visibility>
                                     <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
@@ -250,7 +250,7 @@
                                                         UpdateSourceTrigger=PropertyChanged}"
                                          VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
                                          Margin="4,0" BorderThickness="0" Background="Transparent"
-                                         Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20"
+                                         Foreground="{DynamicResource PrimaryForegroundBrush}" MaxLength="20"
                                          IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                             </Border>
                         </Grid>
@@ -303,8 +303,8 @@
                         </Style>
                     </Ellipse.Style>
                 </Ellipse>
-                <Border Background="{StaticResource PrimaryBackgroundBrush}"
-                        BorderBrush="{StaticResource PrimaryHighlightBrush}"
+                <Border Background="{DynamicResource PrimaryBackgroundBrush}"
+                        BorderBrush="{DynamicResource PrimaryHighlightBrush}"
                         BorderThickness="1" CornerRadius="4" Margin="0,4,0,0">
                     <Border.Visibility>
                         <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
@@ -315,7 +315,7 @@
                     <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
                              Margin="4,0" BorderThickness="0" Background="Transparent"
-                             Foreground="{StaticResource PrimaryForegroundBrush}" MaxLength="20"
+                             Foreground="{DynamicResource PrimaryForegroundBrush}" MaxLength="20"
                              IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                 </Border>
             </Grid>
@@ -380,11 +380,11 @@
                                                BasedOn="{StaticResource BaseButton}">
                                             <Setter Property="Padding" Value="6,3" />
                                             <Setter Property="Background"
-                                                    Value="{StaticResource SecondaryBackgroundBrush}" />
+                                                    Value="{DynamicResource SecondaryBackgroundBrush}" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsActive}" Value="True">
                                                     <Setter Property="Background"
-                                                            Value="{StaticResource PrimaryHighlightBrush}" />
+                                                            Value="{DynamicResource PrimaryHighlightBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -398,8 +398,8 @@
                                         </behaviors:EventTrigger>
                                     </behaviors:Interaction.Triggers>
                                 </Button>
-                                <Border Background="{StaticResource PrimaryBackgroundBrush}"
-                                        BorderBrush="{StaticResource PrimaryHighlightBrush}"
+                                <Border Background="{DynamicResource PrimaryBackgroundBrush}"
+                                        BorderBrush="{DynamicResource PrimaryHighlightBrush}"
                                         BorderThickness="1" CornerRadius="3"
                                         Visibility="{Binding IsRenaming,
                                                              Converter={StaticResource FalseToCollapsedConverter}}">
@@ -408,7 +408,7 @@
                                                             UpdateSourceTrigger=PropertyChanged}"
                                              VerticalContentAlignment="Center"
                                              Margin="4,0" BorderThickness="0" Background="Transparent"
-                                             Foreground="{StaticResource PrimaryForegroundBrush}"
+                                             Foreground="{DynamicResource PrimaryForegroundBrush}"
                                              FontSize="11" MaxLength="20" MinWidth="40"
                                              IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                                 </Border>

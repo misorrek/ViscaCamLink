@@ -5,8 +5,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Infrastructure.Localization;
+using ViscaCamLink.Infrastructure.Theming;
 using ViscaCamLink.Services;
 
 public class OptionsViewModel : INotifyPropertyChanged
@@ -27,10 +29,12 @@ public class OptionsViewModel : INotifyPropertyChanged
         HotKeyCaptureCommand = new Command(ExecuteHotKeyCapture);
         HotKeyPreviewKeyDownCommand = new Command(ExecuteHotKeyPreviewKeyDown);
         LanguageItems = GetLanguageItems();
+        ThemeItems = GetThemeItems();
         HotKeyBindings = new ObservableCollection<HotKeyBindingItemViewModel>(
             _hotKeyService.Bindings.Select(binding => new HotKeyBindingItemViewModel(binding)));
 
         _selectedLanguage = _settings.Language;
+        _selectedTheme = _settings.Theme;
         _numpadLayout = _settings.NumpadLayout;
         _globalHotKeys = _settings.GlobalHotKeys;
         _usePresetGroups = _settings.UsePresetGroups;
@@ -50,6 +54,8 @@ public class OptionsViewModel : INotifyPropertyChanged
     public ICommand HotKeyPreviewKeyDownCommand { get; }
 
     public IEnumerable<LanguageItem> LanguageItems { get; }
+
+    public IEnumerable<ThemeItem> ThemeItems { get; }
 
     public ObservableCollection<HotKeyBindingItemViewModel> HotKeyBindings { get; }
 
@@ -83,6 +89,18 @@ public class OptionsViewModel : INotifyPropertyChanged
         set
         {
             _selectedLanguage = value;
+
+            NotifyPropertyChanged();
+        }
+    }
+
+    public Theme SelectedTheme
+    {
+        get => _selectedTheme;
+
+        set
+        {
+            _selectedTheme = value;
 
             NotifyPropertyChanged();
         }
@@ -146,6 +164,7 @@ public class OptionsViewModel : INotifyPropertyChanged
     private Action CloseHandler { get; }
 
     private Language _selectedLanguage;
+    private Theme _selectedTheme;
     private bool _numpadLayout;
     private bool _globalHotKeys;
     private bool _usePresetGroups;
@@ -168,7 +187,7 @@ public class OptionsViewModel : INotifyPropertyChanged
             return;
         }
 
-        _settings.ApplyOptions(_selectedLanguage, _numpadLayout, _globalHotKeys, _usePresetGroups, _useMultipleCameraProfiles, _minimizeToCompactWindow);
+        _settings.ApplyOptions(_selectedLanguage, _numpadLayout, _globalHotKeys, _usePresetGroups, _useMultipleCameraProfiles, _minimizeToCompactWindow, _selectedTheme);
         _hotKeyService.ApplyBindings(HotKeyBindings.Select(binding => binding.ToBinding()).ToList());
 
         CloseHandler.Invoke();
@@ -179,7 +198,7 @@ public class OptionsViewModel : INotifyPropertyChanged
         CloseHandler.Invoke();
     }
 
-    private static IEnumerable<LanguageItem> GetLanguageItems()
+    private static List<LanguageItem> GetLanguageItems()
     {
         var languages = new List<LanguageItem>();
 
@@ -189,6 +208,18 @@ public class OptionsViewModel : INotifyPropertyChanged
         }
 
         return languages;
+    }
+
+    private static List<ThemeItem> GetThemeItems()
+    {
+        var themes = new List<ThemeItem>();
+
+        foreach (var theme in Enum.GetValues<Theme>())
+        {
+            themes.Add(new ThemeItem(theme));
+        }
+
+        return themes;
     }
 
     private void ExecuteHotKeyCapture(object? parameter)
@@ -281,14 +312,16 @@ public class OptionsViewModel : INotifyPropertyChanged
         Key.LWin or Key.RWin;
 }
 
-public class LanguageItem
+public class LanguageItem(Language language)
 {
-    public LanguageItem(Language language)
-    {
-        LanguageValue = language;
-    }
-
-    public Language LanguageValue { get; }
+    public Language LanguageValue { get; } = language;
 
     public string LanguageDisplay => LanguageValue.ToLocalizedString();
+}
+
+public class ThemeItem(Theme theme)
+{
+    public Theme ThemeValue { get; } = theme;
+
+    public string ThemeDisplay => ThemeValue.ToLocalizedString();
 }

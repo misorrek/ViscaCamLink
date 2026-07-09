@@ -1,0 +1,38 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="PrimaryBackgroundColor">#FFFFFF</Color>
+    <Color x:Key="SecondaryBackgroundColor">#33214E</Color>
+    <Color x:Key="PrimaryForegroundColor">#51367B</Color>
+    <Color x:Key="SecondaryForegroundColor">#FFFFFF</Color>
+    <Color x:Key="PrimaryHighlightColor">#BAADF4</Color>
+    <Color x:Key="SecondaryHighlightColor">#D3CCF9</Color>
+    <Color x:Key="PrimaryPressedColor">#9770E4</Color>
+    <Color x:Key="SecondaryPressedColor">#A58CED</Color>
+    <Color x:Key="PrimaryDisabledColor">#E6E3FC</Color>
+    <Color x:Key="SecondaryDisabledColor">#F2F0FD</Color>
+    <Color x:Key="DefaultBorderColor">#D3D3D3</Color>
+    <Color x:Key="DefaultFontColor">#000000</Color>
+
+    <SolidColorBrush x:Key="PrimaryBackgroundBrush"
+                     Color="{StaticResource PrimaryBackgroundColor}" />
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush"
+                     Color="{StaticResource SecondaryBackgroundColor}" />
+    <SolidColorBrush x:Key="PrimaryForegroundBrush"
+                     Color="{StaticResource PrimaryForegroundColor}" />
+    <SolidColorBrush x:Key="SecondaryForegroundBrush"
+                     Color="{StaticResource SecondaryForegroundColor}" />
+    <SolidColorBrush x:Key="PrimaryHighlightBrush"
+                     Color="{StaticResource PrimaryHighlightColor}" />
+    <SolidColorBrush x:Key="SecondaryHighlightBrush"
+                     Color="{StaticResource SecondaryHighlightColor}" />
+    <SolidColorBrush x:Key="PrimaryPressedBrush"
+                     Color="{StaticResource PrimaryPressedColor}" />
+    <SolidColorBrush x:Key="SecondaryPressedBrush"
+                     Color="{StaticResource SecondaryPressedColor}" />
+    <SolidColorBrush x:Key="DefaultBorderBrush"
+                     Color="{StaticResource DefaultBorderColor}" />
+    <SolidColorBrush x:Key="DefaultFontBrush"
+                     Color="{StaticResource DefaultFontColor}" />
+
+</ResourceDictionary>

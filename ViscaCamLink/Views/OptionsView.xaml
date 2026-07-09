@@ -58,6 +58,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Column="0"
@@ -86,18 +87,39 @@
                                        HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
                                        TextWrapping="Wrap"
+                                       Text="{Binding [Options_ThemeSelection], Source={x:Static localization:TranslationSource.Instance}}"
+                                       Style="{StaticResource BaseTextBlock}" />
+
+                            <ComboBox Grid.Column="1"
+                                      Grid.Row="1"
+                                      Width="140"
+                                      Height="28"
+                                      HorizontalAlignment="Right"
+                                      ItemsSource="{Binding ThemeItems}"
+                                      SelectedValue="{Binding SelectedTheme}"
+                                      SelectedValuePath="ThemeValue"
+                                      DisplayMemberPath="ThemeDisplay"
+                                      Style="{StaticResource BaseComboBox}"
+                                      ItemContainerStyle="{StaticResource BaseComboBoxItem}" />
+
+                            <TextBlock Grid.Column="0"
+                                       Grid.Row="2"
+                                       Margin="0,8,0,0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap"
                                        Text="{Binding [Options_NumpadLayout], Source={x:Static localization:TranslationSource.Instance}}"
                                        Style="{StaticResource BaseTextBlock}" />
 
                             <CheckBox Grid.Column="1"
-                                      Grid.Row="1"
+                                      Grid.Row="2"
                                       Margin="0,8,0,0"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
                                       IsChecked="{Binding NumpadLayout}" />
 
                             <TextBlock Grid.Column="0"
-                                       Grid.Row="2"
+                                       Grid.Row="3"
                                        Margin="0,8,0,0"
                                        HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
@@ -106,14 +128,14 @@
                                        Style="{StaticResource BaseTextBlock}" />
 
                             <CheckBox Grid.Column="1"
-                                      Grid.Row="2"
+                                      Grid.Row="3"
                                       Margin="0,8,0,0"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
                                       IsChecked="{Binding UsePresetGroups}" />
 
                             <TextBlock Grid.Column="0"
-                                       Grid.Row="3"
+                                       Grid.Row="4"
                                        Margin="0,8,0,0"
                                        HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
@@ -122,14 +144,14 @@
                                        Style="{StaticResource BaseTextBlock}" />
 
                             <CheckBox Grid.Column="1"
-                                      Grid.Row="3"
+                                      Grid.Row="4"
                                       Margin="0,8,0,0"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
                                       IsChecked="{Binding UseMultipleCameraProfiles}" />
 
                             <TextBlock Grid.Column="0"
-                                       Grid.Row="4"
+                                       Grid.Row="5"
                                        Margin="0,8,0,0"
                                        HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
@@ -138,7 +160,7 @@
                                        Style="{StaticResource BaseTextBlock}" />
 
                             <CheckBox Grid.Column="1"
-                                      Grid.Row="4"
+                                      Grid.Row="5"
                                       Margin="0,8,0,0"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
@@ -252,8 +274,8 @@
             <Button Height="32"
                     Width="120"
                     Content="{Binding [Common_OK], Source={x:Static localization:TranslationSource.Instance}}"
-                    Background="{StaticResource PrimaryForegroundBrush}"
-                    Foreground="{StaticResource PrimaryBackgroundBrush}"
+                    Background="{DynamicResource PrimaryForegroundBrush}"
+                    Foreground="{DynamicResource PrimaryBackgroundBrush}"
                     Command="{Binding OkCommand}"
                     Style="{StaticResource DialogButton}" />
 
