@@ -15,16 +15,8 @@
     <ApplicationVersion>1.0.0.0</ApplicationVersion>
     <ApplicationIcon>Resources\program.ico</ApplicationIcon>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
-    <Configurations>Debug;Release;Release-Portable;Release-Velopack</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <StartupObject>ViscaCamLink.Program</StartupObject>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Portable|AnyCPU'">
-    <DefineConstants>RELEASE_PORTABLE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Velopack|AnyCPU'">
-    <DefineConstants>USE_VELOPACK</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
