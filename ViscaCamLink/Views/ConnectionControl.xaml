@@ -35,8 +35,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Margin="{StaticResource DefaultMargin}"
-            Style="{StaticResource BaseBorder}">
+    <Border Style="{StaticResource BaseBorder}">
         <Grid Margin="{StaticResource DefaultMargin}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />

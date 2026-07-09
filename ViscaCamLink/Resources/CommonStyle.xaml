@@ -63,6 +63,12 @@
                Right="4"
                Bottom="4" />
 
+    <Thickness x:Key="DefaultMarginTop"
+               Left="0"
+               Top="4"
+               Right="0"
+               Bottom="0" />
+
     <Thickness x:Key="ExtendedMargin"
                Left="8"
                Top="8"

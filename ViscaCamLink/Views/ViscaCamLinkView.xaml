@@ -141,6 +141,7 @@
 
         <!-- Container -->
         <StackPanel Grid.Column="1"
+                    Margin="{StaticResource DefaultMarginTop}"
                     Orientation="Vertical">
 
             <views:ConnectionControl DataContext="{Binding Connection}"
