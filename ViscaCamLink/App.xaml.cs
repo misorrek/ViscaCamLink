@@ -1,28 +1,24 @@
 ﻿namespace ViscaCamLink
 {
-    using System.Net.Http.Headers;
-    using System.IO;
     using System.Windows;
 
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Microsoft.Win32;
 
+    using ViscaCamLink.Infrastructure;
+    using ViscaCamLink.Infrastructure.Interface;
+    using ViscaCamLink.Infrastructure.Localization;
+    using ViscaCamLink.Infrastructure.Logging;
+    using ViscaCamLink.Infrastructure.Theming;
+    using ViscaCamLink.Repositories.AppSettings;
+    using ViscaCamLink.Repositories.HotKeys;
+    using ViscaCamLink.Repositories.Presets;
     using ViscaCamLink.Services;
     using ViscaCamLink.ViewModels;
     using ViscaCamLink.Views;
     using ViscaCamLink.Visca;
-    using ViscaCamLink.Repositories.AppSettings;
-    using ViscaCamLink.Repositories.HotKeys;
-    using ViscaCamLink.Repositories.Presets;
-    using ViscaCamLink.Infrastructure;
-    using ViscaCamLink.Infrastructure.Localization;
-    using ViscaCamLink.Infrastructure.Interface;
-    using ViscaCamLink.Infrastructure.Logging;
 
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
         private IServiceProvider? _serviceProvider;
