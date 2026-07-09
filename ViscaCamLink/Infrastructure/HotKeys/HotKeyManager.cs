@@ -1,4 +1,4 @@
-﻿namespace ViscaCamLink.Infrastructure.Interface;
+﻿namespace ViscaCamLink.Infrastructure.HotKeys;
 
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -146,7 +146,7 @@ public partial class HotKeyManager : IHotKeyManager
         {
             UnregisterHotKey(MainWindowHandle, id);
         }
-            
+
         GlobalRegistrations.Clear();
         GlobalHoldRegistrations.Clear();
         ActiveGlobalHoldVks.Clear();
@@ -180,7 +180,7 @@ public partial class HotKeyManager : IHotKeyManager
         CurrentHotKeyId++;
 
         var registered = RegisterHotKey(MainWindowHandle, CurrentHotKeyId, modifierCode, virtualKeyCode);
-        
+
         if (registered)
         {
             GlobalRegistrations.Add(CurrentHotKeyId, action);
@@ -214,7 +214,7 @@ public partial class HotKeyManager : IHotKeyManager
     private bool RegisterLocalHoldHotKey(ModifierKeys modifier, Key key, Action pressAction, Action releaseAction)
     {
         var result = RegisterLocalHotKey(modifier, key, pressAction);
-        
+
         if (result)
         {
             LocalHoldReleaseCallbacks[key] = releaseAction;
@@ -264,7 +264,7 @@ public partial class HotKeyManager : IHotKeyManager
 
     private void EnsureLowLevelHook()
     {
-        if (_llHookHandle != IntPtr.Zero) 
+        if (_llHookHandle != IntPtr.Zero)
         {
             return;
         }
@@ -273,7 +273,7 @@ public partial class HotKeyManager : IHotKeyManager
         using var curProcess = System.Diagnostics.Process.GetCurrentProcess();
         var mainModule = curProcess.MainModule;
         _llHookHandle = SetWindowsHookEx(
-            WH_KEYBOARD_LL, 
+            WH_KEYBOARD_LL,
             Marshal.GetFunctionPointerForDelegate(_llKeyboardProc),
             GetModuleHandle(mainModule?.ModuleName),
             0);
@@ -297,7 +297,7 @@ public partial class HotKeyManager : IHotKeyManager
         if (nCode >= 0 && (wParam.ToInt32() == WM_KEYUP || wParam.ToInt32() == WM_SYSKEYUP))
         {
             var hookStruct = Marshal.PtrToStructure<KBDLLHOOKSTRUCT>(lParam);
-            
+
             if (ActiveGlobalHoldVks.Remove(hookStruct.vkCode))
             {
                 foreach (var (Vk, ReleaseAction) in GlobalHoldRegistrations.Values)
@@ -316,7 +316,7 @@ public partial class HotKeyManager : IHotKeyManager
 
     private void OnLocalPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (e.IsRepeat) 
+        if (e.IsRepeat)
         {
             return;
         }
@@ -330,7 +330,7 @@ public partial class HotKeyManager : IHotKeyManager
             {
                 ActiveLocalHoldKeys.Add(key);
             }
-                
+
             action.Invoke();
             e.Handled = true;
         }
@@ -364,7 +364,7 @@ public partial class HotKeyManager : IHotKeyManager
                 action.Invoke();
             }
         }
-     
+
         return IntPtr.Zero;
     }
 

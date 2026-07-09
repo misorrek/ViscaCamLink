@@ -2,12 +2,13 @@ namespace ViscaCamLink.Tests.Services;
 
 using System.Windows.Input;
 
+using Moq;
+
 using Shouldly;
 
-using Moq;
-using ViscaCamLink.Services;
+using ViscaCamLink.Infrastructure.HotKeys;
 using ViscaCamLink.Repositories.HotKeys;
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Services;
 
 public sealed class HotKeyServiceTests
 {

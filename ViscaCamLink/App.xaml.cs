@@ -7,6 +7,7 @@
     using Microsoft.Win32;
 
     using ViscaCamLink.Infrastructure;
+    using ViscaCamLink.Infrastructure.HotKeys;
     using ViscaCamLink.Infrastructure.Interface;
     using ViscaCamLink.Infrastructure.Localization;
     using ViscaCamLink.Infrastructure.Logging;
