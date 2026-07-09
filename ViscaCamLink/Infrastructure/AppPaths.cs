@@ -28,5 +28,6 @@ public static class AppPaths
 
     // ViscaCamLink 0.3.0 wrote user.config here via .NET Framework Properties.Settings.
     // Path used to migrate settings from there.
+    // TODO: Remove this with 1.1.0 or later
     public static string LegacyUserDataRoot => LegacyLocalBase;
 }
