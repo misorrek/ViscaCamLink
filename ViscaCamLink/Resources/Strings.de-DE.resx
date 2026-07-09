@@ -216,6 +216,18 @@
   <data name="HotKeyAction_ZoomOut" xml:space="preserve">
     <value>Herauszoomen</value>
   </data>
+  <data name="HotKeyAction_CameraProfilePrevious" xml:space="preserve">
+    <value>Vorheriges Kameraprofil</value>
+  </data>
+  <data name="HotKeyAction_CameraProfileNext" xml:space="preserve">
+    <value>Nächstes Kameraprofil</value>
+  </data>
+  <data name="HotKeyAction_PresetGroupPrevious" xml:space="preserve">
+    <value>Vorherige Voreinstellungsgruppe</value>
+  </data>
+  <data name="HotKeyAction_PresetGroupNext" xml:space="preserve">
+    <value>Nächste Voreinstellungsgruppe</value>
+  </data>
   <data name="Options_HotKeyAction" xml:space="preserve">
     <value>Aktion</value>
   </data>

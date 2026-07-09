@@ -4,6 +4,7 @@ using Moq;
 using Shouldly;
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Repositories.AppSettings;
+using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;
 using ViscaCamLink.Visca.Types;
@@ -15,6 +16,7 @@ public sealed class ConnectionViewModelTests
     private readonly Mock<IPowerService> _powerService = new();
     private readonly Mock<IUiDispatcher> _uiDispatcher = new();
     private readonly Mock<IDialogService> _dialogService = new();
+    private readonly Mock<IHotKeyService> _hotKeyService = new();
     private readonly CameraProfile _activeCameraProfile = new() { Name = "Cam", Ip = "192.168.0.1", Port = 5678 };
 
     public ConnectionViewModelTests()
@@ -81,5 +83,5 @@ public sealed class ConnectionViewModelTests
     }
 
     private ConnectionViewModel CreateViewModel() =>
-        new(_settings.Object, _connectionService.Object, _powerService.Object, _uiDispatcher.Object, _dialogService.Object);
+        new(_settings.Object, _connectionService.Object, _powerService.Object, _uiDispatcher.Object, _dialogService.Object, _hotKeyService.Object);
 }

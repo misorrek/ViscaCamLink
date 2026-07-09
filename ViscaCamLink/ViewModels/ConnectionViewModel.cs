@@ -4,6 +4,7 @@ using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Repositories.AppSettings;
+using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca.Types;
@@ -32,13 +33,16 @@ public class ConnectionViewModel : ViewModelBase
         ICameraConnectionService connectionService,
         IPowerService powerService,
         IUiDispatcher uiDispatcher,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        IHotKeyService hotKeyService)
     {
         _settings = settings;
         _connectionService = connectionService;
         _powerService = powerService;
         _uiDispatcher = uiDispatcher;
         _dialogService = dialogService;
+
+        hotKeyService.RegisterActions(CreateHotKeyActions());
 
         RefreshFromActiveCamera();
 
@@ -341,6 +345,24 @@ public class ConnectionViewModel : ViewModelBase
 
         var nextIndex = (currentIndex + direction + cameras.Count) % cameras.Count;
         return cameras[nextIndex];
+    }
+
+    private IEnumerable<HotKeyActionRegistration> CreateHotKeyActions()
+    {
+        yield return new HotKeyActionRegistration(HotKeyAction.CameraProfilePrevious, () =>
+        {
+            if (CanCycleCamera())
+            {
+                ExecutePrevCamera();
+            }
+        });
+        yield return new HotKeyActionRegistration(HotKeyAction.CameraProfileNext, () =>
+        {
+            if (CanCycleCamera())
+            {
+                ExecuteNextCamera();
+            }
+        });
     }
 
     private void ExecuteManageCameras()

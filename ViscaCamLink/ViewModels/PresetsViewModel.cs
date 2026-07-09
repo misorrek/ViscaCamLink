@@ -495,6 +495,39 @@ public class PresetsViewModel : ViewModelBase
         {
             yield return new HotKeyActionRegistration(action, () => ExecutePresetHotKey(action));
         }
+
+        yield return new HotKeyActionRegistration(HotKeyAction.PresetGroupPrevious, () =>
+        {
+            if (PresetGroups.Count <= 1)
+            {
+                return;
+            }
+
+            var currentIndex = PresetGroups.ToList().FindIndex(g => g.IsActive);
+            if (currentIndex < 0)
+            {
+                return;
+            }
+
+            var previousIndex = (currentIndex - 1 + PresetGroups.Count) % PresetGroups.Count;
+            ExecuteGroupSwitch(PresetGroups[previousIndex].Id);
+        });
+        yield return new HotKeyActionRegistration(HotKeyAction.PresetGroupNext, () =>
+        {
+            if (PresetGroups.Count <= 1)
+            {
+                return;
+            }
+
+            var currentIndex = PresetGroups.ToList().FindIndex(g => g.IsActive);
+            if (currentIndex < 0)
+            {
+                return;
+            }
+
+            var nextIndex = (currentIndex + 1) % PresetGroups.Count;
+            ExecuteGroupSwitch(PresetGroups[nextIndex].Id);
+        });
     }
 
     private void ExecutePresetHotKey(HotKeyAction action)

@@ -47,6 +47,10 @@ public static class HotKeyDefinitions
         CreateDefault(HotKeyAction.MoveRight, Key.None),
         CreateDefault(HotKeyAction.ZoomIn, Key.None),
         CreateDefault(HotKeyAction.ZoomOut, Key.None),
+        CreateDefault(HotKeyAction.CameraProfilePrevious, Key.None),
+        CreateDefault(HotKeyAction.CameraProfileNext, Key.None),
+        CreateDefault(HotKeyAction.PresetGroupPrevious, Key.None),
+        CreateDefault(HotKeyAction.PresetGroupNext, Key.None),
     ];
 
     public static bool TryGetPresetPosition(HotKeyAction action, out byte presetPosition)
@@ -78,6 +82,10 @@ public static class HotKeyDefinitions
             HotKeyAction.MoveRight => TranslationSource.Instance["HotKeyAction_MoveRight"],
             HotKeyAction.ZoomIn => TranslationSource.Instance["HotKeyAction_ZoomIn"],
             HotKeyAction.ZoomOut => TranslationSource.Instance["HotKeyAction_ZoomOut"],
+            HotKeyAction.CameraProfilePrevious => TranslationSource.Instance["HotKeyAction_CameraProfilePrevious"],
+            HotKeyAction.CameraProfileNext => TranslationSource.Instance["HotKeyAction_CameraProfileNext"],
+            HotKeyAction.PresetGroupPrevious => TranslationSource.Instance["HotKeyAction_PresetGroupPrevious"],
+            HotKeyAction.PresetGroupNext => TranslationSource.Instance["HotKeyAction_PresetGroupNext"],
             _ => action.ToString(),
         };
     }

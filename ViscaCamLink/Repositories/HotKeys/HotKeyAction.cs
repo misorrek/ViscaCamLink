@@ -18,4 +18,8 @@ public enum HotKeyAction
     MoveRight,
     ZoomIn,
     ZoomOut,
+    CameraProfilePrevious,
+    CameraProfileNext,
+    PresetGroupPrevious,
+    PresetGroupNext,
 }
