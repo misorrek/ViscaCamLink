@@ -8,7 +8,7 @@
     <LangVersion>14</LangVersion>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Copyright>Copyright © 2024 Max Groiser</Copyright>
+    <Copyright>Copyright © 2026 Max Groiser</Copyright>
     <Version>1.0.0.0</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
