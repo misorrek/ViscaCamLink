@@ -1,10 +1,13 @@
 namespace ViscaCamLink.Infrastructure.Interface;
 
+using System.Windows;
 using System.Windows.Input;
 
 public interface IHotKeyManager : IDisposable
 {
     bool UseGlobalHotKeys { get; set; }
+
+    void AddLocalKeyTarget(Window window);
 
     bool RegisterHotKey(ModifierKeys modifier, Key key, Action action);
 

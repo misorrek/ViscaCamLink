@@ -1,0 +1,437 @@
+<Window x:Class="ViscaCamLink.Views.CompactWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:interface="clr-namespace:ViscaCamLink.Infrastructure.Interface"
+        xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
+        xmlns:types="clr-namespace:ViscaCamLink.Visca.Types"
+        xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewmodels:ViscaCamLinkViewModel}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        Topmost="True"
+        Width="150"
+        Height="200"
+        ShowInTaskbar="True"
+        Deactivated="Window_Deactivated"
+        Activated="Window_Activated">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Title-bar button: borderless, fits 20×20, transparent bg -->
+            <Style x:Key="TitleBarButton"
+                   TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource BorderlessButton}">
+                <Setter Property="Width" Value="20" />
+                <Setter Property="Height" Value="20" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+            </Style>
+
+            <!-- Icon path style with white fill for use on dark title bar -->
+            <Style x:Key="TitleBarIconPath"
+                   TargetType="{x:Type Path}"
+                   BasedOn="{StaticResource Icon12Path}">
+                <Setter Property="Fill" Value="{StaticResource SecondaryForegroundBrush}" />
+            </Style>
+
+            <!-- Movement triggers (x:Shared="False" → each button gets its own instance) -->
+            <interface:Triggers x:Key="CompactMoveTriggers" x:Shared="False">
+                <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                    <behaviors:InvokeCommandAction Command="{Binding MoveBeginCommand}"
+                                                   PassEventArgsToCommand="True" />
+                </behaviors:EventTrigger>
+                <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                    <behaviors:InvokeCommandAction Command="{Binding MoveEndCommand}"
+                                                   PassEventArgsToCommand="True" />
+                </behaviors:EventTrigger>
+            </interface:Triggers>
+
+            <!-- Direction button style -->
+            <Style x:Key="CompactMoveButton"
+                   TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource BaseButton}">
+                <Setter Property="interface:SupplementaryInteraction.Triggers"
+                        Value="{StaticResource CompactMoveTriggers}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsMousePanning}" Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Mouse-pan pad button style -->
+            <Style x:Key="CompactMousePadButton"
+                   TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource BaseButton}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsMousePanning}" Value="True">
+                        <Setter Property="Background" Value="{StaticResource PrimaryHighlightBrush}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource PrimaryForegroundBrush}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Zoom triggers (x:Shared="False" → each button gets its own instance) -->
+            <interface:Triggers x:Key="CompactZoomTriggers" x:Shared="False">
+                <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                    <behaviors:InvokeCommandAction Command="{Binding ZoomCommand}"
+                                                   PassEventArgsToCommand="True" />
+                </behaviors:EventTrigger>
+                <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                    <behaviors:InvokeCommandAction Command="{Binding ZoomCommand}"
+                                                   PassEventArgsToCommand="True" />
+                </behaviors:EventTrigger>
+            </interface:Triggers>
+
+            <!-- Zoom button style -->
+            <Style x:Key="CompactZoomButton"
+                   TargetType="{x:Type Button}"
+                   BasedOn="{StaticResource BaseButton}">
+                <Setter Property="interface:SupplementaryInteraction.Triggers"
+                        Value="{StaticResource CompactZoomTriggers}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection,
+                                                   RelativeSource={RelativeSource AncestorType=Window}}"
+                                 Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <!-- Root border: rounded corners + drop shadow -->
+    <Border CornerRadius="12"
+            Margin="4"
+            Background="{StaticResource PrimaryBackgroundBrush}">
+        <Border.Effect>
+            <DropShadowEffect ShadowDepth="2"
+                              BlurRadius="8"
+                              Opacity="0.4"
+                              Direction="270" />
+        </Border.Effect>
+
+        <DockPanel>
+            <!-- Title bar (draggable region) -->
+            <Border DockPanel.Dock="Top"
+                    Height="28"
+                    Background="{StaticResource SecondaryBackgroundBrush}"
+                    CornerRadius="12,12,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <DockPanel LastChildFill="False"
+                           Margin="2,0">
+
+                    <!-- Profile navigation (left) -->
+                    <Button DockPanel.Dock="Left"
+                            Command="{Binding Connection.PrevCameraCommand}"
+                            ToolTip="{Binding [Compact_PrevProfile], Source={x:Static localization:TranslationSource.Instance}}"
+                            Style="{StaticResource TitleBarButton}">
+                        <Path Data="{StaticResource Angle}"
+                              Style="{StaticResource TitleBarIconPath}" />
+                    </Button>
+                    <Button DockPanel.Dock="Left"
+                            Command="{Binding Connection.NextCameraCommand}"
+                            ToolTip="{Binding [Compact_NextProfile], Source={x:Static localization:TranslationSource.Instance}}"
+                            Style="{StaticResource TitleBarButton}">
+                        <Path Data="{StaticResource Angle}"
+                              Style="{StaticResource TitleBarIconPath}">
+                            <Path.RenderTransform>
+                                <RotateTransform Angle="180" CenterX="6" CenterY="6" />
+                            </Path.RenderTransform>
+                        </Path>
+                    </Button>
+
+                    <!-- Chrome: Close (rightmost) -->
+                    <Button DockPanel.Dock="Right"
+                            Click="CloseButton_Click"
+                            ToolTip="{Binding [Compact_Close], Source={x:Static localization:TranslationSource.Instance}}"
+                            Style="{StaticResource TitleBarButton}">
+                        <Path Data="{StaticResource Cross}"
+                              Style="{StaticResource TitleBarIconPath}" />
+                    </Button>
+
+                    <!-- Chrome: Maximize (restore main window) -->
+                    <Button DockPanel.Dock="Right"
+                            Click="MaximizeButton_Click"
+                            ToolTip="{Binding [Compact_Maximize], Source={x:Static localization:TranslationSource.Instance}}"
+                            Style="{StaticResource TitleBarButton}">
+                        <Border Width="10"
+                                Height="10"
+                                BorderBrush="{StaticResource SecondaryForegroundBrush}"
+                                BorderThickness="1.5" />
+                    </Button>
+
+                    <!-- Chrome: Minimize -->
+                    <Button DockPanel.Dock="Right"
+                            Click="MinimizeButton_Click"
+                            ToolTip="{Binding [Compact_Minimize], Source={x:Static localization:TranslationSource.Instance}}"
+                            Style="{StaticResource TitleBarButton}">
+                        <Rectangle Width="10"
+                                   Height="2"
+                                   Fill="{StaticResource SecondaryForegroundBrush}" />
+                    </Button>
+                </DockPanel>
+            </Border>
+
+            <!-- Tab control -->
+            <TabControl TabStripPlacement="Top"
+                        Padding="2,2,2,2">
+
+                <!-- Presets tab -->
+                <TabItem Header="{Binding [Compact_Tab_Presets], Source={x:Static localization:TranslationSource.Instance}}"
+                         DataContext="{Binding Presets}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Presets}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="2" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding Name}"
+                                            Height="26"
+                                            Margin="1"
+                                            FontSize="10"
+                                            Command="{Binding DataContext.MemoryCommand,
+                                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding SlotIndex}"
+                                            Style="{StaticResource BaseButton}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Movement tab -->
+                <TabItem Header="{Binding [Compact_Tab_Movement], Source={x:Static localization:TranslationSource.Instance}}"
+                         DataContext="{Binding Movement}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="28" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Row 0 -->
+                        <Button Grid.Row="0" Grid.Column="0"
+                                CommandParameter="{x:Static types:PanTiltDirection.PanLeftTiltUp}"
+                                Style="{StaticResource CompactMoveButton}">
+                            <Path Data="{StaticResource Angle}" Style="{StaticResource Icon12Path}">
+                                <Path.LayoutTransform>
+                                    <RotateTransform Angle="45" />
+                                </Path.LayoutTransform>
+                            </Path>
+                        </Button>
+                        <Button Grid.Row="0" Grid.Column="1"
+                                CommandParameter="{x:Static types:PanTiltDirection.TiltUp}"
+                                Style="{StaticResource CompactMoveButton}">
+                            <Path Data="{StaticResource Angle}" Style="{StaticResource Icon12Path}">
+                                <Path.LayoutTransform>
+                                    <RotateTransform Angle="90" />
+                                </Path.LayoutTransform>
+                            </Path>
+                        </Button>
+                        <Button Grid.Row="0" Grid.Column="2"
+                                CommandParameter="{x:Static types:PanTiltDirection.PanRightTiltUp}"
+                                Style="{StaticResource CompactMoveButton}">
+                            <Path Data="{StaticResource Angle}" Style="{StaticResource Icon12Path}">
+                                <Path.LayoutTransform>
+                                    <RotateTransform Angle="135" />
+                                </Path.LayoutTransform>
+                            </Path>
+                        </Button>
+
+                        <!-- Row 1 -->
+                        <Button Grid.Row="1" Grid.Column="0"
+                                CommandParameter="{x:Static types:PanTiltDirection.PanLeft}"
+                                Style="{StaticResource CompactMoveButton}">
+                            <Path Data="{StaticResource Angle}" Style="{StaticResource Icon12Path}">
+                                <Path.LayoutTransform>
+                                    <RotateTransform Angle="0" />
+                                </Path.LayoutTransform>
+                            </Path>
+                        </Button>
+                        <Button Grid.Row="1" Grid.Column="1"
+                                Cursor="SizeAll"
+                                ToolTip="{Binding [Control_MousePan], Source={x:Static localization:TranslationSource.Instance}}"
+                                Style="{StaticResource CompactMousePadButton}">
+                            <behaviors:Interaction.Triggers>
+                                <behaviors:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                    <behaviors:InvokeCommandAction Command="{Binding MouseMovePanTiltCommand}"
+                                                                   PassEventArgsToCommand="True" />
+                                </behaviors:EventTrigger>
+                                <behaviors:EventTrigger EventName="PreviewMouseMove">
+                                    <behaviors:InvokeCommandAction Command="{Binding MouseMovePanTiltCommand}"
+                                                                   PassEventArgsToCommand="True" />
+                                </behaviors:EventTrigger>
+                                <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                    <behaviors:InvokeCommandAction Command="{Binding MousePanEndCommand}"
+                                                                   PassEventArgsToCommand="True" />
+                                </behaviors:EventTrigger>
+                            </behaviors:Interaction.Triggers>
+                            <Path Data="{StaticResource MoveArrows}"
+                                  Style="{StaticResource Icon12Path}" />
+                        </Button>
+                        <Button Grid.Row="1" Grid.Column="2"
+                                CommandParameter="{x:Static types:PanTiltDirection.PanRight}"
+                                Style="{StaticResource CompactMoveButton}">
+                            <Path Data="{StaticResource Angle}" Style="{StaticResource Icon12Path}">
+                                <Path.LayoutTransform>
+                                    <RotateTransform Angle="180" />
+                                </Path.LayoutTransform>
+                            </Path>
+                        </Button>
+
+                        <!-- Row 2 -->
+                        <Button Grid.Row="2" Grid.Column="0"
+                                CommandParameter="{x:Static types:PanTiltDirection.PanLeftTiltDown}"
+                                Style="{StaticResource CompactMoveButton}">
+                            <Path Data="{StaticResource Angle}" Style="{StaticResource Icon12Path}">
+                                <Path.LayoutTransform>
+                                    <RotateTransform Angle="315" />
+                                </Path.LayoutTransform>
+                            </Path>
+                        </Button>
+                        <Button Grid.Row="2" Grid.Column="1"
+                                CommandParameter="{x:Static types:PanTiltDirection.TiltDown}"
+                                Style="{StaticResource CompactMoveButton}">
+                            <Path Data="{StaticResource Angle}" Style="{StaticResource Icon12Path}">
+                                <Path.LayoutTransform>
+                                    <RotateTransform Angle="270" />
+                                </Path.LayoutTransform>
+                            </Path>
+                        </Button>
+                        <Button Grid.Row="2" Grid.Column="2"
+                                CommandParameter="{x:Static types:PanTiltDirection.PanRightTiltDown}"
+                                Style="{StaticResource CompactMoveButton}">
+                            <Path Data="{StaticResource Angle}" Style="{StaticResource Icon12Path}">
+                                <Path.LayoutTransform>
+                                    <RotateTransform Angle="225" />
+                                </Path.LayoutTransform>
+                            </Path>
+                        </Button>
+
+                        <!-- Speed control -->
+                        <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3"
+                              Margin="2,2,2,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="24" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0"
+                                    Width="20"
+                                    Command="{Binding MoveSpeedDecreaseCommand}"
+                                    Style="{StaticResource BorderlessButton}">
+                                <Path Data="{StaticResource TachometerSlow}"
+                                      Style="{StaticResource Icon12Path}" />
+                            </Button>
+                            <Slider Grid.Column="1"
+                                    Minimum="1"
+                                    Maximum="{Binding MaximalPanTiltSpeed}"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Value="{Binding PanTiltSpeed}" />
+                            <Button Grid.Column="2"
+                                    Width="20"
+                                    Command="{Binding MoveSpeedIncreaseCommand}"
+                                    Style="{StaticResource BorderlessButton}">
+                                <Path Data="{StaticResource TachometerFast}"
+                                      Style="{StaticResource Icon12Path}" />
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- Zoom tab -->
+                <TabItem Header="{Binding [Compact_Tab_Zoom], Source={x:Static localization:TranslationSource.Instance}}"
+                         DataContext="{Binding Zoom}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="28" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Row="0" Grid.Column="0"
+                                CommandParameter="{x:Static types:ZoomDirection.Out}"
+                                Style="{StaticResource CompactZoomButton}">
+                            <Path Data="{StaticResource ZoomOut}"
+                                  Style="{StaticResource Icon12Path}" />
+                        </Button>
+                        <Button Grid.Row="0" Grid.Column="1"
+                                CommandParameter="{x:Static types:ZoomDirection.In}"
+                                Style="{StaticResource CompactZoomButton}">
+                            <Path Data="{StaticResource ZoomIn}"
+                                  Style="{StaticResource Icon12Path}" />
+                        </Button>
+
+                        <!-- Speed control -->
+                        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                              Margin="2,2,2,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="24" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0"
+                                    Width="20"
+                                    Command="{Binding ZoomSpeedDecreaseCommand}"
+                                    Style="{StaticResource BorderlessButton}">
+                                <Path Data="{StaticResource TachometerSlow}"
+                                      Style="{StaticResource Icon12Path}" />
+                            </Button>
+                            <Slider Grid.Column="1"
+                                    Minimum="1"
+                                    Maximum="{Binding MaximalZoomSpeed}"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Value="{Binding ZoomSpeed}" />
+                            <Button Grid.Column="2"
+                                    Width="20"
+                                    Command="{Binding ZoomSpeedIncreaseCommand}"
+                                    Style="{StaticResource BorderlessButton}">
+                                <Path Data="{StaticResource TachometerFast}"
+                                      Style="{StaticResource Icon12Path}" />
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+            </TabControl>
+        </DockPanel>
+    </Border>
+</Window>

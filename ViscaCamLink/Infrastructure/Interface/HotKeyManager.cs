@@ -8,6 +8,15 @@ using System.Windows.Interop;
 
 public partial class HotKeyManager : IHotKeyManager
 {
+    private class LocalKeyTargetState(Window window)
+    {
+        public Window Window { get; } = window;
+
+        public bool IsKeyDownHandlerAttached { get; set; }
+
+        public bool IsKeyUpHandlerAttached { get; set; }
+    }
+
     [LibraryImport("User32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -45,11 +54,11 @@ public partial class HotKeyManager : IHotKeyManager
     private const int WM_KEYUP = 0x0101;
     private const int WM_SYSKEYUP = 0x0105;
 
-    private readonly Window _mainWindow;
+    private readonly List<LocalKeyTargetState> _localKeyTargets = [];
 
     public HotKeyManager(Window mainWindow)
     {
-        _mainWindow = mainWindow;
+        _localKeyTargets.Add(new LocalKeyTargetState(mainWindow));
 
         var windowInteropHelper = new WindowInteropHelper(mainWindow);
         windowInteropHelper.EnsureHandle();
@@ -86,10 +95,31 @@ public partial class HotKeyManager : IHotKeyManager
     // Currently active local hold keys
     private HashSet<Key> ActiveLocalHoldKeys { get; } = [];
 
-    private bool _localKeyDownHandlerAttached;
-    private bool _localKeyUpHandlerAttached;
-
     public bool UseGlobalHotKeys { get; set; } = true;
+
+    public void AddLocalKeyTarget(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+
+        if (_localKeyTargets.Any(target => ReferenceEquals(target.Window, window)))
+        {
+            return;
+        }
+
+        var target = new LocalKeyTargetState(window);
+
+        _localKeyTargets.Add(target);
+
+        if (LocalRegistrations.Count > 0)
+        {
+            AttachLocalKeyDownHandler(target);
+        }
+
+        if (LocalHoldReleaseCallbacks.Count > 0)
+        {
+            AttachLocalKeyUpHandler(target);
+        }
+    }
 
     public bool RegisterHotKey(ModifierKeys modifier, Key key, Action action)
     {
@@ -122,16 +152,19 @@ public partial class HotKeyManager : IHotKeyManager
         ActiveGlobalHoldVks.Clear();
         RemoveLowLevelHook();
 
-        if (_localKeyDownHandlerAttached)
+        foreach (var target in _localKeyTargets)
         {
-            _mainWindow.PreviewKeyDown -= OnLocalPreviewKeyDown;
-            _localKeyDownHandlerAttached = false;
-        }
+            if (target.IsKeyDownHandlerAttached)
+            {
+                target.Window.PreviewKeyDown -= OnLocalPreviewKeyDown;
+                target.IsKeyDownHandlerAttached = false;
+            }
 
-        if (_localKeyUpHandlerAttached)
-        {
-            _mainWindow.PreviewKeyUp -= OnLocalPreviewKeyUp;
-            _localKeyUpHandlerAttached = false;
+            if (target.IsKeyUpHandlerAttached)
+            {
+                target.Window.PreviewKeyUp -= OnLocalPreviewKeyUp;
+                target.IsKeyUpHandlerAttached = false;
+            }
         }
 
         LocalRegistrations.Clear();
@@ -172,11 +205,7 @@ public partial class HotKeyManager : IHotKeyManager
 
     private bool RegisterLocalHotKey(ModifierKeys modifier, Key key, Action action)
     {
-        if (!_localKeyDownHandlerAttached)
-        {
-            _mainWindow.PreviewKeyDown += OnLocalPreviewKeyDown;
-            _localKeyDownHandlerAttached = true;
-        }
+        AttachLocalKeyDownHandlersToAllTargets();
 
         LocalRegistrations[(modifier, key)] = action;
         return true;
@@ -189,15 +218,48 @@ public partial class HotKeyManager : IHotKeyManager
         if (result)
         {
             LocalHoldReleaseCallbacks[key] = releaseAction;
-
-            if (!_localKeyUpHandlerAttached)
-            {
-                _mainWindow.PreviewKeyUp += OnLocalPreviewKeyUp;
-                _localKeyUpHandlerAttached = true;
-            }
+            AttachLocalKeyUpHandlersToAllTargets();
         }
 
         return result;
+    }
+
+    private void AttachLocalKeyDownHandlersToAllTargets()
+    {
+        foreach (var target in _localKeyTargets)
+        {
+            AttachLocalKeyDownHandler(target);
+        }
+    }
+
+    private void AttachLocalKeyUpHandlersToAllTargets()
+    {
+        foreach (var target in _localKeyTargets)
+        {
+            AttachLocalKeyUpHandler(target);
+        }
+    }
+
+    private void AttachLocalKeyDownHandler(LocalKeyTargetState target)
+    {
+        if (target.IsKeyDownHandlerAttached)
+        {
+            return;
+        }
+
+        target.Window.PreviewKeyDown += OnLocalPreviewKeyDown;
+        target.IsKeyDownHandlerAttached = true;
+    }
+
+    private void AttachLocalKeyUpHandler(LocalKeyTargetState target)
+    {
+        if (target.IsKeyUpHandlerAttached)
+        {
+            return;
+        }
+
+        target.Window.PreviewKeyUp += OnLocalPreviewKeyUp;
+        target.IsKeyUpHandlerAttached = true;
     }
 
     private void EnsureLowLevelHook()

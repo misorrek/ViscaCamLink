@@ -49,11 +49,18 @@
 
             var viscaCamLinkViewModel = _serviceProvider.GetRequiredService<ViscaCamLinkViewModel>();
             var viscaCamLinkView = _serviceProvider.GetRequiredService<ViscaCamLinkView>();
+            var compactWindow = _serviceProvider.GetRequiredService<CompactWindow>();
+            var windowModeCoordinator = _serviceProvider.GetRequiredService<IWindowModeCoordinator>();
+            var hotKeyManager = _serviceProvider.GetRequiredService<IHotKeyManager>();
             var startupUpdateCheckService = _serviceProvider.GetRequiredService<IStartupUpdateCheckService>();
 
             viscaCamLinkViewModel.UpdateAvailable += viscaCamLinkView.ShowUpdateButton;
             viscaCamLinkView.DataContext = viscaCamLinkViewModel;
             viscaCamLinkView.Closed += OnClosed;
+
+            compactWindow.DataContext = viscaCamLinkViewModel;
+            windowModeCoordinator.Initialize(viscaCamLinkView, compactWindow);
+            hotKeyManager.AddLocalKeyTarget(compactWindow);
 
             _updateCheckCts = new CancellationTokenSource();
             _ = startupUpdateCheckService.RunAsync(_updateCheckCts.Token);
@@ -106,18 +113,21 @@
             services.AddSingleton<IHotKeyManager>(sp => new HotKeyManager(sp.GetRequiredService<ViscaCamLinkView>()));
             services.AddSingleton<IHotKeyRepository, HotKeyRepository>();
             services.AddSingleton<IHotKeyService, HotKeyService>();
+            services.AddSingleton<IWindowModeCoordinator, WindowModeCoordinator>();
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<IOptionsViewModelFactory, OptionsViewModelFactory>();
             services.AddSingleton<IStartupUpdateCheckService>(sp =>
                 new StartupUpdateCheckService(sp.GetRequiredService<IUpdateService>()));
             services.AddSingleton<VelopackUpdateService>();
             services.AddSingleton<IUpdateService>(sp => sp.GetRequiredService<VelopackUpdateService>());
+            services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
             services.AddSingleton<ViscaCamLinkViewModel>();
             services.AddSingleton<ConnectionViewModel>();
             services.AddSingleton<PresetsViewModel>();
             services.AddSingleton<MovementViewModel>();
             services.AddSingleton<ZoomViewModel>();
             services.AddSingleton<ViscaCamLinkView>();
+            services.AddSingleton<CompactWindow>();
 
             return services.BuildServiceProvider();
         }

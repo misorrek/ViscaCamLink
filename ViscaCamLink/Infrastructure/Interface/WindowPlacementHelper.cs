@@ -31,11 +31,11 @@ public static partial class WindowPlacementHelper
         public RECT rcNormalPosition;
     }
 
-    [LibraryImport("user32.dll", EntryPoint = "GetWindowPlacementA")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetWindowPlacement(nint hWnd, ref WINDOWPLACEMENT lpwndpl);
 
-    [LibraryImport("user32.dll", EntryPoint = "SetWindowPlacementA")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool SetWindowPlacement(nint hWnd, ref WINDOWPLACEMENT lpwndpl);
 
