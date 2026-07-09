@@ -12,24 +12,43 @@ public class Triggers : List<TriggerBase> { }
 
 public static class SupplementaryInteraction
 {
-    public static Behaviors GetBehaviors(DependencyObject obj)
+    public static readonly DependencyProperty BehaviorsProperty = DependencyProperty.RegisterAttached(
+        "Behaviors", 
+        typeof(Behaviors), 
+        typeof(SupplementaryInteraction), 
+        new UIPropertyMetadata(null, OnPropertyBehaviorsChanged));
+
+    public static readonly DependencyProperty TriggersProperty = DependencyProperty.RegisterAttached(
+        "Triggers",
+        typeof(Triggers),
+        typeof(SupplementaryInteraction),
+        new UIPropertyMetadata(null, OnPropertyTriggersChanged));
+
+    public static Behaviors GetBehaviors(DependencyObject dependencyObject)
     {
-        return (Behaviors)obj.GetValue(BehaviorsProperty);
+        return (Behaviors)dependencyObject.GetValue(BehaviorsProperty);
     }
 
-    public static void SetBehaviors(DependencyObject obj, Behaviors value)
+    public static void SetBehaviors(DependencyObject dependencyObject, Behaviors value)
     {
-        obj.SetValue(BehaviorsProperty, value);
+        dependencyObject.SetValue(BehaviorsProperty, value);
     }
 
-    public static readonly DependencyProperty BehaviorsProperty =
-        DependencyProperty.RegisterAttached("Behaviors", typeof(Behaviors), typeof(SupplementaryInteraction), new UIPropertyMetadata(null, OnPropertyBehaviorsChanged));
-
-    private static void OnPropertyBehaviorsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    public static Triggers GetTriggers(DependencyObject dependencyObject)
     {
-        var behaviors = Interaction.GetBehaviors(d);
+        return (Triggers)dependencyObject.GetValue(TriggersProperty);
+    }
 
-        if (e.NewValue is not Behaviors eventBehaviors)
+    public static void SetTriggers(DependencyObject dependencyObject, Triggers value)
+    {
+        dependencyObject.SetValue(TriggersProperty, value);
+    }
+    
+    private static void OnPropertyBehaviorsChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs eventArgs)
+    {
+        var behaviors = Interaction.GetBehaviors(dependencyObject);
+
+        if (eventArgs.NewValue is not Behaviors eventBehaviors)
         {
             return;
         }
@@ -40,24 +59,11 @@ public static class SupplementaryInteraction
         }
     }
 
-    public static Triggers GetTriggers(DependencyObject obj)
+    private static void OnPropertyTriggersChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs eventArgs)
     {
-        return (Triggers)obj.GetValue(TriggersProperty);
-    }
+        var triggers = Interaction.GetTriggers(dependencyObject);
 
-    public static void SetTriggers(DependencyObject obj, Triggers value)
-    {
-        obj.SetValue(TriggersProperty, value);
-    }
-
-    public static readonly DependencyProperty TriggersProperty =
-        DependencyProperty.RegisterAttached("Triggers", typeof(Triggers), typeof(SupplementaryInteraction), new UIPropertyMetadata(null, OnPropertyTriggersChanged));
-
-    private static void OnPropertyTriggersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        var triggers = Interaction.GetTriggers(d);
-
-        if (e.NewValue is not Triggers newTriggers)
+        if (eventArgs.NewValue is not Triggers newTriggers)
         {
             return;
         }

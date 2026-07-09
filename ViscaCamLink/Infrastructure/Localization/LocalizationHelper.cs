@@ -2,6 +2,7 @@
 
 using System.Globalization;
 using System.Threading;
+
 using ViscaCamLink.Extensions;
 using ViscaCamLink.Resources;
 

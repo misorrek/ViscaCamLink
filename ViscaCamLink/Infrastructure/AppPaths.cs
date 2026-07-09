@@ -26,7 +26,7 @@ public static class AppPaths
 
     public static string Logs => Path.Combine(LocalBase, "logs");
 
-    // WiX 0.3.0 wrote user.config here via .NET Framework Properties.Settings.
-    // Untouched by Velopack after the packId change to ViscaCamLink.App.
+    // ViscaCamLink 0.3.0 wrote user.config here via .NET Framework Properties.Settings.
+    // Path used to migrate settings from there.
     public static string LegacyUserDataRoot => LegacyLocalBase;
 }

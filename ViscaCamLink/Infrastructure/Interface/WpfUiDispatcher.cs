@@ -2,13 +2,14 @@ namespace ViscaCamLink.Infrastructure.Interface;
 
 using System.Windows;
 
-public sealed class WpfUiDispatcher : IUiDispatcher
+public class WpfUiDispatcher : IUiDispatcher
 {
     public Task InvokeAsync(Action action)
     {
         ArgumentNullException.ThrowIfNull(action);
 
         var dispatcher = Application.Current?.Dispatcher;
+
         if (dispatcher is null || dispatcher.CheckAccess())
         {
             action();
@@ -23,6 +24,7 @@ public sealed class WpfUiDispatcher : IUiDispatcher
         ArgumentNullException.ThrowIfNull(action);
 
         var dispatcher = Application.Current?.Dispatcher;
+        
         if (dispatcher is null || dispatcher.CheckAccess())
         {
             action();

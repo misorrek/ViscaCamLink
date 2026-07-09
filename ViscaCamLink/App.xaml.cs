@@ -18,6 +18,7 @@
     using ViscaCamLink.Infrastructure;
     using ViscaCamLink.Infrastructure.Localization;
     using ViscaCamLink.Infrastructure.Interface;
+    using ViscaCamLink.Infrastructure.Logging;
 
     /// <summary>
     /// Interaction logic for App.xaml
@@ -105,7 +106,6 @@
             services.AddSingleton<IHotKeyManager>(sp => new HotKeyManager(sp.GetRequiredService<ViscaCamLinkView>()));
             services.AddSingleton<IHotKeyRepository, HotKeyRepository>();
             services.AddSingleton<IHotKeyService, HotKeyService>();
-            services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<IOptionsViewModelFactory, OptionsViewModelFactory>();
             services.AddSingleton<IStartupUpdateCheckService>(sp =>

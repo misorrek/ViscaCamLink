@@ -5,7 +5,7 @@ using System.Windows.Data;
 
 using ViscaCamLink.Resources;
 
-public sealed class TranslationSource : INotifyPropertyChanged
+public class TranslationSource : INotifyPropertyChanged
 {
     public static TranslationSource Instance { get; } = new();
 

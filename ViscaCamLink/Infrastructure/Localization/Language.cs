@@ -19,16 +19,12 @@ public static class LanguageExtension
 {
     public static string ToLocalizedString(this Language language)
     {
-        switch (language) 
+        return language switch
         {
-            case Language.System:
-                return Strings.Language_System;
-            case Language.English:
-                return Strings.Language_English;
-            case Language.German:
-                return Strings.Language_German;
-            default:
-                return language.ToString();
-        }
+            Language.System => Strings.Language_System,
+            Language.English => Strings.Language_English,
+            Language.German => Strings.Language_German,
+            _ => language.ToString(),
+        };
     }
 }
