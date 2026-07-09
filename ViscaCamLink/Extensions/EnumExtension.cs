@@ -5,18 +5,18 @@ using System.ComponentModel;
 
 public static class EnumExtension
 {
-    public static String GetDescription<T>(this T enumerationValue)
+    public static string GetDescription<T>(this T enumerationValue)
     {
         if (enumerationValue == null)
         {
             throw new ArgumentNullException(nameof(enumerationValue));
         }
 
-        Type type = enumerationValue.GetType();
+        var type = enumerationValue.GetType();
 
         if (!type.IsEnum)
         {
-            throw new ArgumentException("EnumerationValue must be of Enum type", nameof(enumerationValue));
+            throw new ArgumentException("Must be an enum type", nameof(enumerationValue));
         }
 
         var name = Enum.GetName(type, enumerationValue);
@@ -34,6 +34,6 @@ public static class EnumExtension
             }
         }
 
-        throw new ArgumentException("EnumerationValue has no description", nameof(enumerationValue));
+        throw new ArgumentException("Has no description attribute", nameof(enumerationValue));
     }
 }

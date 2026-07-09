@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
-        xmlns:extensions="clr-namespace:ViscaCamLink.Extensions"
+        xmlns:interface="clr-namespace:ViscaCamLink.Infrastructure.Interface"
         xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
         xmlns:views="clr-namespace:ViscaCamLink.Views"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
@@ -27,12 +27,15 @@
             </ResourceDictionary.MergedDictionaries>
 
             <Style x:Key="SidebarButton"
-                   TargetType="{x:Type Button}">
+                   TargetType="{x:Type interface:SidebarButton}">
                 <Setter Property="Background"
                         Value="{StaticResource SecondaryBackgroundBrush}"/>
+                <Setter Property="Width" Value="40"/>
+                <Setter Property="Height" Value="40"/>
+                <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Template">
                     <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type Button}">
+                        <ControlTemplate TargetType="{x:Type interface:SidebarButton}">
                             <Border Background="{TemplateBinding Background}">
                                 <StackPanel Orientation="Horizontal">
                                     <Border Margin="2,4,5,4"
@@ -40,10 +43,11 @@
                                             CornerRadius="1"
                                             BorderThickness="0"
                                             Background="{StaticResource PrimaryHighlightBrush}"
-                                            Visibility="{Binding RelativeSource={RelativeSource TemplatedParent},
-                                                                 Path=(extensions:SidebarButtonExtension.BorderVisibility)}"/>
-                                    <Path Data="{Binding RelativeSource={RelativeSource TemplatedParent},
-                                                         Path=(extensions:SidebarButtonExtension.PathData)}"
+                                            Visibility="{Binding IsActive,
+                                                                 RelativeSource={RelativeSource TemplatedParent},
+                                                                 Converter={StaticResource FalseToHiddenConverter}}"/>
+                                    <Path Data="{Binding Icon,
+                                                         RelativeSource={RelativeSource TemplatedParent}}"
                                           Style="{StaticResource IconSidebarPath}" />
                                 </StackPanel>
                             </Border>
@@ -74,66 +78,50 @@
             <DockPanel LastChildFill="False"
                        Background="{StaticResource SecondaryBackgroundBrush}">
 
-                <Button DockPanel.Dock="Top"
-                        Width="40" Height="40"
-                        BorderThickness="0"
-                        Command="{Binding SidebarCommand}"
-                        CommandParameter="Connection"
-                        extensions:SidebarButtonExtension.BorderVisibility="{Binding ConnectionContainerVisible,
-                                                                               Converter={StaticResource FalseToHiddenConverter}}"
-                        extensions:SidebarButtonExtension.PathData="{StaticResource Connection}"
-                        Style="{StaticResource SidebarButton}" />
+                <interface:SidebarButton DockPanel.Dock="Top"
+                                         Command="{Binding SidebarCommand}"
+                                         CommandParameter="Connection"
+                                         Icon="{StaticResource Connection}"
+                                         IsActive="{Binding ConnectionContainerVisible}"
+                                         Style="{StaticResource SidebarButton}" />
 
-                <Button DockPanel.Dock="Top"
-                        Width="40" Height="40"
-                        BorderThickness="0"
-                        Command="{Binding SidebarCommand}"
-                        CommandParameter="Memory"
-                        extensions:SidebarButtonExtension.BorderVisibility="{Binding MemoryContainerVisible,
-                                                                               Converter={StaticResource FalseToHiddenConverter}}"
-                        extensions:SidebarButtonExtension.PathData="{StaticResource Numpad}"
-                        Style="{StaticResource SidebarButton}" />
+                <interface:SidebarButton DockPanel.Dock="Top"
+                                         Command="{Binding SidebarCommand}"
+                                         CommandParameter="Memory"
+                                         Icon="{StaticResource Numpad}"
+                                         IsActive="{Binding MemoryContainerVisible}"
+                                         Style="{StaticResource SidebarButton}" />
 
-                <Button DockPanel.Dock="Top"
-                        Width="40" Height="40"
-                        BorderThickness="0"
-                        Command="{Binding SidebarCommand}"
-                        CommandParameter="Move"
-                        extensions:SidebarButtonExtension.BorderVisibility="{Binding MoveContainerVisible,
-                                                                               Converter={StaticResource FalseToHiddenConverter}}"
-                        extensions:SidebarButtonExtension.PathData="{StaticResource MoveArrows}"
-                        Style="{StaticResource SidebarButton}" />
+                <interface:SidebarButton DockPanel.Dock="Top"
+                                         Command="{Binding SidebarCommand}"
+                                         CommandParameter="Move"
+                                         Icon="{StaticResource MoveArrows}"
+                                         IsActive="{Binding MoveContainerVisible}"
+                                         Style="{StaticResource SidebarButton}" />
 
-                <Button DockPanel.Dock="Top"
-                        Width="40" Height="40"
-                        BorderThickness="0"
-                        Command="{Binding SidebarCommand}"
-                        CommandParameter="Zoom"
-                        extensions:SidebarButtonExtension.BorderVisibility="{Binding ZoomContainerVisible,
-                                                                               Converter={StaticResource FalseToHiddenConverter}}"
-                        extensions:SidebarButtonExtension.PathData="{StaticResource Zoom}"
-                        Style="{StaticResource SidebarButton}" />
+                <interface:SidebarButton DockPanel.Dock="Top"
+                                         Command="{Binding SidebarCommand}"
+                                         CommandParameter="Zoom"
+                                         Icon="{StaticResource Zoom}"
+                                         IsActive="{Binding ZoomContainerVisible}"
+                                         Style="{StaticResource SidebarButton}" />
 
-                <Button DockPanel.Dock="Bottom"
-                        Width="40" Height="40"
-                        BorderThickness="0"
-                        Command="{Binding OptionsCommand}"
-                        extensions:SidebarButtonExtension.BorderVisibility="Hidden"
-                        extensions:SidebarButtonExtension.PathData="{StaticResource Options}"
-                        Style="{StaticResource SidebarButton}" />
+                <interface:SidebarButton DockPanel.Dock="Bottom"
+                                         Command="{Binding OptionsCommand}"
+                                         Icon="{StaticResource Options}"
+                                         IsActive="False"
+                                         Style="{StaticResource SidebarButton}" />
 
-                <Button DockPanel.Dock="Bottom"
-                        x:Name="UpdateButton"
-                        Width="40" Height="40"
-                        BorderThickness="0"
-                        Visibility="Hidden"
-                        Command="{Binding UpdateCommand}">
-                    <Button.Style>
-                        <Style TargetType="{x:Type Button}"
+                <interface:SidebarButton DockPanel.Dock="Bottom"
+                                         x:Name="UpdateButton"
+                                         Visibility="Hidden"
+                                         Command="{Binding UpdateCommand}">
+                    <interface:SidebarButton.Style>
+                        <Style TargetType="{x:Type interface:SidebarButton}"
                                BasedOn="{StaticResource SidebarButton}">
                             <Setter Property="Template">
                                 <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type Button}">
+                                    <ControlTemplate TargetType="{x:Type interface:SidebarButton}">
                                         <Border Background="{TemplateBinding Background}">
                                             <Image x:Name="UpdateImage"
                                                    Width="24" Height="24"
@@ -146,8 +134,8 @@
                                 </Setter.Value>
                             </Setter>
                         </Style>
-                    </Button.Style>
-                </Button>
+                    </interface:SidebarButton.Style>
+                </interface:SidebarButton>
             </DockPanel>
         </Border>
 
