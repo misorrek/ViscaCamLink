@@ -4,6 +4,7 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+
 using ViscaCamLink.Visca.Types;
 
 public static class StatusBrushConstants
@@ -27,7 +28,7 @@ public static class StatusBrushConstants
 }
 
 [ValueConversion(typeof(ConnectionStatus), typeof(SolidColorBrush))]
-public sealed class ConnectionStatusToBrushConverter : IValueConverter
+public class ConnectionStatusToBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
@@ -52,7 +53,7 @@ public sealed class ConnectionStatusToBrushConverter : IValueConverter
 }
 
 [ValueConversion(typeof(PowerStatus), typeof(SolidColorBrush))]
-public sealed class PowerStatusToBrushConverter : IValueConverter
+public class PowerStatusToBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {

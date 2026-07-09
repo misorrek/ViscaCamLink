@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 
+[ValueConversion(typeof(bool[]), typeof(bool))]
 public class BoolAndConverter : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)

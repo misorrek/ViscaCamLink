@@ -4,7 +4,7 @@ using System;
 using System.Windows.Data;
 
 [ValueConversion(typeof(bool), typeof(bool))]
-public sealed class InverseBooleanConverter : IValueConverter
+public class InverseBooleanConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
@@ -12,7 +12,8 @@ public sealed class InverseBooleanConverter : IValueConverter
         {
             return !boolValue;
         }
-        throw new InvalidOperationException("The target must be a boolean");
+
+        throw new InvalidOperationException("The value to convert must be a boolean");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Data;
 
 [ValueConversion(typeof(string), typeof(Visibility))]
-public sealed class StringToVisibilityConverter : IValueConverter
+public class StringToVisibilityConverter : IValueConverter
 {
     public StringToVisibilityConverter()
     {
@@ -27,7 +27,8 @@ public sealed class StringToVisibilityConverter : IValueConverter
         {
             return FallbackValue;
         }
-        return String.IsNullOrEmpty((string)value) ? FalseValue : TrueValue;
+
+        return string.IsNullOrEmpty((string)value) ? FalseValue : TrueValue;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

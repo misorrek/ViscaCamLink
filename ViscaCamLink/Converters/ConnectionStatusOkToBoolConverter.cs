@@ -3,8 +3,10 @@
 using System;
 using System.Globalization;
 using System.Windows.Data;
+
 using ViscaCamLink.Visca.Types;
 
+[ValueConversion(typeof(ConnectionStatus), typeof(bool))]
 public class ConnectionStatusOkToBoolConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -13,6 +15,7 @@ public class ConnectionStatusOkToBoolConverter : IValueConverter
         {
             return status == ConnectionStatus.Ok;
         }
+        
         return false;
     }
 

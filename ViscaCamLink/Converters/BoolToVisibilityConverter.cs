@@ -6,7 +6,7 @@ using System.Windows.Data;
 using System.Windows;
 
 [ValueConversion(typeof(bool), typeof(Visibility))]
-public sealed class BoolToVisibilityConverter : IValueConverter
+public class BoolToVisibilityConverter : IValueConverter
 {
     public BoolToVisibilityConverter()
     {
@@ -26,7 +26,8 @@ public sealed class BoolToVisibilityConverter : IValueConverter
         if (value is not bool)
         {
             return FallbackValue;
-        }                
+        }      
+
         return (bool)value ? TrueValue : FalseValue;
     }
 
@@ -40,7 +41,8 @@ public sealed class BoolToVisibilityConverter : IValueConverter
         if (Equals(value, FalseValue))
         {
             return false;
-        }                
+        }    
+                    
         return FallbackValue;
     }
 }

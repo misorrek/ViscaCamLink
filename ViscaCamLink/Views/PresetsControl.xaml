@@ -16,8 +16,13 @@
                 <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <converters:IntEqualsToCollapsedConverter x:Key="IntEqualsToCollapsedConverter" />
-            <converters:IntEqualsToVisibleConverter x:Key="IntEqualsToVisibleConverter" />
+            <converters:IntEqualsToVisibilityConverter x:Key="IntEqualsToCollapsedConverter"
+                                                       TrueValue="Collapsed"
+                                                       FalseValue="Visible" />
+
+            <converters:IntEqualsToVisibilityConverter x:Key="IntEqualsToVisibleConverter"
+                                                       TrueValue="Visible"
+                                                       FalseValue="Collapsed" />
 
             <Style x:Key="PresetButton"
                    TargetType="{x:Type Button}"
