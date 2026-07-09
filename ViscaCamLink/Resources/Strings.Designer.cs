@@ -709,5 +709,77 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("Zoom_IncreaseSpeed", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Presets ähnelt.
+        /// </summary>
+        public static string Compact_Tab_Presets {
+            get {
+                return ResourceManager.GetString("Compact_Tab_Presets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Move ähnelt.
+        /// </summary>
+        public static string Compact_Tab_Movement {
+            get {
+                return ResourceManager.GetString("Compact_Tab_Movement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zoom ähnelt.
+        /// </summary>
+        public static string Compact_Tab_Zoom {
+            get {
+                return ResourceManager.GetString("Compact_Tab_Zoom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Previous camera profile ähnelt.
+        /// </summary>
+        public static string Compact_PrevProfile {
+            get {
+                return ResourceManager.GetString("Compact_PrevProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Next camera profile ähnelt.
+        /// </summary>
+        public static string Compact_NextProfile {
+            get {
+                return ResourceManager.GetString("Compact_NextProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minimize ähnelt.
+        /// </summary>
+        public static string Compact_Minimize {
+            get {
+                return ResourceManager.GetString("Compact_Minimize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restore ähnelt.
+        /// </summary>
+        public static string Compact_Maximize {
+            get {
+                return ResourceManager.GetString("Compact_Maximize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Close ähnelt.
+        /// </summary>
+        public static string Compact_Close {
+            get {
+                return ResourceManager.GetString("Compact_Close", resourceCulture);
+            }
+        }
     }
 }

@@ -347,4 +347,28 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="Options_MinimizeToCompactWindow" xml:space="preserve">
     <value>Kompakte Ansicht beim Minimieren verwenden</value>
   </data>
+  <data name="Compact_Tab_Presets" xml:space="preserve">
+    <value>Presets</value>
+  </data>
+  <data name="Compact_Tab_Movement" xml:space="preserve">
+    <value>Bewegen</value>
+  </data>
+  <data name="Compact_Tab_Zoom" xml:space="preserve">
+    <value>Zoom</value>
+  </data>
+  <data name="Compact_PrevProfile" xml:space="preserve">
+    <value>Vorheriges Kamera-Profil</value>
+  </data>
+  <data name="Compact_NextProfile" xml:space="preserve">
+    <value>Nächstes Kamera-Profil</value>
+  </data>
+  <data name="Compact_Minimize" xml:space="preserve">
+    <value>Minimieren</value>
+  </data>
+  <data name="Compact_Maximize" xml:space="preserve">
+    <value>Wiederherstellen</value>
+  </data>
+  <data name="Compact_Close" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
 </root>
