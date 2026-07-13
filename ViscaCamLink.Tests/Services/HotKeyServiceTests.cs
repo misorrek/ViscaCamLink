@@ -20,7 +20,7 @@ public sealed class HotKeyServiceTests
     public HotKeyServiceTests()
     {
         _repository.Setup(r => r.Load()).Returns(HotKeyDefinitions.CreateDefaultBindings());
-        _settings.Setup(s => s.GlobalHotKeys).Returns(true);
+        _settings.Setup(s => s.UseGlobalHotKeys).Returns(true);
         _hotKeyManager.SetupProperty(m => m.UseGlobalHotKeys, true);
         _hotKeyService = new HotKeyService(_hotKeyManager.Object, _repository.Object, _settings.Object);
     }

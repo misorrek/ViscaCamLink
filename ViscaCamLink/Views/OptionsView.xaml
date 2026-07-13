@@ -116,7 +116,7 @@
                                       Margin="0,8,0,0"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding NumpadLayout}" />
+                                      IsChecked="{Binding UseNumpadLayout}" />
 
                             <TextBlock Grid.Column="0"
                                        Grid.Row="3"
@@ -164,7 +164,7 @@
                                       Margin="0,8,0,0"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding MinimizeToCompactWindow}" />
+                                      IsChecked="{Binding UseCompactView}" />
                         </Grid>
                     </ScrollViewer>
                 </TabItem>
@@ -192,7 +192,7 @@
 
                             <CheckBox Grid.Column="1"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding GlobalHotKeys}" />
+                                      IsChecked="{Binding UseGlobalHotKeys}" />
                         </Grid>
 
                         <Grid Grid.Row="1" Margin="0,0,0,4">

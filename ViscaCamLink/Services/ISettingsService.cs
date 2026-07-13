@@ -1,12 +1,20 @@
 namespace ViscaCamLink.Services;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Infrastructure.Theming;
 using ViscaCamLink.Repositories.AppSettings;
 
 public interface ISettingsService
 {
-    Microsoft.Extensions.Logging.LogLevel LogLevel { get; }
+    WindowPlacementData? WindowPlacement { get; set; }
+
+    LogLevel LogLevel { get; }
+
+    Language Language { get; set; }
+
+    Theme Theme { get; set; }
 
     IReadOnlyList<CameraProfile> CameraProfiles { get; }
 
@@ -26,21 +34,15 @@ public interface ISettingsService
 
     int ZoomSpeed { get; set; }
 
-    Language Language { get; set; }
+    bool UseMultipleCameraProfiles { get; set; }
 
-    Theme Theme { get; set; }
-
-    bool NumpadLayout { get; set; }
-
-    bool GlobalHotKeys { get; set; }
+    bool UseCompactView { get; set; }
 
     bool UsePresetGroups { get; set; }
 
-    bool UseMultipleCameraProfiles { get; set; }
+    bool UseNumpadLayout { get; set; }
 
-    WindowPlacementData? WindowPlacement { get; set; }
-
-    bool MinimizeToCompactWindow { get; set; }
+    bool UseGlobalHotKeys { get; set; }
 
     void AddCameraProfile(CameraProfile profile);
 

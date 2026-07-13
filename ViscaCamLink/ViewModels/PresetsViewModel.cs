@@ -1,14 +1,14 @@
 namespace ViscaCamLink.ViewModels;
 
-using System.ComponentModel;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows.Input;
 
+using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca.Types;
-using ViscaCamLink.Repositories.HotKeys;
-using ViscaCamLink.Infrastructure.Interface;
 
 public class PresetsViewModel : ViewModelBase
 {
@@ -21,7 +21,7 @@ public class PresetsViewModel : ViewModelBase
     private string _memoryInfo = string.Empty;
     private int _renamingSlotIndex = -1;
     private string _renamingText = string.Empty;
-    private bool _isNumpadLayout;
+    private bool _useNumpadLayout;
     private bool _usePresetGroups;
     private string _renamingGroupText = string.Empty;
     private int _lastRecalledPresetSlot = -1;
@@ -38,7 +38,7 @@ public class PresetsViewModel : ViewModelBase
         _hotKeyService = hotKeyService;
         _connection = connection;
 
-        _isNumpadLayout = _settings.NumpadLayout;
+        _useNumpadLayout = _settings.UseNumpadLayout;
         _usePresetGroups = _settings.UsePresetGroups;
 
         _presetService.PresetsChanged += OnPresetsChanged;
@@ -144,18 +144,18 @@ public class PresetsViewModel : ViewModelBase
         }
     }
 
-    public bool IsNumpadLayout
+    public bool UseNumpadLayout
     {
-        get => _isNumpadLayout;
+        get => _useNumpadLayout;
         set
         {
-            if (_isNumpadLayout == value)
+            if (_useNumpadLayout == value)
             {
                 return;
             }
 
-            _isNumpadLayout = value;
-            _settings.NumpadLayout = value;
+            _useNumpadLayout = value;
+            _settings.UseNumpadLayout = value;
             _settings.Save();
             GridPresets = BuildGridPresets();
             NotifyPropertyChanged();
@@ -269,9 +269,9 @@ public class PresetsViewModel : ViewModelBase
 
     public void RefreshLayout()
     {
-        if (_isNumpadLayout != _settings.NumpadLayout)
+        if (_useNumpadLayout != _settings.UseNumpadLayout)
         {
-            IsNumpadLayout = _settings.NumpadLayout;
+            UseNumpadLayout = _settings.UseNumpadLayout;
         }
 
         if (_usePresetGroups != _settings.UsePresetGroups)
@@ -406,7 +406,7 @@ public class PresetsViewModel : ViewModelBase
             return new ObservableCollection<PresetItemViewModel>(Presets.Skip(1));
         }
 
-        var positions = _isNumpadLayout
+        var positions = _useNumpadLayout
             ? new[] { 7, 8, 9, 4, 5, 6, 1, 2, 3 }
             : new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 

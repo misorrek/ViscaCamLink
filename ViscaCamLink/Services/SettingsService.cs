@@ -1,18 +1,31 @@
 namespace ViscaCamLink.Services;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Infrastructure.Theming;
 using ViscaCamLink.Repositories.AppSettings;
 
-public sealed class SettingsService(AppSettings settings, AppSettingsRepository settingsRepository, Action<Language> applyLocalization, Action<Theme> applyTheme) : ISettingsService
+public class SettingsService(
+    AppSettings settings,
+    AppSettingsRepository settingsRepository,
+    Action<Language> applyLocalization,
+    Action<Theme> applyTheme)
+    : ISettingsService
 {
-    public Microsoft.Extensions.Logging.LogLevel LogLevel
+    public WindowPlacementData? WindowPlacement
+    {
+        get => settings.WindowPlacement;
+        set => settings.WindowPlacement = value;
+    }
+
+    public LogLevel LogLevel
     {
         get => settings.LogLevel;
         set => settings.LogLevel = value;
     }
 
-        public Language Language
+    public Language Language
     {
         get => settings.Language;
         set => settings.Language = value;
@@ -31,12 +44,6 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         ?? settings.CameraProfiles.FirstOrDefault();
 
     public Guid ActiveCameraProfileId => ActiveCameraProfile?.Id ?? Guid.Empty;
-
-    public bool UseMultipleCameraProfiles
-    {
-        get => settings.UseMultipleCameraProfiles;
-        set => settings.UseMultipleCameraProfiles = value;
-    }
 
     public bool ConnectionContainerVisible
     {
@@ -74,16 +81,16 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         set => settings.ZoomSpeed = value;
     }
 
-    public bool NumpadLayout
+    public bool UseMultipleCameraProfiles
     {
-        get => settings.NumpadLayout;
-        set => settings.NumpadLayout = value;
+        get => settings.UseMultipleCameraProfiles;
+        set => settings.UseMultipleCameraProfiles = value;
     }
 
-    public bool GlobalHotKeys
+    public bool UseCompactView
     {
-        get => settings.GlobalHotKeys;
-        set => settings.GlobalHotKeys = value;
+        get => settings.UseCompactView;
+        set => settings.UseCompactView = value;
     }
 
     public bool UsePresetGroups
@@ -92,21 +99,25 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
         set => settings.UsePresetGroups = value;
     }
 
-    public WindowPlacementData? WindowPlacement
+    public bool UseGlobalHotKeys
     {
-        get => settings.WindowPlacement;
-        set => settings.WindowPlacement = value;
+        get => settings.UseGlobalHotKeys;
+        set => settings.UseGlobalHotKeys = value;
     }
 
-    public bool MinimizeToCompactWindow
+    public bool UseNumpadLayout
     {
-        get => settings.MinimizeToCompactWindow;
-        set => settings.MinimizeToCompactWindow = value;
+        get => settings.UseNumpadLayout;
+        set => settings.UseNumpadLayout = value;
     }
 
-    // TODO: Check if id is still in the collection?
     public void AddCameraProfile(CameraProfile profile)
     {
+        if (settings.CameraProfiles.Any(c => c.Id == profile.Id))
+        {
+            throw new InvalidOperationException($"Camera profile with id {profile.Id} already exists.");
+        }
+
         settings.CameraProfiles.Add(profile);
 
         if (settings.ActiveCameraProfileId == Guid.Empty)
@@ -164,6 +175,7 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
 
     public void Save() => settingsRepository.Save(settings);
 
+    // TODO: Create options model with all these settings that this service and the callers of this method use
     public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameraProfiles, bool minimizeToCompactWindow, Theme theme)
     {
         if (!Language.Equals(language))
@@ -174,16 +186,16 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
             applyLocalization(language);
         }
 
-        if (NumpadLayout != numpadLayout)
+        if (UseNumpadLayout != numpadLayout)
         {
-            NumpadLayout = numpadLayout;
+            UseNumpadLayout = numpadLayout;
 
             Save();
         }
 
-        if (GlobalHotKeys != globalHotKeys)
+        if (UseGlobalHotKeys != globalHotKeys)
         {
-            GlobalHotKeys = globalHotKeys;
+            UseGlobalHotKeys = globalHotKeys;
 
             Save();
         }
@@ -202,9 +214,9 @@ public sealed class SettingsService(AppSettings settings, AppSettingsRepository 
             Save();
         }
 
-        if (MinimizeToCompactWindow != minimizeToCompactWindow)
+        if (UseCompactView != minimizeToCompactWindow)
         {
-            MinimizeToCompactWindow = minimizeToCompactWindow;
+            UseCompactView = minimizeToCompactWindow;
 
             Save();
         }

@@ -104,7 +104,6 @@ public sealed class AppSettingsRepository
             ApplyLegacyValue(settings, values, nameof(AppSettings.PanTiltSpeed));
             ApplyLegacyValue(settings, values, nameof(AppSettings.ZoomSpeed));
             ApplyLegacyValue(settings, values, nameof(AppSettings.Language));
-            ApplyLegacyValue(settings, values, nameof(AppSettings.NumpadLayout));
 
             return settings;
         }

@@ -35,11 +35,11 @@ public class OptionsViewModel : INotifyPropertyChanged
 
         _selectedLanguage = _settings.Language;
         _selectedTheme = _settings.Theme;
-        _numpadLayout = _settings.NumpadLayout;
-        _globalHotKeys = _settings.GlobalHotKeys;
+        _useNumpadLayout = _settings.UseNumpadLayout;
+        _useGlobalHotKeys = _settings.UseGlobalHotKeys;
         _usePresetGroups = _settings.UsePresetGroups;
         _useMultipleCameraProfiles = _settings.UseMultipleCameraProfiles;
-        _minimizeToCompactWindow = _settings.MinimizeToCompactWindow;
+        _useCompactView = _settings.UseCompactView;
         RefreshHotKeyValidation();
     }
 
@@ -106,24 +106,24 @@ public class OptionsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool NumpadLayout
+    public bool UseNumpadLayout
     {
-        get => _numpadLayout;
+        get => _useNumpadLayout;
 
         set
         {
-            _numpadLayout = value;
+            _useNumpadLayout = value;
             NotifyPropertyChanged();
         }
     }
 
-    public bool GlobalHotKeys
+    public bool UseGlobalHotKeys
     {
-        get => _globalHotKeys;
+        get => _useGlobalHotKeys;
 
         set
         {
-            _globalHotKeys = value;
+            _useGlobalHotKeys = value;
             NotifyPropertyChanged();
         }
     }
@@ -150,13 +150,13 @@ public class OptionsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool MinimizeToCompactWindow
+    public bool UseCompactView
     {
-        get => _minimizeToCompactWindow;
+        get => _useCompactView;
 
         set
         {
-            _minimizeToCompactWindow = value;
+            _useCompactView = value;
             NotifyPropertyChanged();
         }
     }
@@ -165,11 +165,11 @@ public class OptionsViewModel : INotifyPropertyChanged
 
     private Language _selectedLanguage;
     private Theme _selectedTheme;
-    private bool _numpadLayout;
-    private bool _globalHotKeys;
+    private bool _useNumpadLayout;
+    private bool _useGlobalHotKeys;
     private bool _usePresetGroups;
     private bool _useMultipleCameraProfiles;
-    private bool _minimizeToCompactWindow;
+    private bool _useCompactView;
     private bool _hasHotKeyConflicts;
     private string _hotKeyValidationMessage = string.Empty;
     private HotKeyBindingItemViewModel? _capturingHotKey;
@@ -187,7 +187,7 @@ public class OptionsViewModel : INotifyPropertyChanged
             return;
         }
 
-        _settings.ApplyOptions(_selectedLanguage, _numpadLayout, _globalHotKeys, _usePresetGroups, _useMultipleCameraProfiles, _minimizeToCompactWindow, _selectedTheme);
+        _settings.ApplyOptions(_selectedLanguage, _useNumpadLayout, _useGlobalHotKeys, _usePresetGroups, _useMultipleCameraProfiles, _useCompactView, _selectedTheme);
         _hotKeyService.ApplyBindings(HotKeyBindings.Select(binding => binding.ToBinding()).ToList());
 
         CloseHandler.Invoke();

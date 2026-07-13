@@ -80,7 +80,7 @@ public sealed class WindowModeCoordinator(ISettingsService settingsService) : IW
             return;
 
         if (_mainWindow.WindowState == WindowState.Minimized &&
-            settingsService.MinimizeToCompactWindow)
+            settingsService.UseCompactView)
         {
             EnterCompactMode();
         }

@@ -7,6 +7,8 @@ using ViscaCamLink.Infrastructure.Theming;
 
 public sealed class AppSettings
 {
+    public WindowPlacementData? WindowPlacement { get; set; }
+
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
     public Language Language { get; set; } = Language.System;
@@ -29,17 +31,15 @@ public sealed class AppSettings
 
     public int ZoomSpeed { get; set; } = 1;
 
-    public bool NumpadLayout { get; set; } = true;
+    public bool UseMultipleCameraProfiles { get; set; } = false;
 
-    public bool GlobalHotKeys { get; set; } = true;
+    public bool UseCompactView { get; set; } = true;
 
     public bool UsePresetGroups { get; set; } = true;
 
-    public bool UseMultipleCameraProfiles { get; set; } = false;
+    public bool UseNumpadLayout { get; set; } = true;
 
-    public WindowPlacementData? WindowPlacement { get; set; }
-
-    public bool MinimizeToCompactWindow { get; set; } = true;
+    public bool UseGlobalHotKeys { get; set; } = true;
 
     public bool WixUninstallPrompted { get; set; } = false;
 }

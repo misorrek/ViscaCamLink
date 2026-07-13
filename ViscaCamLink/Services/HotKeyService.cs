@@ -93,7 +93,7 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
 
     private void RegisterConfiguredBindings()
     {
-        _hotKeyManager.UseGlobalHotKeys = _settings.GlobalHotKeys;
+        _hotKeyManager.UseGlobalHotKeys = _settings.UseGlobalHotKeys;
         _hotKeyManager.UnregisterAll();
 
         var validation = ValidateBindings(_bindings);

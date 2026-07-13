@@ -113,7 +113,7 @@
 
             <!-- Preset 0 full-width at top (Standard layout) -->
             <Grid Height="40"
-                  Visibility="{Binding IsNumpadLayout,
+                  Visibility="{Binding UseNumpadLayout,
                                        Converter={StaticResource TrueToCollapsedConverter}}">
                 <Button Content="{Binding Presets[0].Name}"
                         Command="{Binding MemoryCommand}"

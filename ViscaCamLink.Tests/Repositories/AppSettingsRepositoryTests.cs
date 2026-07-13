@@ -47,7 +47,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
             PanTiltSpeed = 4,
             ZoomSpeed = 5,
             Language = Language.German,
-            NumpadLayout = false,
+            UseNumpadLayout = false,
         };
 
         repository.Save(settings);
@@ -63,7 +63,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         loadedSettings.PanTiltSpeed.ShouldBe(4);
         loadedSettings.ZoomSpeed.ShouldBe(5);
         loadedSettings.Language.ShouldBe(Language.German);
-        loadedSettings.NumpadLayout.ShouldBeFalse();
+        loadedSettings.UseNumpadLayout.ShouldBeFalse();
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         settings.PanTiltSpeed.ShouldBe(7);
         settings.ZoomSpeed.ShouldBe(8);
         settings.Language.ShouldBe(Language.German);
-        settings.NumpadLayout.ShouldBeFalse();
+        settings.UseNumpadLayout.ShouldBeFalse();
         File.Exists(_settingsFilePath).ShouldBeTrue();
         Directory.Exists(_legacyRoot).ShouldBeFalse();
     }
