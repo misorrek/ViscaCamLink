@@ -25,7 +25,7 @@ public partial class HotKeyManager : IHotKeyManager
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool UnregisterHotKey(IntPtr hWnd, int id);
 
-    [LibraryImport("user32.dll", SetLastError = true)]
+    [LibraryImport("user32.dll", EntryPoint = "SetWindowsHookExA", SetLastError = true)]
     private static partial IntPtr SetWindowsHookEx(int idHook, IntPtr lpfn, IntPtr hMod, uint dwThreadId);
 
     [LibraryImport("user32.dll", SetLastError = true)]
@@ -35,7 +35,7 @@ public partial class HotKeyManager : IHotKeyManager
     [LibraryImport("user32.dll")]
     private static partial IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
-    [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleA", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     private static partial IntPtr GetModuleHandle(string? lpModuleName);
 
     private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);

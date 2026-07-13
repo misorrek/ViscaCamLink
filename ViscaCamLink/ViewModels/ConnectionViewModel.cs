@@ -26,7 +26,6 @@ public class ConnectionViewModel : ViewModelBase
     private bool _changingPowerStatus;
     private string _powerInfo = string.Empty;
     private string _activeCameraName = string.Empty;
-    private bool _isSwitching;
 
     public ConnectionViewModel(
         ISettingsService settings,
@@ -164,18 +163,6 @@ public class ConnectionViewModel : ViewModelBase
         }
     }
 
-    public bool IsSwitching
-    {
-        get => _isSwitching;
-        private set
-        {
-            _isSwitching = value;
-            NotifyPropertyChanged();
-            ((Command)PrevCameraCommand).Invalidate();
-            ((Command)NextCameraCommand).Invalidate();
-        }
-    }
-
     public bool UseMultipleCameras => _settings.UseMultipleCameraProfiles;
 
     public void Initialize()
@@ -227,11 +214,7 @@ public class ConnectionViewModel : ViewModelBase
 
     private async void OnConnectionStatusChanged(object? sender, ConnectionStatus status)
     {
-        await _uiDispatcher.InvokeAsync(() =>
-        {
-            ConnectionStatus = status;
-            IsSwitching = _connectionService.IsSwitchingCameraProfile;
-        });
+        await _uiDispatcher.InvokeAsync(() => ConnectionStatus = status);
 
         if (status == ConnectionStatus.Ok)
         {
@@ -313,26 +296,41 @@ public class ConnectionViewModel : ViewModelBase
         await TryCameraOperation(_powerService.SwitchPowerAsync());
     }
 
-    private bool CanCycleCamera() => !IsSwitching && _settings.CameraProfiles.Count > 1;
+    private bool CanCycleCamera() => _settings.CameraProfiles.Count > 1;
 
     private async void ExecutePrevCamera()
     {
         var target = GetAdjacentCamera(-1);
         if (target is null) return;
-        IsSwitching = true;
-        await _connectionService.SwitchCameraProfileAsync(target);
-        RefreshFromActiveCamera();
-        IsSwitching = false;
+        await SwitchToCameraAsync(target);
     }
 
     private async void ExecuteNextCamera()
     {
         var target = GetAdjacentCamera(+1);
         if (target is null) return;
-        IsSwitching = true;
-        await _connectionService.SwitchCameraProfileAsync(target);
+        await SwitchToCameraAsync(target);
+    }
+
+    private async Task SwitchToCameraAsync(CameraProfile target)
+    {
+        // Update the UI immediately so the profile label changes while the user is cycling.
+        // The actual connection is debounced and performed on a background thread by the
+        // connection service; a newer request cancels any pending attempt.
+        Ip = target.Ip;
+        Port = target.Port.ToString();
+        ActiveCameraName = target.Name;
+
+        try
+        {
+            await _connectionService.SwitchCameraProfileAsync(target);
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer switch request; the UI already reflects the latest profile.
+        }
+
         RefreshFromActiveCamera();
-        IsSwitching = false;
     }
 
     private CameraProfile? GetAdjacentCamera(int direction)

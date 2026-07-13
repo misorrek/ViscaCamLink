@@ -54,7 +54,6 @@
                         Width="24"
                         VerticalAlignment="Stretch"
                         Command="{Binding PrevCameraCommand}"
-                        IsEnabled="{Binding IsSwitching, Converter={StaticResource InverseBooleanConverter}}"
                         Style="{StaticResource BorderlessButton}">
                     <Path Data="{StaticResource Angle}"
                           Style="{StaticResource Icon16Path}" />
@@ -63,7 +62,6 @@
                         Width="24"
                         VerticalAlignment="Stretch"
                         Command="{Binding NextCameraCommand}"
-                        IsEnabled="{Binding IsSwitching, Converter={StaticResource InverseBooleanConverter}}"
                         Style="{StaticResource BorderlessButton}">
                     <Path Data="{StaticResource Angle}"
                           Style="{StaticResource Icon16Path}">

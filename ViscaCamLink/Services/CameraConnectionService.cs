@@ -12,10 +12,12 @@ public sealed class CameraConnectionService(
 {
     private static readonly TimeSpan DefaultHealthCheckInterval = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan HealthCheckTimeout = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan SwitchDelay = TimeSpan.FromSeconds(1);
 
     private readonly TimeSpan _healthCheckInterval = healthCheckInterval ?? DefaultHealthCheckInterval;
 
     private CancellationTokenSource _healthCheckCts = new();
+    private CancellationTokenSource _pendingConnectionCts = new();
 
     public event EventHandler<ConnectionStatus>? ConnectionStatusChanged;
 
@@ -27,34 +29,70 @@ public sealed class CameraConnectionService(
     {
         _healthCheckCts.Cancel();
         _healthCheckCts.Dispose();
+        _pendingConnectionCts.Cancel();
+        _pendingConnectionCts.Dispose();
     }
 
     public async Task ReconnectAsync()
     {
-        StopHealthCheck();
-        OnConnectionStatusChanged(ConnectionStatus.Working);
-
-        await Connect();
-    }
-
-    public async Task SwitchCameraProfileAsync(CameraProfile camera)
-    {
-        IsSwitchingCameraProfile = true;
+        var cts = StartNewPendingConnection();
+        var token = cts.Token;
 
         try
         {
             StopHealthCheck();
+            IsSwitchingCameraProfile = true;
             OnConnectionStatusChanged(ConnectionStatus.Working);
+
+            await Connect(token).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (_pendingConnectionCts == cts)
+            {
+                IsSwitchingCameraProfile = false;
+            }
+        }
+    }
+
+    public async Task SwitchCameraProfileAsync(CameraProfile camera)
+    {
+        var cts = StartNewPendingConnection();
+        var token = cts.Token;
+
+        try
+        {
+            StopHealthCheck();
 
             settingsService.SetActiveCameraProfile(camera.Id);
             presetService.SwitchCameraProfile(camera.Id);
 
-            await Connect();
+            await Task.Delay(SwitchDelay, token).ConfigureAwait(false);
+
+            IsSwitchingCameraProfile = true;
+            OnConnectionStatusChanged(ConnectionStatus.Working);
+
+            await Connect(token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // Superseded by a newer switch/reconnect request; don't update the connection status.
         }
         finally
         {
-            IsSwitchingCameraProfile = false;
+            if (_pendingConnectionCts == cts)
+            {
+                IsSwitchingCameraProfile = false;
+            }
         }
+    }
+
+    private CancellationTokenSource StartNewPendingConnection()
+    {
+        var oldCts = Interlocked.Exchange(ref _pendingConnectionCts, new CancellationTokenSource());
+        oldCts.Cancel();
+        oldCts.Dispose();
+        return _pendingConnectionCts;
     }
 
     public void CommitConnectionSettings(string ip, int port)
@@ -77,7 +115,7 @@ public sealed class CameraConnectionService(
         settingsService.UpdateCameraProfile(updatedProfile);
     }
 
-    private async Task Connect()
+    private async Task Connect(CancellationToken cancellationToken)
     {
         try
         {
@@ -85,9 +123,11 @@ public sealed class CameraConnectionService(
             var ip = camera?.Ip ?? CameraProfile.DefaultIp;
             var port = camera?.Port ?? CameraProfile.DefaultPort;
 
-            using var cts = new CancellationTokenSource();
-
-            await viscaController.Reconnect(cts.Token, ip, port).ConfigureAwait(false);
+            await viscaController.Reconnect(cancellationToken, ip, port).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch
         {
