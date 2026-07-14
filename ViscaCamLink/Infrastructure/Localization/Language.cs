@@ -9,9 +9,9 @@ using ViscaCamLink.Resources;
 public enum Language
 {
     System = 0,
-   [Description("en-US")]
+   [Description("en")]
     English = 1,
-   [Description("de-DE")]
+   [Description("de")]
     German = 2,
 }
 

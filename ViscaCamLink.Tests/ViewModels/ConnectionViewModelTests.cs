@@ -24,7 +24,6 @@ public sealed class ConnectionViewModelTests
         _settings.SetupGet(s => s.ActiveCameraProfile).Returns(_activeCameraProfile);
         _settings.SetupGet(s => s.ActiveCameraProfileId).Returns(_activeCameraProfile.Id);
         _settings.SetupGet(s => s.CameraProfiles).Returns(new List<CameraProfile> { _activeCameraProfile });
-        _settings.SetupGet(s => s.UseMultipleCameraProfiles).Returns(false);
 
         _uiDispatcher
             .Setup(d => d.InvokeAsync(It.IsAny<Action>()))

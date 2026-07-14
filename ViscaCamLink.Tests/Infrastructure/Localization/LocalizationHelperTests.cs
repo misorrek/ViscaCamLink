@@ -11,17 +11,15 @@ using ViscaCamLink.Resources;
 public class LocalizationHelperTests
 {
     [Theory]
-    [InlineData("de-AT", "de-DE")]
-    [InlineData("de-CH", "de-DE")]
-    [InlineData("de-DE", "de-DE")]
-    [InlineData("de", "de-DE")]
-    [InlineData("en-GB", "en-US")]
-    [InlineData("en-US", "en-US")]
-    [InlineData("en", "en-US")]
-    [InlineData("fr-FR", "")]
-    public void ApplyLocalization_SystemLanguage_UsesNearestSupportedResourceCulture(
-        string currentCultureName,
-        string expectedResourceCultureName)
+    [InlineData("de-AT")]
+    [InlineData("de-CH")]
+    [InlineData("de-DE")]
+    [InlineData("de")]
+    [InlineData("en-GB")]
+    [InlineData("en-US")]
+    [InlineData("en")]
+    [InlineData("fr-FR")]
+    public void ApplyLocalization_SystemLanguage_UsesCurrentCulture(string currentCultureName)
     {
         var originalCulture = Thread.CurrentThread.CurrentCulture;
         var originalUiCulture = Thread.CurrentThread.CurrentUICulture;
@@ -29,17 +27,14 @@ public class LocalizationHelperTests
 
         try
         {
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo(currentCultureName);
+            var currentCulture = CultureInfo.GetCultureInfo(currentCultureName);
+            Thread.CurrentThread.CurrentCulture = currentCulture;
 
             LocalizationHelper.ApplyLocalization(Language.System);
 
-            var expectedResourceCulture = string.IsNullOrEmpty(expectedResourceCultureName)
-                ? CultureInfo.InvariantCulture
-                : CultureInfo.GetCultureInfo(expectedResourceCultureName);
-
-            Strings.Culture.ShouldBe(expectedResourceCulture);
-            Thread.CurrentThread.CurrentUICulture.ShouldBe(expectedResourceCulture);
-            Thread.CurrentThread.CurrentCulture.ShouldBe(CultureInfo.GetCultureInfo(currentCultureName));
+            Strings.Culture.ShouldBe(currentCulture);
+            Thread.CurrentThread.CurrentUICulture.ShouldBe(currentCulture);
+            Thread.CurrentThread.CurrentCulture.ShouldBe(currentCulture);
         }
         finally
         {
@@ -50,9 +45,9 @@ public class LocalizationHelperTests
     }
 
     [Theory]
-    [InlineData(Language.English, "en-US")]
-    [InlineData(Language.German, "de-DE")]
-    public void ApplyLocalization_ExplicitLanguage_UsesCultureFromLanguage(Language language, string expectedCultureName)
+    [InlineData(Language.English, "en")]
+    [InlineData(Language.German, "de")]
+    public void ApplyLocalization_ExplicitLanguage_UsesNeutralCultureFromLanguage(Language language, string expectedCultureName)
     {
         var originalCulture = Thread.CurrentThread.CurrentCulture;
         var originalUiCulture = Thread.CurrentThread.CurrentUICulture;
