@@ -19,7 +19,6 @@ public class ConnectionViewModel : ViewModelBase
 
     private string _ip = string.Empty;
     private string _port = string.Empty;
-    private bool _isEditingConnection;
     private ConnectionStatus _connectionStatus = ConnectionStatus.Failed;
     private string _connectionInfo = string.Empty;
     private PowerStatus _powerStatus = PowerStatus.Unknown;
@@ -49,15 +48,12 @@ public class ConnectionViewModel : ViewModelBase
         _powerService.PowerStatusChanged += OnPowerStatusChanged;
         _powerService.SwitchingPower += OnSwitchingPower;
 
-        ConnectionEditCommand = new Command(ExecuteConnectionEdit);
         ReconnectCommand = new Command(ExecuteReconnect);
         PowerSwitchCommand = new Command(ExecutePowerSwitch);
         PrevCameraCommand = new Command(ExecutePrevCamera, CanCycleCamera);
         NextCameraCommand = new Command(ExecuteNextCamera, CanCycleCamera);
         ManageCamerasCommand = new Command(ExecuteManageCameras);
     }
-
-    public ICommand ConnectionEditCommand { get; }
 
     public ICommand ReconnectCommand { get; }
 
@@ -85,16 +81,6 @@ public class ConnectionViewModel : ViewModelBase
         set
         {
             _port = value;
-            NotifyPropertyChanged();
-        }
-    }
-
-    public bool IsEditingConnection
-    {
-        get => _isEditingConnection;
-        set
-        {
-            _isEditingConnection = value;
             NotifyPropertyChanged();
         }
     }
@@ -166,15 +152,6 @@ public class ConnectionViewModel : ViewModelBase
     public void Initialize()
     {
         ExecuteReconnect();
-    }
-
-    public void CancelEditMode()
-    {
-        if (IsEditingConnection)
-        {
-            RefreshFromActiveCamera();
-            IsEditingConnection = false;
-        }
     }
 
     public void OnLanguageChanged()
@@ -249,30 +226,6 @@ public class ConnectionViewModel : ViewModelBase
                 PowerStatus.InternalPowerCircuitError => Strings.PowerStatus_Error,
                 _ => string.Empty
             };
-        }
-    }
-
-    private void ExecuteConnectionEdit(object? parameter)
-    {
-        if (IsEditingConnection)
-        {
-            if (parameter is bool editingCanceled && editingCanceled)
-            {
-                RefreshFromActiveCamera();
-            }
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(Port) && int.TryParse(Port, out var port))
-                {
-                    _connectionService.CommitConnectionSettings(Ip, port);
-                }
-            }
-
-            IsEditingConnection = false;
-        }
-        else
-        {
-            IsEditingConnection = true;
         }
     }
 

@@ -169,8 +169,6 @@ public class ViscaCamLinkViewModel : ViewModelBase
 
     private void OpenOptions()
     {
-        // TODO : Remove because editing now only happens in own dialog
-        Connection.CancelEditMode();
         Presets.CancelEditMode();
         _dialogService.ShowOptionsDialog();
         Presets.RefreshLayout();

@@ -8,23 +8,48 @@ using ViscaCamLink.Resources;
 
 public static class LocalizationHelper
 {
+    private static readonly HashSet<string> SupportedResourceCultures = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "en-US",
+        "de-DE",
+    };
+
     public static void ApplyLocalization(Language language)
     {
-        CultureInfo cultureInfo;
+        CultureInfo selectedCulture;
 
         if (language == Language.System)
         {
-            cultureInfo = CultureInfo.CurrentCulture;
+            selectedCulture = CultureInfo.CurrentCulture;
         }
         else
         {
-            cultureInfo = CultureInfo.CreateSpecificCulture(language.GetDescription());
+            selectedCulture = CultureInfo.CreateSpecificCulture(language.GetDescription());
         }
 
-        Thread.CurrentThread.CurrentCulture = cultureInfo;
-        Thread.CurrentThread.CurrentUICulture = cultureInfo;
-        Strings.Culture = cultureInfo;
+        var resourceCulture = GetNearestSupportedResourceCulture(selectedCulture);
+
+        Thread.CurrentThread.CurrentCulture = selectedCulture;
+        Thread.CurrentThread.CurrentUICulture = resourceCulture;
+        Strings.Culture = resourceCulture;
 
         TranslationSource.Instance.NotifyLanguageChanged();
+    }
+
+    private static CultureInfo GetNearestSupportedResourceCulture(CultureInfo culture)
+    {
+        var current = culture;
+
+        while (!current.Equals(CultureInfo.InvariantCulture))
+        {
+            if (SupportedResourceCultures.Contains(current.Name))
+            {
+                return current;
+            }
+
+            current = current.Parent;
+        }
+
+        return CultureInfo.InvariantCulture;
     }
 }

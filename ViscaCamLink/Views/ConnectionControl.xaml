@@ -18,9 +18,14 @@
             </ResourceDictionary.MergedDictionaries>
 
             <converters:ConnectionStatusToBrushConverter x:Key="ConnectionStatusToBrushConverter" />
-            <converters:ConnectionStatusOkToBoolConverter x:Key="ConnectionStatusOkToBoolConverter" />
+            <converters:ConnectionStatusToBoolConverter x:Key="ConnectionStatusOkToBoolConverter" />
             <converters:PowerStatusToBrushConverter x:Key="PowerStatusToBrushConverter" />
             <converters:BoolAndConverter x:Key="BoolAndConverter" />
+            <converters:ValueConverterGroup x:Key="ConnectionStatusFailedToVisibilityVisibleConverter">
+                <converters:ConnectionStatusToBoolConverter CompareValue="Failed" />
+                <converters:BoolToVisibilityConverter TrueValue="Visible"
+                                                      FalseValue="Hidden" />
+            </converters:ValueConverterGroup>
 
             <s:Boolean x:Key="True">True</s:Boolean>
 
@@ -119,13 +124,15 @@
                 <Button DockPanel.Dock="Right"
                         Width="24"
                         VerticalAlignment="Stretch"
-                        Command="{Binding ReconnectCommand}">
+                        Command="{Binding ReconnectCommand}"
+                        IsEnabled="{Binding DataContext.Presets.IsSettingMemory,
+                                            RelativeSource={RelativeSource AncestorType=Window},
+                                            Converter={StaticResource InverseBooleanConverter}}"
+                        Visibility="{Binding Path=ConnectionStatus,
+                                             Converter={StaticResource ConnectionStatusFailedToVisibilityVisibleConverter}}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource BorderlessButton}">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsEditingConnection}" Value="True">
-                                    <Setter Property="IsEnabled" Value="False" />
-                                </DataTrigger>
                                 <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
                                                                RelativeSource={RelativeSource AncestorType=Window}}"
                                              Value="True">
@@ -175,8 +182,6 @@
                         Style="{StaticResource BorderlessButton}">
                     <Button.IsEnabled>
                         <MultiBinding Converter="{StaticResource BoolAndConverter}">
-                            <Binding Path="IsEditingConnection"
-                                     Converter="{StaticResource InverseBooleanConverter}" />
                             <Binding Path="ConnectionStatus"
                                      Converter="{StaticResource ConnectionStatusOkToBoolConverter}" />
                             <Binding Path="DataContext.Presets.IsSettingMemory"

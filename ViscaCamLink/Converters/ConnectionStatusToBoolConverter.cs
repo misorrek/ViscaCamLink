@@ -7,15 +7,22 @@ using System.Windows.Data;
 using ViscaCamLink.Visca.Types;
 
 [ValueConversion(typeof(ConnectionStatus), typeof(bool))]
-public class ConnectionStatusOkToBoolConverter : IValueConverter
+public class ConnectionStatusToBoolConverter : IValueConverter
 {
+    public ConnectionStatusToBoolConverter()
+    {
+        CompareValue = ConnectionStatus.Ok;
+    }
+
+    public ConnectionStatus CompareValue { get; set; }
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is ConnectionStatus status)
         {
-            return status == ConnectionStatus.Ok;
+            return status == CompareValue;
         }
-        
+
         return false;
     }
 
