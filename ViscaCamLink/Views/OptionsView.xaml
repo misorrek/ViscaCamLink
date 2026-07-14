@@ -116,7 +116,8 @@
                                       Margin="0,8,0,0"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding UseNumpadLayout}" />
+                                      IsChecked="{Binding UseNumpadLayout}"
+                                      Style="{StaticResource BaseCheckBox}" />
 
                             <TextBlock Grid.Column="0"
                                        Grid.Row="3"
@@ -132,7 +133,8 @@
                                       Margin="0,8,0,0"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding UsePresetGroups}" />
+                                      IsChecked="{Binding UsePresetGroups}"
+                                      Style="{StaticResource BaseCheckBox}" />
 
                             <TextBlock Grid.Column="0"
                                        Grid.Row="5"
@@ -148,7 +150,8 @@
                                       Margin="0,8,0,0"
                                       HorizontalAlignment="Right"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding UseCompactView}" />
+                                      IsChecked="{Binding UseCompactView}"
+                                      Style="{StaticResource BaseCheckBox}" />
                         </Grid>
                     </ScrollViewer>
                 </TabItem>
@@ -176,7 +179,8 @@
 
                             <CheckBox Grid.Column="1"
                                       VerticalAlignment="Center"
-                                      IsChecked="{Binding UseGlobalHotKeys}" />
+                                      IsChecked="{Binding UseGlobalHotKeys}"
+                                      Style="{StaticResource BaseCheckBox}" />
                         </Grid>
 
                         <Grid Grid.Row="1" Margin="0,0,0,4">

@@ -479,7 +479,7 @@
 
     <!--#endregion-->
     
-    <!--#region ComboBox Templates -->
+    <!--#region ComboBox Style-->
 
     <ControlTemplate x:Key="ComboBoxToggleButton"
                      TargetType="{x:Type ToggleButton}">
@@ -658,6 +658,54 @@
                         Value="{StaticResource SecondaryHighlightBrush}" />
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <!--#endregion-->
+    
+    <!--#region CheckBox Style-->
+
+    <Style x:Key="BaseCheckBox"
+           TargetType="{x:Type CheckBox}"
+           BasedOn="{StaticResource {x:Type CheckBox}}">
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Border x:Name="Box"
+                                Width="18"
+                                Height="18"
+                                BorderThickness="{StaticResource DefaultBorderThickness}"
+                                BorderBrush="{DynamicResource DefaultBorderBrush}"
+                                CornerRadius="{StaticResource DefaultCornerRadius}">
+
+                        <Viewbox Width="12"
+                                     Height="12"
+                                     Stretch="Uniform">
+                            <Path x:Name="CheckMark"
+                                      Visibility="Collapsed"
+                                      Data="{StaticResource CheckMark}"
+                                      Style="{StaticResource Icon12Path}"/>
+                        </Viewbox>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="Box"
+                                    Property="Background"
+                                    Value="{StaticResource SecondaryHighlightBrush}" />
+                        </Trigger>
+
+                        <Trigger Property="IsChecked"
+                                 Value="True">
+                            <Setter TargetName="CheckMark"
+                                    Property="Visibility"
+                                    Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!--#endregion-->
