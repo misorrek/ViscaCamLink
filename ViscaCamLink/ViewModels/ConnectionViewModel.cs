@@ -163,8 +163,6 @@ public class ConnectionViewModel : ViewModelBase
         }
     }
 
-    public bool UseMultipleCameras => _settings.UseMultipleCameraProfiles;
-
     public void Initialize()
     {
         ExecuteReconnect();
@@ -183,14 +181,6 @@ public class ConnectionViewModel : ViewModelBase
     {
         UpdateConnectionInfo();
         UpdatePowerInfo();
-    }
-
-    public void RefreshMultipleCameraMode()
-    {
-        NotifyPropertyChanged(nameof(UseMultipleCameras));
-        RefreshFromActiveCamera();
-        ((Command)PrevCameraCommand).Invalidate();
-        ((Command)NextCameraCommand).Invalidate();
     }
 
     private void RefreshFromActiveCamera()
@@ -367,6 +357,7 @@ public class ConnectionViewModel : ViewModelBase
     {
         _dialogService.ShowCameraProfilesDialog();
         RefreshFromActiveCamera();
-        RefreshMultipleCameraMode();
+        ((Command)PrevCameraCommand).Invalidate();
+        ((Command)NextCameraCommand).Invalidate();
     }
 }

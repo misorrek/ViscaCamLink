@@ -99,6 +99,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="80" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -116,6 +117,12 @@
                          Margin="0,0,0,6"
                          Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource BaseTextBox}" />
+                <Path Grid.Row="0"
+                      Grid.Column="2"
+                      Style="{StaticResource Icon16Path}"
+                      Data="{StaticResource Info}"
+                      Visibility="{Binding IsEditNameValid, Converter={StaticResource TrueToCollapsedConverter}}"
+                      ToolTip="{Binding [CameraProfile_Name_Invalid], Source={x:Static localization:TranslationSource.Instance}}" />
 
                 <TextBlock Grid.Row="1" Grid.Column="0"
                            VerticalAlignment="Center"
@@ -126,6 +133,12 @@
                          Margin="0,0,0,6"
                          Text="{Binding EditIp, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource BaseTextBox}" />
+                <Path Grid.Row="1"
+                      Grid.Column="2"
+                      Style="{StaticResource Icon16Path}"
+                      Data="{StaticResource Info}"
+                      Visibility="{Binding IsEditIpValid, Converter={StaticResource TrueToCollapsedConverter}}"
+                      ToolTip="{Binding [CameraProfile_Ip_Invalid], Source={x:Static localization:TranslationSource.Instance}}" />
 
                 <TextBlock Grid.Row="2" Grid.Column="0"
                            VerticalAlignment="Center"
@@ -136,6 +149,12 @@
                          Margin="0,0,0,10"
                          Text="{Binding EditPort, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource BaseTextBox}" />
+                <Path Grid.Row="2"
+                      Grid.Column="2"
+                      Style="{StaticResource Icon16Path}"
+                      Data="{StaticResource Info}"
+                      Visibility="{Binding IsEditPortValid, Converter={StaticResource TrueToCollapsedConverter}}"
+                      ToolTip="{Binding [CameraProfile_Port_Invalid], Source={x:Static localization:TranslationSource.Instance}}" />
 
                 <StackPanel Grid.Row="3" Grid.Column="1"
                             Orientation="Horizontal"

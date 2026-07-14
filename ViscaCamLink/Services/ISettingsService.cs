@@ -34,8 +34,6 @@ public interface ISettingsService
 
     int ZoomSpeed { get; set; }
 
-    bool UseMultipleCameraProfiles { get; set; }
-
     bool UseCompactView { get; set; }
 
     bool UsePresetGroups { get; set; }
@@ -54,5 +52,5 @@ public interface ISettingsService
 
     void Save();
 
-    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameras, bool minimizeToCompactWindow, Theme theme);
+    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool minimizeToCompactWindow, Theme theme);
 }

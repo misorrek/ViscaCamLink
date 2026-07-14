@@ -30,6 +30,7 @@ public class Command : ICommand
         return CanExecuteFunc == null || CanExecuteFunc();
     }
 
+    // TODO : Check for can execute?
     public void Execute(object? parameter)
     {
         ExecuteAction(parameter);

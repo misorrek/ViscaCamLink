@@ -38,7 +38,6 @@ public class OptionsViewModel : INotifyPropertyChanged
         _useNumpadLayout = _settings.UseNumpadLayout;
         _useGlobalHotKeys = _settings.UseGlobalHotKeys;
         _usePresetGroups = _settings.UsePresetGroups;
-        _useMultipleCameraProfiles = _settings.UseMultipleCameraProfiles;
         _useCompactView = _settings.UseCompactView;
         RefreshHotKeyValidation();
     }
@@ -139,17 +138,6 @@ public class OptionsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool UseMultipleCameraProfiles
-    {
-        get => _useMultipleCameraProfiles;
-
-        set
-        {
-            _useMultipleCameraProfiles = value;
-            NotifyPropertyChanged();
-        }
-    }
-
     public bool UseCompactView
     {
         get => _useCompactView;
@@ -168,7 +156,6 @@ public class OptionsViewModel : INotifyPropertyChanged
     private bool _useNumpadLayout;
     private bool _useGlobalHotKeys;
     private bool _usePresetGroups;
-    private bool _useMultipleCameraProfiles;
     private bool _useCompactView;
     private bool _hasHotKeyConflicts;
     private string _hotKeyValidationMessage = string.Empty;
@@ -187,7 +174,7 @@ public class OptionsViewModel : INotifyPropertyChanged
             return;
         }
 
-        _settings.ApplyOptions(_selectedLanguage, _useNumpadLayout, _useGlobalHotKeys, _usePresetGroups, _useMultipleCameraProfiles, _useCompactView, _selectedTheme);
+        _settings.ApplyOptions(_selectedLanguage, _useNumpadLayout, _useGlobalHotKeys, _usePresetGroups, _useCompactView, _selectedTheme);
         _hotKeyService.ApplyBindings(HotKeyBindings.Select(binding => binding.ToBinding()).ToList());
 
         CloseHandler.Invoke();

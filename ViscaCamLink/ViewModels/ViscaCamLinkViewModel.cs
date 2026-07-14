@@ -2,6 +2,7 @@ namespace ViscaCamLink.ViewModels;
 
 using System.Windows;
 using System.Windows.Input;
+
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Services;
@@ -168,10 +169,10 @@ public class ViscaCamLinkViewModel : ViewModelBase
 
     private void OpenOptions()
     {
+        // TODO : Remove because editing now only happens in own dialog
         Connection.CancelEditMode();
         Presets.CancelEditMode();
         _dialogService.ShowOptionsDialog();
-        Connection.RefreshMultipleCameraMode();
         Presets.RefreshLayout();
     }
 

@@ -81,12 +81,6 @@ public class SettingsService(
         set => settings.ZoomSpeed = value;
     }
 
-    public bool UseMultipleCameraProfiles
-    {
-        get => settings.UseMultipleCameraProfiles;
-        set => settings.UseMultipleCameraProfiles = value;
-    }
-
     public bool UseCompactView
     {
         get => settings.UseCompactView;
@@ -176,7 +170,7 @@ public class SettingsService(
     public void Save() => settingsRepository.Save(settings);
 
     // TODO: Create options model with all these settings that this service and the callers of this method use
-    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool useMultipleCameraProfiles, bool minimizeToCompactWindow, Theme theme)
+    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool minimizeToCompactWindow, Theme theme)
     {
         if (!Language.Equals(language))
         {
@@ -203,13 +197,6 @@ public class SettingsService(
         if (UsePresetGroups != usePresetGroups)
         {
             UsePresetGroups = usePresetGroups;
-
-            Save();
-        }
-
-        if (UseMultipleCameraProfiles != useMultipleCameraProfiles)
-        {
-            UseMultipleCameraProfiles = useMultipleCameraProfiles;
 
             Save();
         }

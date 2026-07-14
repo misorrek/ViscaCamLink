@@ -79,6 +79,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The ip address (version 4) must be in the following format: (0-255).(0-255).(0-255).(0-255) ähnelt.
+        /// </summary>
+        public static string CameraProfile_Ip_Invalid {
+            get {
+                return ResourceManager.GetString("CameraProfile_Ip_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
         /// </summary>
         public static string CameraProfile_Name {
@@ -88,11 +97,29 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The name can not be empty ähnelt.
+        /// </summary>
+        public static string CameraProfile_Name_Invalid {
+            get {
+                return ResourceManager.GetString("CameraProfile_Name_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Port ähnelt.
         /// </summary>
         public static string CameraProfile_Port {
             get {
                 return ResourceManager.GetString("CameraProfile_Port", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The port has to be a number between 0 and 65535 ähnelt.
+        /// </summary>
+        public static string CameraProfile_Port_Invalid {
+            get {
+                return ResourceManager.GetString("CameraProfile_Port_Invalid", resourceCulture);
             }
         }
         
@@ -165,6 +192,78 @@ namespace ViscaCamLink.Resources {
         public static string Common_Saved {
             get {
                 return ResourceManager.GetString("Common_Saved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Close ähnelt.
+        /// </summary>
+        public static string Compact_Close {
+            get {
+                return ResourceManager.GetString("Compact_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restore ähnelt.
+        /// </summary>
+        public static string Compact_Maximize {
+            get {
+                return ResourceManager.GetString("Compact_Maximize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minimize ähnelt.
+        /// </summary>
+        public static string Compact_Minimize {
+            get {
+                return ResourceManager.GetString("Compact_Minimize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Next camera profile ähnelt.
+        /// </summary>
+        public static string Compact_NextProfile {
+            get {
+                return ResourceManager.GetString("Compact_NextProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Previous camera profile ähnelt.
+        /// </summary>
+        public static string Compact_PrevProfile {
+            get {
+                return ResourceManager.GetString("Compact_PrevProfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Move ähnelt.
+        /// </summary>
+        public static string Compact_Tab_Movement {
+            get {
+                return ResourceManager.GetString("Compact_Tab_Movement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Presets ähnelt.
+        /// </summary>
+        public static string Compact_Tab_Presets {
+            get {
+                return ResourceManager.GetString("Compact_Tab_Presets", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zoom ähnelt.
+        /// </summary>
+        public static string Compact_Tab_Zoom {
+            get {
+                return ResourceManager.GetString("Compact_Tab_Zoom", resourceCulture);
             }
         }
         
@@ -268,6 +367,24 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Next Camera Profile ähnelt.
+        /// </summary>
+        public static string HotKeyAction_CameraProfileNext {
+            get {
+                return ResourceManager.GetString("HotKeyAction_CameraProfileNext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Previous Camera Profile ähnelt.
+        /// </summary>
+        public static string HotKeyAction_CameraProfilePrevious {
+            get {
+                return ResourceManager.GetString("HotKeyAction_CameraProfilePrevious", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Move Down ähnelt.
         /// </summary>
         public static string HotKeyAction_MoveDown {
@@ -313,6 +430,24 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Next Preset Group ähnelt.
+        /// </summary>
+        public static string HotKeyAction_PresetGroupNext {
+            get {
+                return ResourceManager.GetString("HotKeyAction_PresetGroupNext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Previous Preset Group ähnelt.
+        /// </summary>
+        public static string HotKeyAction_PresetGroupPrevious {
+            get {
+                return ResourceManager.GetString("HotKeyAction_PresetGroupPrevious", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zoom In ähnelt.
         /// </summary>
         public static string HotKeyAction_ZoomIn {
@@ -354,33 +489,6 @@ namespace ViscaCamLink.Resources {
         public static string Language_System {
             get {
                 return ResourceManager.GetString("Language_System", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die System based ähnelt.
-        /// </summary>
-        public static string Theme_System {
-            get {
-                return ResourceManager.GetString("Theme_System", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Light ähnelt.
-        /// </summary>
-        public static string Theme_Light {
-            get {
-                return ResourceManager.GetString("Theme_Light", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dark ähnelt.
-        /// </summary>
-        public static string Theme_Dark {
-            get {
-                return ResourceManager.GetString("Theme_Dark", resourceCulture);
             }
         }
         
@@ -486,15 +594,6 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Choose the app theme ähnelt.
-        /// </summary>
-        public static string Options_ThemeSelection {
-            get {
-                return ResourceManager.GetString("Options_ThemeSelection", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Use compact view when minimizing ähnelt.
         /// </summary>
         public static string Options_MinimizeToCompactWindow {
@@ -518,6 +617,15 @@ namespace ViscaCamLink.Resources {
         public static string Options_RestartNeeded {
             get {
                 return ResourceManager.GetString("Options_RestartNeeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Choose the app theme ähnelt.
+        /// </summary>
+        public static string Options_ThemeSelection {
+            get {
+                return ResourceManager.GetString("Options_ThemeSelection", resourceCulture);
             }
         }
         
@@ -657,6 +765,33 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dark ähnelt.
+        /// </summary>
+        public static string Theme_Dark {
+            get {
+                return ResourceManager.GetString("Theme_Dark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Light ähnelt.
+        /// </summary>
+        public static string Theme_Light {
+            get {
+                return ResourceManager.GetString("Theme_Light", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die System based ähnelt.
+        /// </summary>
+        public static string Theme_System {
+            get {
+                return ResourceManager.GetString("Theme_System", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Changelog ähnelt.
         /// </summary>
         public static string Updater_Changelog {
@@ -743,78 +878,6 @@ namespace ViscaCamLink.Resources {
         public static string Zoom_IncreaseSpeed {
             get {
                 return ResourceManager.GetString("Zoom_IncreaseSpeed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Presets ähnelt.
-        /// </summary>
-        public static string Compact_Tab_Presets {
-            get {
-                return ResourceManager.GetString("Compact_Tab_Presets", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Move ähnelt.
-        /// </summary>
-        public static string Compact_Tab_Movement {
-            get {
-                return ResourceManager.GetString("Compact_Tab_Movement", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zoom ähnelt.
-        /// </summary>
-        public static string Compact_Tab_Zoom {
-            get {
-                return ResourceManager.GetString("Compact_Tab_Zoom", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Previous camera profile ähnelt.
-        /// </summary>
-        public static string Compact_PrevProfile {
-            get {
-                return ResourceManager.GetString("Compact_PrevProfile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Next camera profile ähnelt.
-        /// </summary>
-        public static string Compact_NextProfile {
-            get {
-                return ResourceManager.GetString("Compact_NextProfile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Minimize ähnelt.
-        /// </summary>
-        public static string Compact_Minimize {
-            get {
-                return ResourceManager.GetString("Compact_Minimize", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Restore ähnelt.
-        /// </summary>
-        public static string Compact_Maximize {
-            get {
-                return ResourceManager.GetString("Compact_Maximize", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Close ähnelt.
-        /// </summary>
-        public static string Compact_Close {
-            get {
-                return ResourceManager.GetString("Compact_Close", resourceCulture);
             }
         }
     }

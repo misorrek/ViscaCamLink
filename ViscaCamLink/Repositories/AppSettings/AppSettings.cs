@@ -31,8 +31,6 @@ public sealed class AppSettings
 
     public int ZoomSpeed { get; set; } = 1;
 
-    public bool UseMultipleCameraProfiles { get; set; } = false;
-
     public bool UseCompactView { get; set; } = true;
 
     public bool UsePresetGroups { get; set; } = true;

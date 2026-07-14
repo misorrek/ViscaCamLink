@@ -3,14 +3,18 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Services;
 
-public class CameraProfilesViewModel : INotifyPropertyChanged
+public partial class CameraProfilesViewModel : INotifyPropertyChanged
 {
+    [GeneratedRegex(@"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$")]
+    private static partial Regex IpRegex();
+
     private readonly ISettingsService _settings;
     private readonly ICameraConnectionService _connectionService;
 
@@ -33,7 +37,7 @@ public class CameraProfilesViewModel : INotifyPropertyChanged
         AddCommand = new Command(ExecuteAdd, () => !IsEditing);
         EditCommand = new Command(ExecuteEdit, () => SelectedCamera is not null && !IsEditing);
         DeleteCommand = new Command(ExecuteDelete, () => SelectedCamera is not null && !IsEditing && Cameras.Count > 1);
-        SaveEditCommand = new Command(ExecuteSaveEdit, CanSaveEdit);
+        SaveEditCommand = new Command(ExecuteSaveEdit, () => IsEditNameValid && IsEditIpValid && IsEditPortValid);
         CancelEditCommand = new Command(ExecuteCancelEdit);
         ConnectCommand = new Command(ExecuteConnect, () => SelectedCamera is not null && !IsEditing && !_connectionService.IsSwitchingCameraProfile);
         CloseCommand = new Command(() => CloseHandler());
@@ -71,20 +75,47 @@ public class CameraProfilesViewModel : INotifyPropertyChanged
     public string EditName
     {
         get => _editName;
-        set { _editName = value; NotifyPropertyChanged(); ((Command)SaveEditCommand).Invalidate(); }
+        set
+        {
+            _editName = value;
+
+            NotifyPropertyChanged();
+            NotifyPropertyChanged(nameof(IsEditNameValid));
+            ((Command)SaveEditCommand).Invalidate();
+        }
     }
 
     public string EditIp
     {
         get => _editIp;
-        set { _editIp = value; NotifyPropertyChanged(); ((Command)SaveEditCommand).Invalidate(); }
+        set
+        {
+            _editIp = value;
+
+            NotifyPropertyChanged();
+            NotifyPropertyChanged(nameof(IsEditIpValid));
+            ((Command)SaveEditCommand).Invalidate();
+        }
     }
 
     public string EditPort
     {
         get => _editPort;
-        set { _editPort = value; NotifyPropertyChanged(); ((Command)SaveEditCommand).Invalidate(); }
+        set
+        {
+            _editPort = value;
+
+            NotifyPropertyChanged();
+            NotifyPropertyChanged(nameof(IsEditPortValid));
+            ((Command)SaveEditCommand).Invalidate();
+        }
     }
+
+    public bool IsEditNameValid => !string.IsNullOrWhiteSpace(EditName);
+
+    public bool IsEditIpValid => !string.IsNullOrWhiteSpace(EditIp) && IpRegex().IsMatch(EditIp);
+
+    public bool IsEditPortValid => int.TryParse(EditPort, out var p) && p is >= 1 and <= 65535;
 
     public ICommand AddCommand { get; }
 
@@ -138,18 +169,8 @@ public class CameraProfilesViewModel : INotifyPropertyChanged
         InvalidateEditCommands();
     }
 
-    private bool CanSaveEdit()
-    {
-        return !string.IsNullOrWhiteSpace(EditName)
-            && !string.IsNullOrWhiteSpace(EditIp)
-            && int.TryParse(EditPort, out var p)
-            && p is >= 1 and <= 65535;
-    }
-
     private void ExecuteSaveEdit()
     {
-        if (!CanSaveEdit()) return;
-
         var port = int.Parse(EditPort);
 
         if (_editingId == Guid.Empty)

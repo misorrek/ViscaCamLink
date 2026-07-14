@@ -383,4 +383,13 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="Compact_Close" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="CameraProfile_Ip_Invalid" xml:space="preserve">
+    <value>The ip address (version 4) must be in the following format: (0-255).(0-255).(0-255).(0-255)</value>
+  </data>
+  <data name="CameraProfile_Name_Invalid" xml:space="preserve">
+    <value>The name can not be empty</value>
+  </data>
+  <data name="CameraProfile_Port_Invalid" xml:space="preserve">
+    <value>The port has to be a number between 0 and 65535</value>
+  </data>
 </root>
