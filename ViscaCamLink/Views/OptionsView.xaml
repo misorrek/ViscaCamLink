@@ -11,9 +11,9 @@
         d:DataContext="{d:DesignInstance Type=viewmodels:OptionsViewModel}"
         Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"
         Height="460"
-        MinHeight="360"
         Width="560"
         MinWidth="350"
+        ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
@@ -41,217 +41,213 @@
                 Grid.Row="0"
                 Margin="{StaticResource DefaultMargin}"
                 Style="{StaticResource BaseBorder}">
+            <ScrollViewer Style="{StaticResource BaseScrollViewerStyle}">
+                <Grid Margin="{StaticResource ExtendedMargin}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="140" />
+                    </Grid.ColumnDefinitions>
 
-            <TabControl Margin="{StaticResource ExtendedMargin}">
-                <TabItem Header="{Binding [Options_General], Source={x:Static localization:TranslationSource.Instance}}">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                                  VerticalScrollBarVisibility="Auto">
-                        <Grid Margin="{StaticResource ExtendedMargin}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Grid.ColumnSpan="2"
+                               Grid.Row="0"
+                               Text="{Binding [Options_General], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource HeaderTextBlock}" />  
 
-                            <TextBlock Grid.Column="0"
-                                       Grid.Row="0"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding [Options_LanguageSelection], Source={x:Static localization:TranslationSource.Instance}}"
-                                       Style="{StaticResource BaseTextBlock}" />
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="1"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Text="{Binding [Options_LanguageSelection], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource BaseTextBlock}" />
 
-                            <ComboBox Grid.Column="1"
-                                      Grid.Row="0"
-                                      Width="140"
-                                      Height="28"
-                                      HorizontalAlignment="Right"
-                                      ItemsSource="{Binding LanguageItems}"
-                                      SelectedValue="{Binding SelectedLanguage}"
-                                      SelectedValuePath="LanguageValue"
-                                      DisplayMemberPath="LanguageDisplay"
-                                      Style="{StaticResource BaseComboBox}"
-                                      ItemContainerStyle="{StaticResource BaseComboBoxItem}" />
+                    <ComboBox Grid.Column="1"
+                              Grid.Row="1"
+                              Height="28"
+                              HorizontalAlignment="Right"
+                              ItemsSource="{Binding LanguageItems}"
+                              SelectedValue="{Binding SelectedLanguage}"
+                              SelectedValuePath="LanguageValue"
+                              DisplayMemberPath="LanguageDisplay"
+                              Style="{StaticResource BaseComboBox}"
+                              ItemContainerStyle="{StaticResource BaseComboBoxItem}" />
 
-                            <TextBlock Grid.Column="0"
-                                       Grid.Row="1"
-                                       Margin="0,8,0,0"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding [Options_ThemeSelection], Source={x:Static localization:TranslationSource.Instance}}"
-                                       Style="{StaticResource BaseTextBlock}" />
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="2"
+                               Margin="0,8,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Text="{Binding [Options_ThemeSelection], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource BaseTextBlock}" />
 
-                            <ComboBox Grid.Column="1"
-                                      Grid.Row="1"
-                                      Width="140"
-                                      Height="28"
-                                      HorizontalAlignment="Right"
-                                      ItemsSource="{Binding ThemeItems}"
-                                      SelectedValue="{Binding SelectedTheme}"
-                                      SelectedValuePath="ThemeValue"
-                                      DisplayMemberPath="ThemeDisplay"
-                                      Style="{StaticResource BaseComboBox}"
-                                      ItemContainerStyle="{StaticResource BaseComboBoxItem}" />
+                    <ComboBox Grid.Column="1"
+                              Grid.Row="2"
+                              Height="28"
+                              HorizontalAlignment="Right"
+                              ItemsSource="{Binding ThemeItems}"
+                              SelectedValue="{Binding SelectedTheme}"
+                              SelectedValuePath="ThemeValue"
+                              DisplayMemberPath="ThemeDisplay"
+                              Style="{StaticResource BaseComboBox}"
+                              ItemContainerStyle="{StaticResource BaseComboBoxItem}" />
 
-                            <TextBlock Grid.Column="0"
-                                       Grid.Row="2"
-                                       Margin="0,8,0,0"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding [Options_NumpadLayout], Source={x:Static localization:TranslationSource.Instance}}"
-                                       Style="{StaticResource BaseTextBlock}" />
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="3"
+                               Margin="0,8,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Text="{Binding [Options_MinimizeToCompactWindow], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource BaseTextBlock}" />
 
-                            <CheckBox Grid.Column="1"
-                                      Grid.Row="2"
-                                      Margin="0,8,0,0"
-                                      HorizontalAlignment="Right"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding UseNumpadLayout}"
-                                      Style="{StaticResource BaseCheckBox}" />
+                    <CheckBox Grid.Column="1"
+                              Grid.Row="3"
+                              Margin="0,8,0,0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding UseCompactView}"
+                              Style="{StaticResource BaseCheckBox}" />
 
-                            <TextBlock Grid.Column="0"
-                                       Grid.Row="3"
-                                       Margin="0,8,0,0"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding [Options_UsePresetGroups], Source={x:Static localization:TranslationSource.Instance}}"
-                                       Style="{StaticResource BaseTextBlock}" />
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="4"
+                               Margin="0,8,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Text="{Binding [Options_UsePresetGroups], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource BaseTextBlock}" />
 
-                            <CheckBox Grid.Column="1"
-                                      Grid.Row="3"
-                                      Margin="0,8,0,0"
-                                      HorizontalAlignment="Right"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding UsePresetGroups}"
-                                      Style="{StaticResource BaseCheckBox}" />
+                    <CheckBox Grid.Column="1"
+                              Grid.Row="4"
+                              Margin="0,8,0,0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding UsePresetGroups}"
+                              Style="{StaticResource BaseCheckBox}" />
 
-                            <TextBlock Grid.Column="0"
-                                       Grid.Row="5"
-                                       Margin="0,8,0,0"
-                                       HorizontalAlignment="Left"
-                                       VerticalAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding [Options_MinimizeToCompactWindow], Source={x:Static localization:TranslationSource.Instance}}"
-                                       Style="{StaticResource BaseTextBlock}" />
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="5"
+                               Margin="0,8,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Text="{Binding [Options_NumpadLayout], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource BaseTextBlock}" />
 
-                            <CheckBox Grid.Column="1"
-                                      Grid.Row="5"
-                                      Margin="0,8,0,0"
-                                      HorizontalAlignment="Right"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding UseCompactView}"
-                                      Style="{StaticResource BaseCheckBox}" />
-                        </Grid>
-                    </ScrollViewer>
-                </TabItem>
+                    <CheckBox Grid.Column="1"
+                              Grid.Row="5"
+                              Margin="0,8,0,0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding UseNumpadLayout}"
+                              Style="{StaticResource BaseCheckBox}" />
 
-                <TabItem Header="{Binding [Options_Hotkeys], Source={x:Static localization:TranslationSource.Instance}}">
-                    <Grid Margin="{StaticResource ExtendedMargin}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                    <!-- Hotkeys -->
 
-                        <Grid Grid.Row="0" Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Grid.ColumnSpan="2"
+                               Grid.Row="6"
+                               Text="{Binding [Options_Hotkeys], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource HeaderTextBlock}" />
 
-                            <TextBlock Grid.Column="0"
-                                       VerticalAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding [Options_GlobalHotKeys], Source={x:Static localization:TranslationSource.Instance}}"
-                                       Style="{StaticResource BaseTextBlock}" />
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="7"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Text="{Binding [Options_GlobalHotKeys], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource BaseTextBlock}" />
 
-                            <CheckBox Grid.Column="1"
-                                      VerticalAlignment="Center"
-                                      IsChecked="{Binding UseGlobalHotKeys}"
-                                      Style="{StaticResource BaseCheckBox}" />
-                        </Grid>
+                    <CheckBox Grid.Column="1"
+                              Grid.Row="7"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding UseGlobalHotKeys}"
+                              Style="{StaticResource BaseCheckBox}" />
 
-                        <Grid Grid.Row="1" Margin="0,0,0,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="160" />
-                            </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="8"
+                               Text="{Binding [Options_HotKeyAction], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource BaseTextBlock}"
+                               FontWeight="SemiBold" />
 
-                            <TextBlock Grid.Column="0"
-                                       Text="{Binding [Options_HotKeyAction], Source={x:Static localization:TranslationSource.Instance}}"
-                                       Style="{StaticResource BaseTextBlock}"
-                                       FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="1"
-                                       Text="{Binding [Options_HotKeyBinding], Source={x:Static localization:TranslationSource.Instance}}"
-                                       Style="{StaticResource BaseTextBlock}"
-                                       FontWeight="SemiBold" />
-                        </Grid>
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="8"
+                               Text="{Binding [Options_HotKeyBinding], Source={x:Static localization:TranslationSource.Instance}}"
+                               Style="{StaticResource BaseTextBlock}"
+                               FontWeight="SemiBold" />
 
-                        <ListBox Grid.Row="2"
-                                 ItemsSource="{Binding HotKeyBindings}"
-                                 BorderThickness="0">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type viewmodels:HotKeyBindingItemViewModel}">
-                                    <Grid Margin="0,2">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="160" />
-                                        </Grid.ColumnDefinitions>
+                    <ListBox Grid.Column="0"
+                             Grid.ColumnSpan="2"
+                             Grid.Row="9"
+                             ItemsSource="{Binding HotKeyBindings}"
+                             BorderThickness="0">
 
-                                        <TextBlock Grid.Column="0"
-                                                   VerticalAlignment="Center"
-                                                   Text="{Binding ActionDisplayName}"
-                                                   Style="{StaticResource BaseTextBlock}" />
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type viewmodels:HotKeyBindingItemViewModel}">
+                                <Grid Margin="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="160" />
+                                    </Grid.ColumnDefinitions>
 
-                                        <Button Grid.Column="1"
-                                                Height="28"
-                                                Command="{Binding DataContext.HotKeyCaptureCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding}"
-                                                Content="{Binding ButtonText}">
-                                            <Button.Style>
-                                                <Style TargetType="{x:Type Button}"
-                                                       BasedOn="{StaticResource DialogButton}">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasConflict}" Value="True">
-                                                            <Setter Property="BorderBrush" Value="Tomato" />
-                                                            <Setter Property="BorderThickness" Value="2" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Button.Style>
-                                            <behaviors:Interaction.Triggers>
-                                                <behaviors:EventTrigger EventName="PreviewKeyDown">
-                                                    <behaviors:InvokeCommandAction Command="{Binding DataContext.HotKeyPreviewKeyDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                                   PassEventArgsToCommand="True" />
-                                                </behaviors:EventTrigger>
-                                            </behaviors:Interaction.Triggers>
-                                        </Button>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                                    <TextBlock Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding ActionDisplayName}"
+                                               Style="{StaticResource BaseTextBlock}" />
 
-                        <TextBlock Grid.Row="3"
-                                   Margin="0,6,0,0"
-                                   Foreground="Tomato"
-                                   Text="{Binding HotKeyValidationMessage}"
-                                   TextWrapping="Wrap"
-                                   Style="{StaticResource BaseTextBlock}" />
-                    </Grid>
-                </TabItem>
-            </TabControl>
+                                    <Button Grid.Column="1"
+                                            Height="28"
+                                            Command="{Binding DataContext.HotKeyCaptureCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Content="{Binding ButtonText}">
+                                        <Button.Style>
+                                            <Style TargetType="{x:Type Button}"
+                                                    BasedOn="{StaticResource DialogButton}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasConflict}" Value="True">
+                                                        <Setter Property="BorderBrush" Value="Tomato" />
+                                                        <Setter Property="BorderThickness" Value="2" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        <behaviors:Interaction.Triggers>
+                                            <behaviors:EventTrigger EventName="PreviewKeyDown">
+                                                <behaviors:InvokeCommandAction Command="{Binding DataContext.HotKeyPreviewKeyDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                               PassEventArgsToCommand="True" />
+                                            </behaviors:EventTrigger>
+                                        </behaviors:Interaction.Triggers>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Grid.Column="0"
+                               Grid.ColumnSpan="2"
+                               Grid.Row="10"
+                               Margin="0,6,0,0"
+                               Foreground="Tomato"
+                               Text="{Binding HotKeyValidationMessage}"
+                               TextWrapping="Wrap"
+                               Style="{StaticResource BaseTextBlock}" />
+                </Grid>
+            </ScrollViewer>
         </Border>
 
         <StackPanel Grid.Column="2"
