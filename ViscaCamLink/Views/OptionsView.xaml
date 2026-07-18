@@ -11,9 +11,9 @@
         d:DataContext="{d:DesignInstance Type=viewmodels:OptionsViewModel}"
         Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"
         Height="460"
+        MinHeight="360"
         Width="560"
         MinWidth="350"
-        ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
