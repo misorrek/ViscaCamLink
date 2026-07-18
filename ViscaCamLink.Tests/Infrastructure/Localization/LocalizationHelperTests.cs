@@ -1,5 +1,6 @@
 namespace ViscaCamLink.Tests.Infrastructure.Localization;
 
+using System;
 using System.Globalization;
 using System.Threading;
 
@@ -8,8 +9,27 @@ using Shouldly;
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Resources;
 
-public class LocalizationHelperTests
+using Xunit;
+
+public sealed class LocalizationHelperTests
 {
+    [Theory]
+    [InlineData(Language.English, "en")]
+    [InlineData(Language.German, "de")]
+    public void ApplyLocalization_Success(Language language, string expectedCultureName)
+    {
+        RunWithRestoredCulture(() =>
+        {
+            var expectedCulture = CultureInfo.GetCultureInfo(expectedCultureName);
+
+            LocalizationHelper.ApplyLocalization(language);
+
+            Strings.Culture.ShouldBe(expectedCulture);
+            Thread.CurrentThread.CurrentUICulture.ShouldBe(expectedCulture);
+            Thread.CurrentThread.CurrentCulture.ShouldBe(expectedCulture);
+        });
+    }
+
     [Theory]
     [InlineData("de-AT")]
     [InlineData("de-CH")]
@@ -19,15 +39,12 @@ public class LocalizationHelperTests
     [InlineData("en-US")]
     [InlineData("en")]
     [InlineData("fr-FR")]
-    public void ApplyLocalization_SystemLanguage_UsesCurrentCulture(string currentCultureName)
+    public void ApplyLocalization_WhenLanguageIsSystem_UsesCurrentCulture(string currentCultureName)
     {
-        var originalCulture = Thread.CurrentThread.CurrentCulture;
-        var originalUiCulture = Thread.CurrentThread.CurrentUICulture;
-        var originalStringsCulture = Strings.Culture;
-
-        try
+        RunWithRestoredCulture(() =>
         {
             var currentCulture = CultureInfo.GetCultureInfo(currentCultureName);
+
             Thread.CurrentThread.CurrentCulture = currentCulture;
 
             LocalizationHelper.ApplyLocalization(Language.System);
@@ -35,19 +52,10 @@ public class LocalizationHelperTests
             Strings.Culture.ShouldBe(currentCulture);
             Thread.CurrentThread.CurrentUICulture.ShouldBe(currentCulture);
             Thread.CurrentThread.CurrentCulture.ShouldBe(currentCulture);
-        }
-        finally
-        {
-            Thread.CurrentThread.CurrentCulture = originalCulture;
-            Thread.CurrentThread.CurrentUICulture = originalUiCulture;
-            Strings.Culture = originalStringsCulture;
-        }
+        });
     }
 
-    [Theory]
-    [InlineData(Language.English, "en")]
-    [InlineData(Language.German, "de")]
-    public void ApplyLocalization_ExplicitLanguage_UsesNeutralCultureFromLanguage(Language language, string expectedCultureName)
+    private static void RunWithRestoredCulture(Action test)
     {
         var originalCulture = Thread.CurrentThread.CurrentCulture;
         var originalUiCulture = Thread.CurrentThread.CurrentUICulture;
@@ -55,13 +63,7 @@ public class LocalizationHelperTests
 
         try
         {
-            LocalizationHelper.ApplyLocalization(language);
-
-            var expectedCulture = CultureInfo.GetCultureInfo(expectedCultureName);
-
-            Strings.Culture.ShouldBe(expectedCulture);
-            Thread.CurrentThread.CurrentUICulture.ShouldBe(expectedCulture);
-            Thread.CurrentThread.CurrentCulture.ShouldBe(expectedCulture);
+            test();
         }
         finally
         {
