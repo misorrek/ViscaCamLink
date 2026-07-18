@@ -379,8 +379,6 @@
                                         <Style TargetType="Button"
                                                BasedOn="{StaticResource BaseButton}">
                                             <Setter Property="Padding" Value="6,3" />
-                                            <Setter Property="Background"
-                                                    Value="{DynamicResource SecondaryBackgroundBrush}" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsActive}" Value="True">
                                                     <Setter Property="Background"
