@@ -1,11 +1,20 @@
 namespace ViscaCamLink.Tests.Services;
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 using Moq;
+
 using Shouldly;
+
 using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
+
+using Xunit;
 
 public sealed class CameraConnectionServiceTests
 {
@@ -22,44 +31,41 @@ public sealed class CameraConnectionServiceTests
         _settings.Setup(s => s.ActiveCameraProfile).Returns(_activeCamera);
     }
 
-    private CameraConnectionService CreateService(TimeSpan? interval = null) =>
-        new(_viscaController.Object, _settings.Object, _presetService.Object, interval);
-
-    // ── Existing tests ────────────────────────────────────────────────────────
-
     [Fact]
-    public void Status_InitiallyFailed()
+    public void Status_WhenNeverConnected_ReturnsFailed()
     {
-        using var svc = CreateService();
-        svc.Status.ShouldBe(ConnectionStatus.Failed);
+        using var service = CreateSut();
+
+        service.Status.ShouldBe(ConnectionStatus.Failed);
     }
 
     [Fact]
-    public async Task ReconnectAsync_WhenConnectionSucceeds_SetsStatusToOk()
+    public async Task ReconnectAsync_Success()
     {
         _viscaController.Setup(v => v.Connected).Returns(true);
-        _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), "192.168.1.100", 5678))
-            .Returns(Task.CompletedTask);
 
-        using var svc = CreateService();
-        await svc.ReconnectAsync();
+        using var service = CreateSut();
+        var statuses = new List<ConnectionStatus>();
 
-        svc.Status.ShouldBe(ConnectionStatus.Ok);
+        service.ConnectionStatusChanged += (_, status) => statuses.Add(status);
+
+        await service.ReconnectAsync();
+
+        statuses.ShouldBe([ConnectionStatus.Working, ConnectionStatus.Ok]);
+        service.Status.ShouldBe(ConnectionStatus.Ok);
+        _viscaController.Verify(v => v.Reconnect(It.IsAny<CancellationToken>(), "192.168.1.100", 5678), Times.Once);
     }
 
     [Fact]
     public async Task ReconnectAsync_WhenConnectionFails_SetsStatusToFailed()
     {
         _viscaController.Setup(v => v.Connected).Returns(false);
-        _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), It.IsAny<string>(), It.IsAny<int>()))
-            .Returns(Task.CompletedTask);
 
-        using var svc = CreateService();
-        await svc.ReconnectAsync();
+        using var service = CreateSut();
 
-        svc.Status.ShouldBe(ConnectionStatus.Failed);
+        await service.ReconnectAsync();
+
+        service.Status.ShouldBe(ConnectionStatus.Failed);
     }
 
     [Fact]
@@ -70,51 +76,35 @@ public sealed class CameraConnectionServiceTests
             .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), It.IsAny<string>(), It.IsAny<int>()))
             .ThrowsAsync(new InvalidOperationException("network error"));
 
-        using var svc = CreateService();
-        await svc.ReconnectAsync();
+        using var service = CreateSut();
 
-        svc.Status.ShouldBe(ConnectionStatus.Failed);
+        await service.ReconnectAsync();
+
+        service.Status.ShouldBe(ConnectionStatus.Failed);
     }
 
     [Fact]
-    public async Task ReconnectAsync_RaisesConnectionStatusChanged_InOrder()
+    public async Task ReconnectAsync_WhenCalledTwice_RestartsMonitorAndKeepsStatusOk()
     {
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), It.IsAny<string>(), It.IsAny<int>()))
-            .Returns(Task.CompletedTask);
+            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PowerStatus.On);
 
-        using var svc = CreateService();
-        var statuses = new List<ConnectionStatus>();
-        svc.ConnectionStatusChanged += (_, s) => statuses.Add(s);
+        using var service = CreateSut(FastInterval);
 
-        await svc.ReconnectAsync();
+        await service.ReconnectAsync();
+        await service.ReconnectAsync();
 
-        statuses.ShouldBe([ConnectionStatus.Working, ConnectionStatus.Ok]);
+        service.Status.ShouldBe(ConnectionStatus.Ok);
     }
 
     [Fact]
-    public async Task ReconnectAsync_UsesSettingsForIpAndPort()
+    public void CommitConnectionSettings_Success()
     {
-        _viscaController.Setup(v => v.Connected).Returns(true);
-        _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), "192.168.1.100", 5678))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
+        using var service = CreateSut();
 
-        using var svc = CreateService();
-        await svc.ReconnectAsync();
-
-        _viscaController.Verify();
-    }
-
-    [Fact]
-    public void CommitConnectionSettings_UpdatesCamera()
-    {
-        _settings.Setup(s => s.ActiveCameraProfile).Returns(_activeCamera);
-
-        using var svc = CreateService();
-        svc.CommitConnectionSettings("10.0.0.1", 1234);
+        service.CommitConnectionSettings("10.0.0.1", 1234);
 
         _settings.Verify(s => s.UpdateCameraProfile(It.Is<CameraProfile>(p =>
             p.Id == _activeCamera.Id &&
@@ -122,140 +112,116 @@ public sealed class CameraConnectionServiceTests
             p.Port == 1234)), Times.Once);
     }
 
-    // ── Health-check tests ────────────────────────────────────────────────────
+    [Fact]
+    public async Task HealthCheck_Success()
+    {
+        _viscaController.Setup(v => v.Connected).Returns(true);
+        _viscaController
+            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PowerStatus.On);
+
+        using var service = CreateSut(FastInterval);
+
+        await service.ReconnectAsync();
+
+        var extraEvents = 0;
+
+        service.ConnectionStatusChanged += (_, _) => extraEvents++;
+
+        await Task.Delay(FastInterval * 4);
+
+        extraEvents.ShouldBe(0);
+        service.Status.ShouldBe(ConnectionStatus.Ok);
+    }
 
     [Fact]
     public async Task HealthCheck_WhenProbeFails_SetsStatusToFailed()
     {
-        // Arrange: connect successfully, then make GetPowerStatus fail.
         _viscaController.Setup(v => v.Connected).Returns(true);
-        _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), It.IsAny<string>(), It.IsAny<int>()))
-            .Returns(Task.CompletedTask);
         _viscaController
             .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("connection lost"));
 
-        using var svc = CreateService(FastInterval);
-        await svc.ReconnectAsync();
+        using var service = CreateSut(FastInterval);
 
-        var failedTcs = new TaskCompletionSource<ConnectionStatus>();
-        svc.ConnectionStatusChanged += (_, s) => failedTcs.TrySetResult(s);
+        await service.ReconnectAsync();
 
-        // Act: wait for the health check to fire.
-        var result = await failedTcs.Task.WaitAsync(WaitTimeout);
+        var failedSource = new TaskCompletionSource<ConnectionStatus>();
 
-        // Assert
+        service.ConnectionStatusChanged += (_, status) => failedSource.TrySetResult(status);
+
+        var result = await failedSource.Task.WaitAsync(WaitTimeout);
+
         result.ShouldBe(ConnectionStatus.Failed);
-        svc.Status.ShouldBe(ConnectionStatus.Failed);
+        service.Status.ShouldBe(ConnectionStatus.Failed);
     }
 
     [Fact]
     public async Task HealthCheck_WhenProbeSucceedsAfterFailure_RestoresStatusToOk()
     {
-        // Arrange: connect, fail once, then succeed on subsequent probes.
-        _viscaController.Setup(v => v.Connected).Returns(true);
-        _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), It.IsAny<string>(), It.IsAny<int>()))
-            .Returns(Task.CompletedTask);
+        var probeCount = 0;
 
-        int callCount = 0;
+        _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
             .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() =>
             {
-                if (callCount++ == 0) throw new InvalidOperationException("transient error");
+                if (probeCount++ == 0)
+                {
+                    throw new InvalidOperationException("transient error");
+                }
+
                 return PowerStatus.On;
             });
 
-        using var svc = CreateService(FastInterval);
-        await svc.ReconnectAsync();
+        using var service = CreateSut(FastInterval);
+
+        await service.ReconnectAsync();
 
         var statusChanges = new List<ConnectionStatus>();
-        var recoveredTcs = new TaskCompletionSource();
-        svc.ConnectionStatusChanged += (_, s) =>
+        var recoveredSource = new TaskCompletionSource();
+
+        service.ConnectionStatusChanged += (_, status) =>
         {
-            statusChanges.Add(s);
-            if (s == ConnectionStatus.Ok && statusChanges.Count > 1)
-                recoveredTcs.TrySetResult();
+            statusChanges.Add(status);
+
+            if (status == ConnectionStatus.Ok && statusChanges.Count > 1)
+            {
+                recoveredSource.TrySetResult();
+            }
         };
 
-        // Act: wait for Failed → Ok recovery.
-        await recoveredTcs.Task.WaitAsync(WaitTimeout);
+        await recoveredSource.Task.WaitAsync(WaitTimeout);
 
-        // Assert
         statusChanges.ShouldBe([ConnectionStatus.Failed, ConnectionStatus.Ok]);
-        svc.Status.ShouldBe(ConnectionStatus.Ok);
+        service.Status.ShouldBe(ConnectionStatus.Ok);
     }
 
     [Fact]
-    public async Task HealthCheck_WhenProbeSucceeds_DoesNotFireStatusChanged()
-    {
-        // Arrange: probe always succeeds.
-        _viscaController.Setup(v => v.Connected).Returns(true);
-        _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), It.IsAny<string>(), It.IsAny<int>()))
-            .Returns(Task.CompletedTask);
-        _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.On);
-
-        using var svc = CreateService(FastInterval);
-        await svc.ReconnectAsync();
-
-        int extraEvents = 0;
-        svc.ConnectionStatusChanged += (_, _) => extraEvents++;
-
-        // Act: let several probes fire.
-        await Task.Delay(FastInterval * 4);
-
-        // Assert: status remains Ok with no extra events.
-        extraEvents.ShouldBe(0);
-        svc.Status.ShouldBe(ConnectionStatus.Ok);
-    }
-
-    [Fact]
-    public async Task ReconnectAsync_WhenCalledAgain_CancelsExistingMonitor()
-    {
-        // Arrange: first connect succeeds; probes succeed.
-        _viscaController.Setup(v => v.Connected).Returns(true);
-        _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), It.IsAny<string>(), It.IsAny<int>()))
-            .Returns(Task.CompletedTask);
-        _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.On);
-
-        using var svc = CreateService(FastInterval);
-        await svc.ReconnectAsync();
-
-        // Act: reconnect again — should not throw, and status should reach Ok.
-        await svc.ReconnectAsync();
-
-        svc.Status.ShouldBe(ConnectionStatus.Ok);
-    }
-
-    [Fact]
-    public async Task Dispose_StopsMonitor_NoFurtherStatusChanges()
+    public async Task Dispose_Success()
     {
         _viscaController.Setup(v => v.Connected).Returns(true);
-        _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), It.IsAny<string>(), It.IsAny<int>()))
-            .Returns(Task.CompletedTask);
         _viscaController
             .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("connection lost"));
 
-        var svc = CreateService(FastInterval);
-        await svc.ReconnectAsync();
+        var service = CreateSut(FastInterval);
 
-        int eventsAfterDispose = 0;
-        svc.Dispose();
-        svc.ConnectionStatusChanged += (_, _) => eventsAfterDispose++;
+        await service.ReconnectAsync();
 
-        // Let a potential probe interval pass.
+        var eventsAfterDispose = 0;
+
+        service.Dispose();
+
+        service.ConnectionStatusChanged += (_, _) => eventsAfterDispose++;
+
         await Task.Delay(FastInterval * 4);
 
         eventsAfterDispose.ShouldBe(0);
+    }
+
+    private CameraConnectionService CreateSut(TimeSpan? healthCheckInterval = null)
+    {
+        return new CameraConnectionService(_viscaController.Object, _settings.Object, _presetService.Object, healthCheckInterval);
     }
 }

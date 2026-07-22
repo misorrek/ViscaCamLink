@@ -1,20 +1,27 @@
 namespace ViscaCamLink.Tests.Services;
 
-using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Moq;
 
+using Shouldly;
+
 using ViscaCamLink.Services;
+
+using Xunit;
 
 public sealed class StartupUpdateCheckServiceTests
 {
     private readonly Mock<IUpdateService> _updateService = new();
 
     [Fact]
-    public async Task RunAsync_AfterDelay_StartsUpdateService()
+    public async Task RunAsync_Success()
     {
         var delayCalls = new List<TimeSpan>();
-        var service = CreateService(delayAsync: (delay, _) =>
+        var service = CreateSut(delayAsync: (delay, _) =>
         {
             delayCalls.Add(delay);
             return Task.CompletedTask;
@@ -29,11 +36,12 @@ public sealed class StartupUpdateCheckServiceTests
     [Fact]
     public async Task RunAsync_WhenCancelledDuringDelay_DoesNotStartUpdateService()
     {
-        using var cts = new CancellationTokenSource();
-        var service = CreateService(delayAsync: (_, cancellationToken) => Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken));
+        using var cancellationSource = new CancellationTokenSource();
+        var service = CreateSut(delayAsync: (_, cancellationToken) => Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken));
 
-        cts.Cancel();
-        await service.RunAsync(cts.Token);
+        cancellationSource.Cancel();
+
+        await service.RunAsync(cancellationSource.Token);
 
         _updateService.Verify(s => s.StartAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -43,24 +51,27 @@ public sealed class StartupUpdateCheckServiceTests
     {
         var thrown = new InvalidOperationException("update failure");
         Exception? reported = null;
+
         _updateService
             .Setup(s => s.StartAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(thrown);
 
-        var service = CreateService(reportException: exception => reported = exception);
-
-        var act = () => service.RunAsync();
+        var service = CreateSut(reportException: exception => reported = exception);
+        Task act() => service.RunAsync();
 
         await Should.NotThrowAsync(act);
+
         reported.ShouldBeSameAs(thrown);
     }
 
-    private StartupUpdateCheckService CreateService(
+    private StartupUpdateCheckService CreateSut(
         Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
-        Action<Exception>? reportException = null) =>
-        new(
+        Action<Exception>? reportException = null)
+    {
+        return new StartupUpdateCheckService(
             _updateService.Object,
             TimeSpan.FromMilliseconds(10),
             delayAsync ?? ((_, _) => Task.CompletedTask),
             reportException);
+    }
 }

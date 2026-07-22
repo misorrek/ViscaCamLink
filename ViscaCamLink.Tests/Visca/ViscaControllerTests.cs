@@ -1,14 +1,20 @@
 namespace ViscaCamLink.Tests.Visca;
 
+using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging.Abstractions;
+
+using Moq;
 
 using Shouldly;
 
-using Moq;
-using Microsoft.Extensions.Logging.Abstractions;
-
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
+
+using Xunit;
 
 public sealed class ViscaControllerTests
 {
@@ -20,13 +26,12 @@ public sealed class ViscaControllerTests
         _viscaClient
             .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreateAckPacket());
+
         _controller = new ViscaController(_viscaClient.Object, NullLogger.Instance);
     }
 
-    // --- Connection ---
-
     [Fact]
-    public void Connected_DelegatesToClient()
+    public void Connected_Success()
     {
         _viscaClient.Setup(c => c.IsConnected()).Returns(true);
 
@@ -34,42 +39,33 @@ public sealed class ViscaControllerTests
     }
 
     [Fact]
-    public async Task Reconnect_DelegatesToClient()
-    {
-        _viscaClient
-            .Setup(c => c.Reconnect(It.IsAny<CancellationToken>(), "10.0.0.1", 5678))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
-
-        await _controller.Reconnect(CancellationToken.None, "10.0.0.1", 5678);
-
-        _viscaClient.Verify();
-    }
-
-    // --- Speed limits ---
-
-    [Fact]
-    public void MaxPanSpeed_ReturnsProtocolConstant()
+    public void MaxPanSpeed_Success()
     {
         ((IViscaController)_controller).MaxPanSpeed.ShouldBe(ViscaProtocol.MaxPanSpeed);
     }
 
     [Fact]
-    public void MaxTiltSpeed_ReturnsProtocolConstant()
+    public void MaxTiltSpeed_Success()
     {
         ((IViscaController)_controller).MaxTiltSpeed.ShouldBe(ViscaProtocol.MaxTiltSpeed);
     }
 
     [Fact]
-    public void MaxZoomSpeed_ReturnsProtocolConstant()
+    public void MaxZoomSpeed_Success()
     {
         ((IViscaController)_controller).MaxZoomSpeed.ShouldBe(ViscaProtocol.MaxZoomSpeed);
     }
 
-    // --- Power ---
+    [Fact]
+    public async Task Reconnect_Success()
+    {
+        await _controller.Reconnect(CancellationToken.None, "10.0.0.1", 5678);
+
+        _viscaClient.Verify(c => c.Reconnect(It.IsAny<CancellationToken>(), "10.0.0.1", 5678), Times.Once);
+    }
 
     [Fact]
-    public async Task PowerOn_SendsCorrectPacket()
+    public async Task PowerOn_Success()
     {
         var sent = CapturePacket();
 
@@ -82,7 +78,7 @@ public sealed class ViscaControllerTests
     }
 
     [Fact]
-    public async Task PowerOff_SendsCorrectPacket()
+    public async Task PowerOff_Success()
     {
         var sent = CapturePacket();
 
@@ -94,65 +90,67 @@ public sealed class ViscaControllerTests
             ViscaProtocol.CmdPower, ViscaProtocol.PowerOffArg, ViscaProtocol.Terminator]);
     }
 
-    [Fact]
-    public async Task GetPowerStatus_SendsInquiryAndParsesResponse()
+    [Theory]
+    [InlineData(PowerStatus.On)]
+    [InlineData(PowerStatus.Standby)]
+    public async Task GetPowerStatus_Success(PowerStatus powerStatus)
     {
-        var response = ViscaPacket.FromBytes([0x90, 0x50, (byte)PowerStatus.On, 0xff], 0, 4);
-        _viscaClient
-            .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        SetupResponse([0x90, 0x50, (byte)powerStatus, 0xff]);
 
         var status = await _controller.GetPowerStatus();
 
-        status.ShouldBe(PowerStatus.On);
+        status.ShouldBe(powerStatus);
     }
 
     [Fact]
-    public async Task GetPowerStatus_StandbyResponse()
+    public async Task GetPowerStatus_WhenResponseIsTooShort_ThrowsViscaProtocolException()
     {
-        var response = ViscaPacket.FromBytes([0x90, 0x50, (byte)PowerStatus.Standby, 0xff], 0, 4);
-        _viscaClient
-            .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        SetupResponse([0x90, 0x50, 0xff]);
 
-        var status = await _controller.GetPowerStatus();
+        Task<PowerStatus> act() => _controller.GetPowerStatus();
+
+        await Should.ThrowAsync<ViscaProtocolException>((Func<Task<PowerStatus>>)act);
+    }
+
+    [Fact]
+    public async Task GetPowerStatus_WhenStatusValueIsUnknown_ThrowsViscaProtocolException()
+    {
+        SetupResponse([0x90, 0x50, 0x7f, 0xff]);
+
+        Task<PowerStatus> act() => _controller.GetPowerStatus();
+
+        await Should.ThrowAsync<ViscaProtocolException>((Func<Task<PowerStatus>>)act);
+    }
+
+    [Fact]
+    public async Task GetUpdatedPowerStatus_Success()
+    {
+        SetupResponse([0x90, 0x50, (byte)PowerStatus.Standby, 0xff]);
+
+        var status = await _controller.GetUpdatedPowerStatus(PowerStatus.On);
 
         status.ShouldBe(PowerStatus.Standby);
     }
 
     [Fact]
-    public async Task GetPowerStatus_ThrowsWhenResponseIsTooShort()
+    public async Task GetUpdatedPowerStatus_WhenCancelledWhileStatusIsUnchanged_ThrowsOperationCanceledException()
     {
-        var response = ViscaPacket.FromBytes([0x90, 0x50, 0xff], 0, 3);
-        _viscaClient
-            .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
+        SetupResponse([0x90, 0x50, (byte)PowerStatus.On, 0xff]);
 
-        var act = () => _controller.GetPowerStatus();
+        using var cancellationSource = new CancellationTokenSource();
 
-        await Should.ThrowAsync<ViscaProtocolException>(act);
+        cancellationSource.Cancel();
+
+        Task<PowerStatus> act() => _controller.GetUpdatedPowerStatus(PowerStatus.On, cancellationSource.Token);
+
+        await Should.ThrowAsync<OperationCanceledException>((Func<Task<PowerStatus>>)act);
     }
-
-    [Fact]
-    public async Task GetPowerStatus_ThrowsWhenStatusValueIsUnknown()
-    {
-        var response = ViscaPacket.FromBytes([0x90, 0x50, 0x7f, 0xff], 0, 4);
-        _viscaClient
-            .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        var act = () => _controller.GetPowerStatus();
-
-        await Should.ThrowAsync<ViscaProtocolException>(act);
-    }
-
-    // --- Memory ---
 
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(5)]
-    public async Task MemorySet_SendsCorrectPacket(byte slot)
+    public async Task MemorySet_Success(byte slot)
     {
         var sent = CapturePacket();
 
@@ -168,7 +166,7 @@ public sealed class ViscaControllerTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(5)]
-    public async Task MemoryRecall_SendsCorrectPacket(byte slot)
+    public async Task MemoryRecall_Success(byte slot)
     {
         var sent = CapturePacket();
 
@@ -180,10 +178,8 @@ public sealed class ViscaControllerTests
             ViscaProtocol.CmdMemoryReset, ViscaProtocol.MemorySubRecall, slot, ViscaProtocol.Terminator]);
     }
 
-    // --- Pan/Tilt ---
-
     [Fact]
-    public async Task GoHome_SendsCorrectPacket()
+    public async Task GoHome_Success()
     {
         var sent = CapturePacket();
 
@@ -195,117 +191,80 @@ public sealed class ViscaControllerTests
             ViscaProtocol.CmdHome, ViscaProtocol.Terminator]);
     }
 
-    [Fact]
-    public async Task ContinuousPanTilt_PanRightTiltUp_SendsCorrectDirectionBytes()
+    [Theory]
+    [InlineData(PanTiltDirection.PanRightTiltUp, 0x10, 0x08, ViscaProtocol.DirectionPositive, ViscaProtocol.DirectionNegative)]
+    [InlineData(PanTiltDirection.PanLeftTiltDown, 0x05, 0x03, ViscaProtocol.DirectionNegative, ViscaProtocol.DirectionPositive)]
+    [InlineData(PanTiltDirection.None, 0x00, 0x00, ViscaProtocol.DirectionStop, ViscaProtocol.DirectionStop)]
+    public async Task ContinuousPanTilt_Success(
+        PanTiltDirection direction,
+        byte panSpeed,
+        byte tiltSpeed,
+        byte expectedPanByte,
+        byte expectedTiltByte)
     {
         var sent = CapturePacket();
 
-        await _controller.ContinuousPanTilt(PanTiltDirection.PanRightTiltUp, 0x10, 0x08);
+        await _controller.ContinuousPanTilt(direction, panSpeed, tiltSpeed);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
-            ViscaProtocol.CmdContinuousPanTilt, 0x10, 0x08,
-            ViscaProtocol.DirectionPositive, ViscaProtocol.DirectionNegative, ViscaProtocol.Terminator]);
+            ViscaProtocol.CmdContinuousPanTilt, panSpeed, tiltSpeed,
+            expectedPanByte, expectedTiltByte, ViscaProtocol.Terminator]);
     }
 
-    [Fact]
-    public async Task ContinuousPanTilt_PanLeftTiltDown_SendsCorrectDirectionBytes()
+    [Theory]
+    [InlineData(ZoomDirection.In, 0x05, ViscaProtocol.ZoomInMask | 0x05)]
+    [InlineData(ZoomDirection.Out, 0x03, ViscaProtocol.ZoomOutMask | 0x03)]
+    [InlineData(ZoomDirection.None, 0x00, ViscaProtocol.ZoomStop)]
+    public async Task ContinuousZoom_Success(ZoomDirection direction, byte zoomSpeed, byte expectedZoomByte)
     {
         var sent = CapturePacket();
 
-        await _controller.ContinuousPanTilt(PanTiltDirection.PanLeftTiltDown, 0x05, 0x03);
-
-        sent.Value.ShouldNotBeNull();
-        AssertPacketBytes(sent.Value!.Value, [
-            ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
-            ViscaProtocol.CmdContinuousPanTilt, 0x05, 0x03,
-            ViscaProtocol.DirectionNegative, ViscaProtocol.DirectionPositive, ViscaProtocol.Terminator]);
-    }
-
-    [Fact]
-    public async Task ContinuousPanTilt_Stop_SendsStopDirections()
-    {
-        var sent = CapturePacket();
-
-        await _controller.ContinuousPanTilt(PanTiltDirection.None, 0, 0);
-
-        sent.Value.ShouldNotBeNull();
-        AssertPacketBytes(sent.Value!.Value, [
-            ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
-            ViscaProtocol.CmdContinuousPanTilt, 0x00, 0x00,
-            ViscaProtocol.DirectionStop, ViscaProtocol.DirectionStop, ViscaProtocol.Terminator]);
-    }
-
-    // --- Zoom ---
-
-    [Fact]
-    public async Task ContinuousZoom_ZoomIn_SendsCorrectPacket()
-    {
-        var sent = CapturePacket();
-
-        await _controller.ContinuousZoom(ZoomDirection.In, 0x05);
+        await _controller.ContinuousZoom(direction, zoomSpeed);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
-            ViscaProtocol.CmdZoomVariable, ViscaProtocol.ZoomInMask | 0x05, ViscaProtocol.Terminator]);
+            ViscaProtocol.CmdZoomVariable, expectedZoomByte, ViscaProtocol.Terminator]);
     }
 
     [Fact]
-    public async Task ContinuousZoom_ZoomOut_SendsCorrectPacket()
-    {
-        var sent = CapturePacket();
-
-        await _controller.ContinuousZoom(ZoomDirection.Out, 0x03);
-
-        sent.Value.ShouldNotBeNull();
-        AssertPacketBytes(sent.Value!.Value, [
-            ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
-            ViscaProtocol.CmdZoomVariable, ViscaProtocol.ZoomOutMask | 0x03, ViscaProtocol.Terminator]);
-    }
-
-    [Fact]
-    public async Task ContinuousZoom_Stop_SendsZeroParameter()
-    {
-        var sent = CapturePacket();
-
-        await _controller.ContinuousZoom(ZoomDirection.None, 0x00);
-
-        sent.Value.ShouldNotBeNull();
-        AssertPacketBytes(sent.Value!.Value, [
-            ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
-            ViscaProtocol.CmdZoomVariable, ViscaProtocol.ZoomStop, ViscaProtocol.Terminator]);
-    }
-
-    // --- Dispose ---
-
-    [Fact]
-    public void Dispose_DisposesClient()
+    public void Dispose_Success()
     {
         _controller.Dispose();
 
         _viscaClient.Verify(c => c.Dispose(), Times.Once);
     }
 
-    // --- Helpers ---
+    private void SetupResponse(byte[] responseBytes)
+    {
+        _viscaClient
+            .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ViscaPacket.FromBytes(responseBytes, 0, responseBytes.Length));
+    }
 
     private StrongBox<ViscaPacket?> CapturePacket()
     {
         var box = new StrongBox<ViscaPacket?>(null);
+
         _viscaClient
             .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
-            .Callback<ViscaPacket, CancellationToken>((p, _) => box.Value = p)
+            .Callback<ViscaPacket, CancellationToken>((packet, _) => box.Value = packet)
             .ReturnsAsync(CreateAckPacket());
+
         return box;
     }
 
-    private static ViscaPacket CreateAckPacket() =>
-        ViscaPacket.FromBytes([0x90, 0x41, ViscaProtocol.Terminator], 0, 3);
+    private static ViscaPacket CreateAckPacket()
+    {
+        return ViscaPacket.FromBytes([0x90, 0x41, ViscaProtocol.Terminator], 0, 3);
+    }
 
     private static void AssertPacketBytes(ViscaPacket packet, byte[] expected)
     {
         packet.Length.ShouldBe(expected.Length);
+
         for (var i = 0; i < expected.Length; i++)
         {
             packet.GetByte(i).ShouldBe(expected[i], $"byte at index {i} should be 0x{expected[i]:x2}");

@@ -1,12 +1,17 @@
 namespace ViscaCamLink.Tests.Services;
 
-using Shouldly;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Moq;
+
+using Shouldly;
 
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
+
+using Xunit;
 
 public sealed class PowerServiceTests
 {
@@ -19,14 +24,15 @@ public sealed class PowerServiceTests
     }
 
     [Fact]
-    public async Task RefreshPowerStatusAsync_RaisesPowerStatusChanged()
+    public async Task RefreshPowerStatusAsync_Success()
     {
         _viscaController
             .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
             .ReturnsAsync(PowerStatus.On);
 
         PowerStatus? received = null;
-        _powerService.PowerStatusChanged += (_, s) => received = s;
+
+        _powerService.PowerStatusChanged += (_, status) => received = status;
 
         await _powerService.RefreshPowerStatusAsync();
 
@@ -34,71 +40,7 @@ public sealed class PowerServiceTests
     }
 
     [Fact]
-    public async Task SwitchPowerAsync_WhenOn_CallsPowerOff()
-    {
-        _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.On);
-        _viscaController
-            .Setup(v => v.PowerOff(It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
-        _viscaController
-            .Setup(v => v.GetUpdatedPowerStatus(PowerStatus.On, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.Standby);
-
-        await _powerService.SwitchPowerAsync();
-
-        _viscaController.Verify(v => v.PowerOff(It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task SwitchPowerAsync_WhenStandby_CallsPowerOn()
-    {
-        _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.Standby);
-        _viscaController
-            .Setup(v => v.PowerOn(It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
-        _viscaController
-            .Setup(v => v.GetUpdatedPowerStatus(PowerStatus.Standby, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.On);
-
-        await _powerService.SwitchPowerAsync();
-
-        _viscaController.Verify(v => v.PowerOn(It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task SwitchPowerAsync_WhenUnknown_DoesNothing()
-    {
-        _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.Unknown);
-
-        await _powerService.SwitchPowerAsync();
-
-        _viscaController.Verify(v => v.PowerOn(It.IsAny<CancellationToken>()), Times.Never);
-        _viscaController.Verify(v => v.PowerOff(It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task SwitchPowerAsync_WhenInternalError_DoesNothing()
-    {
-        _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.InternalPowerCircuitError);
-
-        await _powerService.SwitchPowerAsync();
-
-        _viscaController.Verify(v => v.PowerOn(It.IsAny<CancellationToken>()), Times.Never);
-        _viscaController.Verify(v => v.PowerOff(It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task SwitchPowerAsync_RaisesSwitchingPowerBeforeCommand()
+    public async Task SwitchPowerAsync_Success()
     {
         _viscaController
             .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
@@ -108,31 +50,50 @@ public sealed class PowerServiceTests
             .ReturnsAsync(PowerStatus.Standby);
 
         var switchingRaised = false;
+        PowerStatus? received = null;
+
         _powerService.SwitchingPower += (_, _) => switchingRaised = true;
+        _powerService.PowerStatusChanged += (_, status) => received = status;
 
         await _powerService.SwitchPowerAsync();
 
         switchingRaised.ShouldBeTrue();
+        received.ShouldBe(PowerStatus.Standby);
+        _viscaController.Verify(v => v.PowerOff(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task SwitchPowerAsync_RaisesPowerStatusChangedWithNewStatus()
+    public async Task SwitchPowerAsync_WhenPowerIsStandby_CallsPowerOnAndRaisesNewStatus()
     {
         _viscaController
             .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
             .ReturnsAsync(PowerStatus.Standby);
         _viscaController
-            .Setup(v => v.PowerOn(It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-        _viscaController
             .Setup(v => v.GetUpdatedPowerStatus(PowerStatus.Standby, It.IsAny<CancellationToken>()))
             .ReturnsAsync(PowerStatus.On);
 
         PowerStatus? received = null;
-        _powerService.PowerStatusChanged += (_, s) => received = s;
+
+        _powerService.PowerStatusChanged += (_, status) => received = status;
 
         await _powerService.SwitchPowerAsync();
 
         received.ShouldBe(PowerStatus.On);
+        _viscaController.Verify(v => v.PowerOn(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(PowerStatus.Unknown)]
+    [InlineData(PowerStatus.InternalPowerCircuitError)]
+    public async Task SwitchPowerAsync_WhenPowerStatusIsNotSwitchable_DoesNothing(PowerStatus powerStatus)
+    {
+        _viscaController
+            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(powerStatus);
+
+        await _powerService.SwitchPowerAsync();
+
+        _viscaController.Verify(v => v.PowerOn(It.IsAny<CancellationToken>()), Times.Never);
+        _viscaController.Verify(v => v.PowerOff(It.IsAny<CancellationToken>()), Times.Never);
     }
 }

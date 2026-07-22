@@ -1,25 +1,31 @@
 namespace ViscaCamLink.Tests.Visca;
 
-using Shouldly;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
+using Shouldly;
+
 using ViscaCamLink.Visca;
+
+using Xunit;
 
 public sealed class ViscaClientBaseTests
 {
     [Fact]
-    public async Task SendAsync_ReceivesCompletionResponse_ReturnsIt()
+    public async Task SendAsync_Success()
     {
         var client = new FakeClient([CreateResponsePacket(0x90, 0x50, 0x02)]);
 
         var result = await ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
 
         result[1].ShouldBe((byte)0x50);
+        client.DisconnectCallCount.ShouldBe(0);
     }
 
     [Fact]
-    public async Task SendAsync_ReceivesAckThenCompletion_SkipsAckAndReturnsCompletion()
+    public async Task SendAsync_WhenAckPrecedesCompletion_SkipsAckAndReturnsCompletion()
     {
         var client = new FakeClient([
             CreateResponsePacket(0x90, 0x41),
@@ -32,84 +38,74 @@ public sealed class ViscaClientBaseTests
     }
 
     [Fact]
-    public async Task SendAsync_ReceivesErrorResponse_ThrowsViscaResponseException()
+    public async Task SendAsync_WhenEndpointReturnsError_ThrowsViscaResponseExceptionAndDisconnects()
     {
         var client = new FakeClient([CreateResponsePacket(0x90, 0x60, 0x02)]);
 
-        var act = () => ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
+        Task<ViscaPacket> act() => ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
 
-        var ex = await Should.ThrowAsync<ViscaResponseException>(act);
-        ex.Message.ShouldContain("Error returned from VISCA endpoint");
-    }
+        var exception = await Should.ThrowAsync<ViscaResponseException>((System.Func<Task<ViscaPacket>>)act);
 
-    [Fact]
-    public async Task SendAsync_ReceivesInvalidResponseType_ThrowsViscaProtocolException()
-    {
-        var client = new FakeClient([CreateResponsePacket(0x90, 0x70, 0x00)]);
-
-        var act = () => ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
-
-        var ex = await Should.ThrowAsync<ViscaProtocolException>(act);
-        ex.Message.ShouldContain("Invalid packet");
-    }
-
-    [Fact]
-    public async Task SendAsync_ReceivesTooShortPacket_ThrowsViscaProtocolException()
-    {
-        var client = new FakeClient([ViscaPacket.FromBytes([0x90], 0, 1)]);
-
-        var act = () => ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
-
-        var ex = await Should.ThrowAsync<ViscaProtocolException>(act);
-        ex.Message.ShouldContain("length");
-    }
-
-    [Fact]
-    public async Task SendAsync_OnError_CallsDisconnect()
-    {
-        var client = new FakeClient([CreateResponsePacket(0x90, 0x60, 0x02)]);
-
-        try { await ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None); } catch { }
-
+        exception.Message.ShouldContain("Error returned from VISCA endpoint");
         client.DisconnectCallCount.ShouldBe(1);
     }
 
     [Fact]
-    public async Task SendAsync_OnSuccess_DoesNotDisconnect()
+    public async Task SendAsync_WhenResponseTypeIsInvalid_ThrowsViscaProtocolException()
     {
-        var client = new FakeClient([CreateResponsePacket(0x90, 0x50, 0x02)]);
+        var client = new FakeClient([CreateResponsePacket(0x90, 0x70, 0x00)]);
 
-        await ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
+        Task<ViscaPacket> act() => ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
 
-        client.DisconnectCallCount.ShouldBe(0);
+        var exception = await Should.ThrowAsync<ViscaProtocolException>(act);
+
+        exception.Message.ShouldContain("Invalid packet");
     }
 
-    private static ViscaPacket CreateRequest() =>
-        ViscaPacket.FromBytesWithPreformatting(0x81, 0x01, 0x04, 0x00, 0x02, 0xff);
+    [Fact]
+    public async Task SendAsync_WhenResponseIsTooShort_ThrowsViscaProtocolException()
+    {
+        var client = new FakeClient([ViscaPacket.FromBytes([0x90], 0, 1)]);
 
-    private static ViscaPacket CreateResponsePacket(params byte[] bytes) =>
-        ViscaPacket.FromBytes(bytes, 0, bytes.Length);
+        Task<ViscaPacket> act() => ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
+
+        var exception = await Should.ThrowAsync<ViscaProtocolException>((System.Func<Task<ViscaPacket>>)act);
+
+        exception.Message.ShouldContain("length");
+    }
+
+    private static ViscaPacket CreateRequest()
+    {
+        return ViscaPacket.FromBytesWithPreformatting(0x81, 0x01, 0x04, 0x00, 0x02, 0xff);
+    }
+
+    private static ViscaPacket CreateResponsePacket(params byte[] bytes)
+    {
+        return ViscaPacket.FromBytes(bytes, 0, bytes.Length);
+    }
 
     private sealed class FakeClient(ViscaPacket[] responses) : ViscaClientBase(NullLogger.Instance)
     {
-        private int responseIndex;
+        private int _responseIndex;
 
         public int DisconnectCallCount { get; private set; }
+
+        public override void Dispose() { }
+
+        public override bool? IsConnected() => true;
+
+        public override Task Reconnect(CancellationToken cancellationToken, string? host = null, int? port = null) =>
+            Task.CompletedTask;
 
         protected override Task SendPacketAsync(ViscaPacket packet, CancellationToken cancellationToken) =>
             Task.CompletedTask;
 
         protected override Task<ViscaPacket> ReceivePacketAsync(CancellationToken cancellationToken) =>
-            Task.FromResult(responses[responseIndex++]);
+            Task.FromResult(responses[_responseIndex++]);
 
         protected override Task ConnectAsync(CancellationToken cancellationToken) =>
             Task.CompletedTask;
 
         protected override void Disconnect() => DisconnectCallCount++;
-
-        public override void Dispose() { }
-        public override bool? IsConnected() => true;
-        public override Task Reconnect(CancellationToken cancellationToken, string? host = null, int? port = null) =>
-            Task.CompletedTask;
     }
 }

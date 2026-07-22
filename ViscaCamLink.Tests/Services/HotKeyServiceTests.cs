@@ -1,5 +1,8 @@
 namespace ViscaCamLink.Tests.Services;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
 
 using Moq;
@@ -9,6 +12,8 @@ using Shouldly;
 using ViscaCamLink.Infrastructure.HotKeys;
 using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Services;
+
+using Xunit;
 
 public sealed class HotKeyServiceTests
 {
@@ -22,13 +27,15 @@ public sealed class HotKeyServiceTests
         _repository.Setup(r => r.Load()).Returns(HotKeyDefinitions.CreateDefaultBindings());
         _settings.Setup(s => s.UseGlobalHotKeys).Returns(true);
         _hotKeyManager.SetupProperty(m => m.UseGlobalHotKeys, true);
+
         _hotKeyService = new HotKeyService(_hotKeyManager.Object, _repository.Object, _settings.Object);
     }
 
     [Fact]
-    public void RegisterHotKey_DelegatesToManager_ReturnsTrue()
+    public void RegisterHotKey_Success()
     {
         Action action = () => { };
+
         _hotKeyManager
             .Setup(m => m.RegisterHotKey(ModifierKeys.Control, Key.A, action))
             .Returns(true);
@@ -42,6 +49,7 @@ public sealed class HotKeyServiceTests
     public void RegisterHotKey_WhenManagerFails_ReturnsFalse()
     {
         Action action = () => { };
+
         _hotKeyManager
             .Setup(m => m.RegisterHotKey(ModifierKeys.Alt, Key.F1, action))
             .Returns(false);
@@ -52,15 +60,7 @@ public sealed class HotKeyServiceTests
     }
 
     [Fact]
-    public void Dispose_DisposesManager()
-    {
-        _hotKeyService.Dispose();
-
-        _hotKeyManager.Verify(m => m.Dispose(), Times.Once);
-    }
-
-    [Fact]
-    public void RegisterActions_UnregistersExistingHotKeysAndRegistersConfiguredBindings()
+    public void RegisterActions_Success()
     {
         Action callback = () => { };
 
@@ -71,11 +71,12 @@ public sealed class HotKeyServiceTests
     }
 
     [Fact]
-    public void ApplyBindings_WhenValid_SavesAndReregistersBindings()
+    public void ApplyBindings_Success()
     {
         var bindings = HotKeyDefinitions.CreateDefaultBindings()
             .Select(binding => binding.Copy())
             .ToList();
+
         bindings[0].Modifier = ModifierKeys.Control;
         bindings[0].Key = Key.D0;
 
@@ -96,6 +97,7 @@ public sealed class HotKeyServiceTests
         var bindings = HotKeyDefinitions.CreateDefaultBindings()
             .Select(binding => binding.Copy())
             .ToList();
+
         bindings[1].Key = bindings[0].Key;
 
         var result = _hotKeyService.ApplyBindings(bindings);
@@ -103,5 +105,13 @@ public sealed class HotKeyServiceTests
         result.ShouldBeFalse();
         _repository.Verify(r => r.Save(It.IsAny<IReadOnlyList<HotKeyBinding>>()), Times.Never);
         _hotKeyManager.Verify(m => m.UnregisterAll(), Times.Never);
+    }
+
+    [Fact]
+    public void Dispose_Success()
+    {
+        _hotKeyService.Dispose();
+
+        _hotKeyManager.Verify(m => m.Dispose(), Times.Once);
     }
 }

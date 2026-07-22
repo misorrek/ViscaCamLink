@@ -1,12 +1,17 @@
 namespace ViscaCamLink.Tests.Services;
 
-using Shouldly;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Moq;
+
+using Shouldly;
 
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
+
+using Xunit;
 
 public sealed class CameraMovementServiceTests
 {
@@ -18,101 +23,71 @@ public sealed class CameraMovementServiceTests
         _viscaController.Setup(v => v.MaxPanSpeed).Returns(ViscaProtocol.MaxPanSpeed);
         _viscaController.Setup(v => v.MaxTiltSpeed).Returns(ViscaProtocol.MaxTiltSpeed);
         _viscaController.Setup(v => v.MaxZoomSpeed).Returns(ViscaProtocol.MaxZoomSpeed);
+
         _movementService = new CameraMovementService(_viscaController.Object);
     }
 
     [Fact]
-    public void MaxPanTiltSpeed_ReturnsControllerMaxPanSpeed()
+    public void MaxPanTiltSpeed_Success()
     {
         _movementService.MaxPanTiltSpeed.ShouldBe(ViscaProtocol.MaxPanSpeed);
     }
 
     [Fact]
-    public void MaxZoomSpeed_ReturnsControllerMaxZoomSpeed()
+    public void MaxZoomSpeed_Success()
     {
         _movementService.MaxZoomSpeed.ShouldBe(ViscaProtocol.MaxZoomSpeed);
     }
 
-    [Fact]
-    public void GetProportionalTiltSpeed_AtMaxPanSpeed_ReturnsMaxTiltSpeed()
+    [Theory]
+    [InlineData(ViscaProtocol.MaxPanSpeed, ViscaProtocol.MaxTiltSpeed)]
+    [InlineData(ViscaProtocol.MaxPanSpeed / 2, 10)]
+    [InlineData(0, 0)]
+    public void GetProportionalTiltSpeed_Success(byte panSpeed, byte expectedTiltSpeed)
     {
-        var result = _movementService.GetProportionalTiltSpeed(ViscaProtocol.MaxPanSpeed);
+        var result = _movementService.GetProportionalTiltSpeed(panSpeed);
 
-        result.ShouldBe(ViscaProtocol.MaxTiltSpeed);
+        result.ShouldBe(expectedTiltSpeed);
     }
 
     [Fact]
-    public void GetProportionalTiltSpeed_AtHalfPanSpeed_ReturnsHalfTiltSpeed()
+    public async Task PanTiltAsync_Success()
     {
-        var halfPan = ViscaProtocol.MaxPanSpeed / 2;
-
-        var result = _movementService.GetProportionalTiltSpeed(halfPan);
-
-        // Ceiling of (MaxTiltSpeed * 0.5) = Ceiling(20 * 0.5) = 10
-        var expected = (byte)Math.Ceiling(ViscaProtocol.MaxTiltSpeed * ((double)halfPan / ViscaProtocol.MaxPanSpeed));
-        result.ShouldBe(expected);
-    }
-
-    [Fact]
-    public void GetProportionalTiltSpeed_AtZero_ReturnsZero()
-    {
-        var result = _movementService.GetProportionalTiltSpeed(0);
-
-        result.ShouldBe((byte)0);
-    }
-
-    [Fact]
-    public async Task PanTiltAsync_DelegatesToController()
-    {
-        _viscaController
-            .Setup(v => v.ContinuousPanTilt(PanTiltDirection.PanRightTiltDown, 10, 5, It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
-
         await _movementService.PanTiltAsync(PanTiltDirection.PanRightTiltDown, 10, 5);
 
-        _viscaController.Verify();
+        _viscaController.Verify(
+            v => v.ContinuousPanTilt(PanTiltDirection.PanRightTiltDown, 10, 5, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
-    public async Task StopPanTiltAsync_SendsStopCommand()
+    public async Task StopPanTiltAsync_Success()
     {
-        _viscaController
-            .Setup(v => v.ContinuousPanTilt(PanTiltDirection.None, 0, 0, It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
-
         await _movementService.StopPanTiltAsync();
 
-        _viscaController.Verify();
+        _viscaController.Verify(
+            v => v.ContinuousPanTilt(PanTiltDirection.None, 0, 0, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Theory]
     [InlineData(ZoomDirection.None, 0)]
     [InlineData(ZoomDirection.In, 5)]
     [InlineData(ZoomDirection.Out, 3)]
-    public async Task ZoomAsync_DelegatesToController(ZoomDirection zoomDirection, byte speed)
+    public async Task ZoomAsync_Success(ZoomDirection zoomDirection, byte speed)
     {
-        _viscaController
-            .Setup(v => v.ContinuousZoom(zoomDirection, speed, It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
-
         await _movementService.ZoomAsync(zoomDirection, speed);
 
-        _viscaController.Verify();
+        _viscaController.Verify(
+            v => v.ContinuousZoom(zoomDirection, speed, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
-    public async Task GoHomeAsync_DelegatesToController()
+    public async Task GoHomeAsync_Success()
     {
-        _viscaController
-            .Setup(v => v.GoHome(It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask)
-            .Verifiable();
-
         await _movementService.GoHomeAsync();
 
-        _viscaController.Verify();
+        _viscaController.Verify(v => v.GoHome(It.IsAny<CancellationToken>()), Times.Once);
     }
 }
