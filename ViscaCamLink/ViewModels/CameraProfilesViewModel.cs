@@ -16,7 +16,6 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
     private static partial Regex IpRegex();
 
     private readonly ISettingsService _settings;
-    private readonly ICameraConnectionService _connectionService;
 
     private CameraProfileItemViewModel? _selectedCamera;
     private bool _isEditing;
@@ -25,10 +24,9 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
     private string _editPort = string.Empty;
     private Guid _editingId = Guid.Empty;
 
-    public CameraProfilesViewModel(ISettingsService settings, ICameraConnectionService connectionService, Action closeHandler)
+    public CameraProfilesViewModel(ISettingsService settings, Action closeHandler)
     {
         _settings = settings;
-        _connectionService = connectionService;
         CloseHandler = closeHandler;
 
         Cameras = new ObservableCollection<CameraProfileItemViewModel>(
@@ -39,7 +37,6 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
         DeleteCommand = new Command(ExecuteDelete, () => SelectedCamera is not null && !IsEditing && Cameras.Count > 1);
         SaveEditCommand = new Command(ExecuteSaveEdit, () => IsEditNameValid && IsEditIpValid && IsEditPortValid);
         CancelEditCommand = new Command(ExecuteCancelEdit);
-        ConnectCommand = new Command(ExecuteConnect, () => SelectedCamera is not null && !IsEditing && !_connectionService.IsSwitchingCameraProfile);
         CloseCommand = new Command(() => CloseHandler());
 
         SelectedCamera = Cameras.FirstOrDefault(c => c.Id == _settings.ActiveCameraProfileId)
@@ -127,8 +124,6 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
 
     public ICommand CancelEditCommand { get; }
 
-    public ICommand ConnectCommand { get; }
-
     public ICommand CloseCommand { get; }
 
     private Action CloseHandler { get; }
@@ -205,24 +200,11 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
         IsEditing = false;
     }
 
-    private async void ExecuteConnect()
-    {
-        if (SelectedCamera is null) return;
-
-        var profile = _settings.CameraProfiles.FirstOrDefault(c => c.Id == SelectedCamera.Id);
-        if (profile is null) return;
-
-        await _connectionService.SwitchCameraProfileAsync(profile);
-
-        CloseHandler();
-    }
-
     private void InvalidateEditCommands()
     {
         ((Command)AddCommand).Invalidate();
         ((Command)EditCommand).Invalidate();
         ((Command)DeleteCommand).Invalidate();
-        ((Command)ConnectCommand).Invalidate();
     }
 
     protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")

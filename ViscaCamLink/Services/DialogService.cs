@@ -6,8 +6,7 @@ using ViscaCamLink.Views;
 
 public sealed class DialogService(
     IOptionsViewModelFactory optionsViewModelFactory,
-    ISettingsService settingsService,
-    ICameraConnectionService connectionService) : IDialogService
+    ISettingsService settingsService) : IDialogService
 {
     public void ShowOptionsDialog()
     {
@@ -20,7 +19,7 @@ public sealed class DialogService(
     public void ShowCameraProfilesDialog()
     {
         var view = new CameraProfilesView();
-        var viewModel = new CameraProfilesViewModel(settingsService, connectionService, () => view.Close());
+        var viewModel = new CameraProfilesViewModel(settingsService, () => view.Close());
         view.DataContext = viewModel;
         view.ShowDialog();
     }

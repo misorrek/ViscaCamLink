@@ -13,7 +13,6 @@ using Xunit;
 public sealed class CameraProfilesViewModelTests
 {
     private readonly Mock<ISettingsService> _settings = new();
-    private readonly Mock<ICameraConnectionService> _connectionService = new();
     private readonly CameraProfile _firstProfile = new() { Name = "Cam A", Ip = "10.0.0.1", Port = 1 };
     private readonly CameraProfile _secondProfile = new() { Name = "Cam B", Ip = "10.0.0.2", Port = 2 };
     private readonly CameraProfilesViewModel _viewModel;
@@ -24,7 +23,6 @@ public sealed class CameraProfilesViewModelTests
     {
         _settings.Setup(s => s.CameraProfiles).Returns([_firstProfile, _secondProfile]);
         _settings.Setup(s => s.ActiveCameraProfileId).Returns(_secondProfile.Id);
-        _connectionService.Setup(c => c.IsSwitchingCameraProfile).Returns(false);
 
         _viewModel = CreateSut();
     }
@@ -159,17 +157,8 @@ public sealed class CameraProfilesViewModelTests
         viewModel.DeleteCommand.CanExecute(null).ShouldBeFalse();
     }
 
-    [Fact]
-    public void ConnectCommand_Success()
-    {
-        _viewModel.ConnectCommand.Execute(null);
-
-        _connectionService.Verify(c => c.SwitchCameraProfileAsync(_secondProfile), Times.Once);
-        _closed.ShouldBeTrue();
-    }
-
     private CameraProfilesViewModel CreateSut()
     {
-        return new CameraProfilesViewModel(_settings.Object, _connectionService.Object, () => _closed = true);
+        return new CameraProfilesViewModel(_settings.Object, () => _closed = true);
     }
 }

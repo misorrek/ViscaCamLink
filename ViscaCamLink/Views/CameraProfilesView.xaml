@@ -177,12 +177,6 @@
         <!-- Bottom buttons -->
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right">
-            <Button Content="{Binding [Connection_Reconnect], Source={x:Static localization:TranslationSource.Instance}}"
-                    Command="{Binding ConnectCommand}"
-                    Style="{StaticResource DialogButton}"
-                    Width="100"
-                    Height="30"
-                    Margin="0,0,8,0" />
             <Button Content="{Binding [Common_OK], Source={x:Static localization:TranslationSource.Instance}}"
                     Command="{Binding CloseCommand}"
                     Style="{StaticResource DialogButton}"
