@@ -57,6 +57,7 @@
                         Width="24"
                         VerticalAlignment="Stretch"
                         Command="{Binding PrevCameraCommand}"
+                        ToolTip="{Binding [CameraProfile_Previous], Source={x:Static localization:TranslationSource.Instance}}"
                         Style="{StaticResource BorderlessButton}">
                     <Path Data="{StaticResource Angle}"
                           Style="{StaticResource Icon16Path}" />
@@ -66,6 +67,7 @@
                         Width="24"
                         VerticalAlignment="Stretch"
                         Command="{Binding NextCameraCommand}"
+                        ToolTip="{Binding [CameraProfile_Next], Source={x:Static localization:TranslationSource.Instance}}"
                         Style="{StaticResource BorderlessButton}">
                     <Path Data="{StaticResource Angle}"
                           Style="{StaticResource Icon16Path}">
@@ -116,7 +118,7 @@
                         VerticalAlignment="Stretch"
                         Command="{Binding ManageCamerasCommand}"
                         Style="{StaticResource BorderlessButton}"
-                        ToolTip="{Binding [CameraManager_Title], Source={x:Static localization:TranslationSource.Instance}}">
+                        ToolTip="{Binding [CameraProfile_Title], Source={x:Static localization:TranslationSource.Instance}}">
                     <Path Data="{StaticResource Options}"
                           Style="{StaticResource Icon16Path}" />
                 </Button>
@@ -129,7 +131,8 @@
                                             RelativeSource={RelativeSource AncestorType=Window},
                                             Converter={StaticResource InverseBooleanConverter}}"
                         Visibility="{Binding Path=ConnectionStatus,
-                                             Converter={StaticResource ConnectionStatusFailedToVisibilityVisibleConverter}}">
+                                             Converter={StaticResource ConnectionStatusFailedToVisibilityVisibleConverter}}"
+                        ToolTip="{Binding [Connection_Reconnect], Source={x:Static localization:TranslationSource.Instance}}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource BorderlessButton}">
                             <Style.Triggers>

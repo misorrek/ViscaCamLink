@@ -92,7 +92,7 @@
                             <Binding Path="ConnectionContainerVisible" />
                             <Binding Path="[Sidebar_Show]" Source="{x:Static localization:TranslationSource.Instance}" />
                             <Binding Path="[Sidebar_Hide]" Source="{x:Static localization:TranslationSource.Instance}" />
-                            <Binding Path="[Sidebar_ControlPanel]" Source="{x:Static localization:TranslationSource.Instance}" />
+                            <Binding Path="[Sidebar_ConnectionPanel]" Source="{x:Static localization:TranslationSource.Instance}" />
                         </MultiBinding>
                     </interface:SidebarButton.ToolTip>
                 </interface:SidebarButton>
@@ -149,6 +149,7 @@
                                          Command="{Binding OptionsCommand}"
                                          Icon="{StaticResource Options}"
                                          IsActive="False"
+                                         ToolTip="{Binding [Sidebar_Options], Source={x:Static localization:TranslationSource.Instance}}"
                                          Style="{StaticResource SidebarButton}" />
 
                 <interface:SidebarButton DockPanel.Dock="Bottom"

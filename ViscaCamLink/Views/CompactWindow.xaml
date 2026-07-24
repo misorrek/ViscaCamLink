@@ -146,14 +146,14 @@
                     <!-- Profile navigation (left) -->
                     <Button DockPanel.Dock="Left"
                             Command="{Binding Connection.PrevCameraCommand}"
-                            ToolTip="{Binding [Compact_PrevProfile], Source={x:Static localization:TranslationSource.Instance}}"
+                            ToolTip="{Binding [CameraProfile_Previous], Source={x:Static localization:TranslationSource.Instance}}"
                             Style="{StaticResource TitleBarButton}">
                         <Path Data="{StaticResource Angle}"
                               Style="{StaticResource TitleBarIconPath}" />
                     </Button>
                     <Button DockPanel.Dock="Left"
                             Command="{Binding Connection.NextCameraCommand}"
-                            ToolTip="{Binding [Compact_NextProfile], Source={x:Static localization:TranslationSource.Instance}}"
+                            ToolTip="{Binding [CameraProfile_Next], Source={x:Static localization:TranslationSource.Instance}}"
                             Style="{StaticResource TitleBarButton}">
                         <Path Data="{StaticResource Angle}"
                               Style="{StaticResource TitleBarIconPath}">

@@ -106,6 +106,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Next camera profile ähnelt.
+        /// </summary>
+        public static string CameraProfile_Next {
+            get {
+                return ResourceManager.GetString("CameraProfile_Next", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Port ähnelt.
         /// </summary>
         public static string CameraProfile_Port {
@@ -120,6 +129,24 @@ namespace ViscaCamLink.Resources {
         public static string CameraProfile_Port_Invalid {
             get {
                 return ResourceManager.GetString("CameraProfile_Port_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Previous camera profile ähnelt.
+        /// </summary>
+        public static string CameraProfile_Previous {
+            get {
+                return ResourceManager.GetString("CameraProfile_Previous", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Camera profiles ähnelt.
+        /// </summary>
+        public static string CameraProfile_Title {
+            get {
+                return ResourceManager.GetString("CameraProfile_Title", resourceCulture);
             }
         }
         
@@ -219,24 +246,6 @@ namespace ViscaCamLink.Resources {
         public static string Compact_Minimize {
             get {
                 return ResourceManager.GetString("Compact_Minimize", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Next camera profile ähnelt.
-        /// </summary>
-        public static string Compact_NextProfile {
-            get {
-                return ResourceManager.GetString("Compact_NextProfile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Previous camera profile ähnelt.
-        /// </summary>
-        public static string Compact_PrevProfile {
-            get {
-                return ResourceManager.GetString("Compact_PrevProfile", resourceCulture);
             }
         }
         
@@ -752,6 +761,15 @@ namespace ViscaCamLink.Resources {
         public static string Presets_Save {
             get {
                 return ResourceManager.GetString("Presets_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Connection panel ähnelt.
+        /// </summary>
+        public static string Sidebar_ConnectionPanel {
+            get {
+                return ResourceManager.GetString("Sidebar_ConnectionPanel", resourceCulture);
             }
         }
         

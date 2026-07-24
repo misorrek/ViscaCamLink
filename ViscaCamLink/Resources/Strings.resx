@@ -377,10 +377,10 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="Compact_Tab_Zoom" xml:space="preserve">
     <value>Zoom</value>
   </data>
-  <data name="Compact_PrevProfile" xml:space="preserve">
+  <data name="CameraProfile_Previous" xml:space="preserve">
     <value>Previous camera profile</value>
   </data>
-  <data name="Compact_NextProfile" xml:space="preserve">
+  <data name="CameraProfile_Next" xml:space="preserve">
     <value>Next camera profile</value>
   </data>
   <data name="Compact_Minimize" xml:space="preserve">
@@ -406,5 +406,11 @@ The previous system-wide installation is no longer needed. You can remove it now
   </data>
   <data name="Sidebar_Hide" xml:space="preserve">
     <value>Hide {0}</value>
+  </data>
+  <data name="CameraProfile_Title" xml:space="preserve">
+    <value>Camera profiles</value>
+  </data>
+  <data name="Sidebar_ConnectionPanel" xml:space="preserve">
+    <value>Connection panel</value>
   </data>
 </root>

@@ -151,13 +151,13 @@
     <value>Steuerung</value>
   </data>
   <data name="Control_DecreaseSpeed" xml:space="preserve">
-    <value>Steuerungsgeschwindigkeit verringern</value>
+    <value>Geschwindigkeit verringern</value>
   </data>
   <data name="Control_Home" xml:space="preserve">
     <value>Ausgangsposition</value>
   </data>
   <data name="Control_IncreaseSpeed" xml:space="preserve">
-    <value>Steuerungsgeschwindigkeit erhöhen</value>
+    <value>Geschwindigkeit erhöhen</value>
   </data>
   <data name="Control_MousePan" xml:space="preserve">
     <value>Klicken und ziehen zum Schwenken/Neigen</value>
@@ -286,16 +286,16 @@
     <value>Aktuelle Position als Voreinstellung speichern</value>
   </data>
   <data name="Sidebar_ControlPanel" xml:space="preserve">
-    <value>Steuerung ein-/ausblenden</value>
+    <value>Steuerung</value>
   </data>
   <data name="Sidebar_Options" xml:space="preserve">
     <value>Einstellungen</value>
   </data>
   <data name="Sidebar_PresetsPanel" xml:space="preserve">
-    <value>Voreinstellungen ein-/ausblenden</value>
+    <value>Voreinstellungen</value>
   </data>
   <data name="Sidebar_ZoomPanel" xml:space="preserve">
-    <value>Zoom ein-/ausblenden</value>
+    <value>Zoom</value>
   </data>
   <data name="Updater_Changelog" xml:space="preserve">
     <value>Versionshinweise</value>
@@ -336,10 +336,10 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
     <value>Zoom</value>
   </data>
   <data name="Zoom_DecreaseSpeed" xml:space="preserve">
-    <value>Zoomgeschwindigkeit verringern</value>
+    <value>Geschwindigkeit verringern</value>
   </data>
   <data name="Zoom_IncreaseSpeed" xml:space="preserve">
-    <value>Zoomgeschwindigkeit erhöhen</value>
+    <value>Geschwindigkeit erhöhen</value>
   </data>
   <data name="CameraProfile_DefaultName" xml:space="preserve">
     <value>Kamera {0}</value>
@@ -377,10 +377,10 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="Compact_Tab_Zoom" xml:space="preserve">
     <value>Zoom</value>
   </data>
-  <data name="Compact_PrevProfile" xml:space="preserve">
+  <data name="CameraProfile_Previous" xml:space="preserve">
     <value>Vorheriges Kamera-Profil</value>
   </data>
-  <data name="Compact_NextProfile" xml:space="preserve">
+  <data name="CameraProfile_Next" xml:space="preserve">
     <value>Nächstes Kamera-Profil</value>
   </data>
   <data name="Compact_Minimize" xml:space="preserve">
@@ -406,5 +406,11 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   </data>
   <data name="Sidebar_Hide" xml:space="preserve">
     <value>{0} ausblenden</value>
+  </data>
+  <data name="CameraProfile_Title" xml:space="preserve">
+    <value>Kameraprofile</value>
+  </data>
+  <data name="Sidebar_ConnectionPanel" xml:space="preserve">
+    <value>Kameraverbindung</value>
   </data>
 </root>

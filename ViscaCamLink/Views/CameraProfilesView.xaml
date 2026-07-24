@@ -30,7 +30,7 @@
     <StackPanel Margin="16,16,16,12">
 
         <!-- Title row -->
-        <TextBlock Text="{Binding [CameraProfiles_Title], Source={x:Static localization:TranslationSource.Instance}}"
+        <TextBlock Text="{Binding [CameraProfile_Title], Source={x:Static localization:TranslationSource.Instance}}"
                    Style="{StaticResource HeaderTextBlock}"
                    Margin="0,0,0,12" />
 

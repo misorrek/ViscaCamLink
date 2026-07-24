@@ -136,6 +136,7 @@
                         Margin="0,0,8,0"
                         Width="24"
                         Command="{Binding ZoomSpeedDecreaseCommand}"
+                        ToolTip="{Binding [Zoom_DecreaseSpeed], Source={x:Static localization:TranslationSource.Instance}}"
                         Style="{StaticResource SpeedButton}">
                     <Path Data="{StaticResource TachometerSlow}"
                           Style="{StaticResource Icon16Path}" />
@@ -154,6 +155,7 @@
                         Margin="8,0,0,0"
                         Width="24"
                         Command="{Binding ZoomSpeedIncreaseCommand}"
+                        ToolTip="{Binding [Zoom_IncreaseSpeed], Source={x:Static localization:TranslationSource.Instance}}"
                         Style="{StaticResource SpeedButton}">
                     <Path Data="{StaticResource TachometerFast}"
                           Style="{StaticResource Icon16Path}" />
