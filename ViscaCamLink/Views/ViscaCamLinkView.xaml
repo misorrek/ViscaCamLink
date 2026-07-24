@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
+        xmlns:converters="clr-namespace:ViscaCamLink.Converters"
         xmlns:interface="clr-namespace:ViscaCamLink.Infrastructure.Interface"
         xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
         xmlns:views="clr-namespace:ViscaCamLink.Views"
@@ -25,6 +26,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <converters:SidebarTooltipConverter x:Key="SidebarTooltipConverter" />
 
             <Style x:Key="SidebarButton"
                    TargetType="{x:Type interface:SidebarButton}">
@@ -83,28 +86,64 @@
                                          CommandParameter="{x:Static viewmodels:SidebarContainer.Connection}"
                                          Icon="{StaticResource Connection}"
                                          IsActive="{Binding ConnectionContainerVisible}"
-                                         Style="{StaticResource SidebarButton}" />
+                                         Style="{StaticResource SidebarButton}">
+                    <interface:SidebarButton.ToolTip>
+                        <MultiBinding Converter="{StaticResource SidebarTooltipConverter}">
+                            <Binding Path="ConnectionContainerVisible" />
+                            <Binding Path="[Sidebar_Show]" Source="{x:Static localization:TranslationSource.Instance}" />
+                            <Binding Path="[Sidebar_Hide]" Source="{x:Static localization:TranslationSource.Instance}" />
+                            <Binding Path="[Sidebar_ControlPanel]" Source="{x:Static localization:TranslationSource.Instance}" />
+                        </MultiBinding>
+                    </interface:SidebarButton.ToolTip>
+                </interface:SidebarButton>
 
                 <interface:SidebarButton DockPanel.Dock="Top"
                                          Command="{Binding SidebarCommand}"
                                          CommandParameter="{x:Static viewmodels:SidebarContainer.Memory}"
                                          Icon="{StaticResource Numpad}"
                                          IsActive="{Binding MemoryContainerVisible}"
-                                         Style="{StaticResource SidebarButton}" />
+                                         Style="{StaticResource SidebarButton}">
+                    <interface:SidebarButton.ToolTip>
+                        <MultiBinding Converter="{StaticResource SidebarTooltipConverter}">
+                            <Binding Path="MemoryContainerVisible" />
+                            <Binding Path="[Sidebar_Show]" Source="{x:Static localization:TranslationSource.Instance}" />
+                            <Binding Path="[Sidebar_Hide]" Source="{x:Static localization:TranslationSource.Instance}" />
+                            <Binding Path="[Sidebar_PresetsPanel]" Source="{x:Static localization:TranslationSource.Instance}" />
+                        </MultiBinding>
+                    </interface:SidebarButton.ToolTip>
+                </interface:SidebarButton>
 
                 <interface:SidebarButton DockPanel.Dock="Top"
                                          Command="{Binding SidebarCommand}"
                                          CommandParameter="{x:Static viewmodels:SidebarContainer.Move}"
                                          Icon="{StaticResource MoveArrows}"
                                          IsActive="{Binding MoveContainerVisible}"
-                                         Style="{StaticResource SidebarButton}" />
+                                         Style="{StaticResource SidebarButton}">
+                    <interface:SidebarButton.ToolTip>
+                        <MultiBinding Converter="{StaticResource SidebarTooltipConverter}">
+                            <Binding Path="MoveContainerVisible" />
+                            <Binding Path="[Sidebar_Show]" Source="{x:Static localization:TranslationSource.Instance}" />
+                            <Binding Path="[Sidebar_Hide]" Source="{x:Static localization:TranslationSource.Instance}" />
+                            <Binding Path="[Sidebar_ControlPanel]" Source="{x:Static localization:TranslationSource.Instance}" />
+                        </MultiBinding>
+                    </interface:SidebarButton.ToolTip>
+                </interface:SidebarButton>
 
                 <interface:SidebarButton DockPanel.Dock="Top"
                                          Command="{Binding SidebarCommand}"
                                          CommandParameter="{x:Static viewmodels:SidebarContainer.Zoom}"
                                          Icon="{StaticResource Zoom}"
                                          IsActive="{Binding ZoomContainerVisible}"
-                                         Style="{StaticResource SidebarButton}" />
+                                         Style="{StaticResource SidebarButton}">
+                    <interface:SidebarButton.ToolTip>
+                        <MultiBinding Converter="{StaticResource SidebarTooltipConverter}">
+                            <Binding Path="ZoomContainerVisible" />
+                            <Binding Path="[Sidebar_Show]" Source="{x:Static localization:TranslationSource.Instance}" />
+                            <Binding Path="[Sidebar_Hide]" Source="{x:Static localization:TranslationSource.Instance}" />
+                            <Binding Path="[Sidebar_ZoomPanel]" Source="{x:Static localization:TranslationSource.Instance}" />
+                        </MultiBinding>
+                    </interface:SidebarButton.ToolTip>
+                </interface:SidebarButton>
 
                 <interface:SidebarButton DockPanel.Dock="Bottom"
                                          Command="{Binding OptionsCommand}"

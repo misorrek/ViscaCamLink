@@ -401,4 +401,10 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="CameraProfile_Port_Invalid" xml:space="preserve">
     <value>Der Port muss eine Zahl zwischen 0 und 65535 sein</value>
   </data>
+  <data name="Sidebar_Show" xml:space="preserve">
+    <value>{0} einblenden</value>
+  </data>
+  <data name="Sidebar_Hide" xml:space="preserve">
+    <value>{0} ausblenden</value>
+  </data>
 </root>
