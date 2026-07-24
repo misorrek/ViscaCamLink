@@ -8,23 +8,23 @@ using Microsoft.Win32;
 
 public static class ThemeHelper
 {
-    private const string ThemeDictUriFormat = "/ViscaCamLink;component/Resources/{0}Theme.xaml";
+    private const string ThemeDictionaryUriFormat = "/ViscaCamLink;component/Resources/{0}Theme.xaml";
 
     public static void ApplyTheme(Theme theme)
     {
         var resolvedTheme = theme == Theme.System ? GetSystemTheme() : theme;
-        var uri = new Uri(string.Format(ThemeDictUriFormat, resolvedTheme), UriKind.Relative);
-        var newDict = new ResourceDictionary { Source = uri };
-        var merged = Application.Current.Resources.MergedDictionaries;
-        var existing = merged.FirstOrDefault(d =>
-            d.Source?.OriginalString.EndsWith("Theme.xaml", StringComparison.OrdinalIgnoreCase) == true);
+        var uri = new Uri(string.Format(ThemeDictionaryUriFormat, resolvedTheme), UriKind.Relative);
+        var newDictionary = new ResourceDictionary { Source = uri };
+        var mergedDictionaries = Application.Current.Resources.MergedDictionaries;
+        var existingDictionary = mergedDictionaries.FirstOrDefault(dictionary =>
+            dictionary.Source?.OriginalString.EndsWith("Theme.xaml", StringComparison.OrdinalIgnoreCase) == true);
 
-        if (existing is not null)
+        if (existingDictionary is not null)
         {
-            merged.Remove(existing);
-        }         
+            mergedDictionaries.Remove(existingDictionary);
+        }
 
-        merged.Add(newDict);
+        mergedDictionaries.Add(newDictionary);
     }
 
     private static Theme GetSystemTheme()
@@ -36,10 +36,11 @@ public static class ThemeHelper
                 "AppsUseLightTheme",
                 defaultValue: 1);
 
-            return value is int i && i == 0 ? Theme.Dark : Theme.Light;
+            return value is int useLightTheme && useLightTheme == 0 ? Theme.Dark : Theme.Light;
         }
         catch
         {
+            // Missing or unreadable registry value — fall back to the light theme.
             return Theme.Light;
         }
     }

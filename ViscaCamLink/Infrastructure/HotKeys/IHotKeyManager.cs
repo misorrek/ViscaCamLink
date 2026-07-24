@@ -1,5 +1,6 @@
 namespace ViscaCamLink.Infrastructure.HotKeys;
 
+using System;
 using System.Windows;
 using System.Windows.Input;
 

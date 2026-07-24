@@ -1,39 +1,30 @@
-﻿namespace ViscaCamLink.Infrastructure.Interface;
+namespace ViscaCamLink.Infrastructure.Interface;
 
 using System;
 using System.Windows.Input;
 
-public class Command : ICommand
+public class Command(Action<object?> executeAction, Func<bool>? canExecuteFunc = null) : ICommand
 {
-    public event EventHandler? CanExecuteChanged;
-
     public Command(Action executeAction, Func<bool>? canExecuteFunc = null)
+        : this(_ => executeAction(), canExecuteFunc)
     {
-        void wrapper(object? parameter) => executeAction.Invoke();
-
-        ExecuteAction = new Action<object?>(wrapper);
-        CanExecuteFunc = canExecuteFunc;
     }
 
-    public Command(Action<object?> executeAction, Func<bool>? canExecuteFunc = null)
-    {
-        ExecuteAction = executeAction;
-        CanExecuteFunc = canExecuteFunc;
-    }
-
-    private Action<object?> ExecuteAction { get; }
-
-    private Func<bool>? CanExecuteFunc { get; }
+    public event EventHandler? CanExecuteChanged;
 
     public bool CanExecute(object? parameter)
     {
-        return CanExecuteFunc == null || CanExecuteFunc();
+        return canExecuteFunc is null || canExecuteFunc();
     }
 
-    // TODO : Check for can execute?
     public void Execute(object? parameter)
     {
-        ExecuteAction(parameter);
+        if (!CanExecute(parameter))
+        {
+            return;
+        }
+
+        executeAction(parameter);
     }
 
     public void Invalidate()

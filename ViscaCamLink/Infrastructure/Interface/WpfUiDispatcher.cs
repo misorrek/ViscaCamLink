@@ -1,5 +1,7 @@
 namespace ViscaCamLink.Infrastructure.Interface;
 
+using System;
+using System.Threading.Tasks;
 using System.Windows;
 
 public class WpfUiDispatcher : IUiDispatcher
@@ -13,6 +15,7 @@ public class WpfUiDispatcher : IUiDispatcher
         if (dispatcher is null || dispatcher.CheckAccess())
         {
             action();
+
             return Task.CompletedTask;
         }
 
@@ -24,10 +27,11 @@ public class WpfUiDispatcher : IUiDispatcher
         ArgumentNullException.ThrowIfNull(action);
 
         var dispatcher = Application.Current?.Dispatcher;
-        
+
         if (dispatcher is null || dispatcher.CheckAccess())
         {
             action();
+
             return;
         }
 

@@ -1,8 +1,10 @@
-﻿namespace ViscaCamLink.Infrastructure.Logging;
+namespace ViscaCamLink.Infrastructure.Logging;
+
+using System;
 
 using Microsoft.Extensions.Logging;
 
-public sealed class FileLogger(string categoryName, Action<string> writeEntry, TimeProvider timeProvider) : ILogger
+public class FileLogger(string categoryName, Action<string> writeEntry, TimeProvider timeProvider) : ILogger
 {
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 
@@ -35,7 +37,7 @@ public sealed class FileLogger(string categoryName, Action<string> writeEntry, T
         var message = formatter(state, exception);
         var entry = $"{timestamp} [{level}] {categoryName}: {message}";
 
-        if (exception != null)
+        if (exception is not null)
         {
             entry += Environment.NewLine + exception;
         }

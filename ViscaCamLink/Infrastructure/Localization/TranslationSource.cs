@@ -1,5 +1,6 @@
 namespace ViscaCamLink.Infrastructure.Localization;
 
+using System;
 using System.ComponentModel;
 using System.Windows.Data;
 

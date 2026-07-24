@@ -1,21 +1,15 @@
-﻿namespace ViscaCamLink.Infrastructure.Interface;
+namespace ViscaCamLink.Infrastructure.Interface;
 
-using System.Collections.Generic;
 using System.Windows;
 
 using Microsoft.Xaml.Behaviors;
-using TriggerBase = Microsoft.Xaml.Behaviors.TriggerBase;
-
-public class Behaviors : List<Behavior> { }
-
-public class Triggers : List<TriggerBase> { }
 
 public static class SupplementaryInteraction
 {
     public static readonly DependencyProperty BehaviorsProperty = DependencyProperty.RegisterAttached(
-        "Behaviors", 
-        typeof(Behaviors), 
-        typeof(SupplementaryInteraction), 
+        "Behaviors",
+        typeof(Behaviors),
+        typeof(SupplementaryInteraction),
         new UIPropertyMetadata(null, OnPropertyBehaviorsChanged));
 
     public static readonly DependencyProperty TriggersProperty = DependencyProperty.RegisterAttached(
@@ -43,17 +37,17 @@ public static class SupplementaryInteraction
     {
         dependencyObject.SetValue(TriggersProperty, value);
     }
-    
+
     private static void OnPropertyBehaviorsChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs eventArgs)
     {
-        var behaviors = Interaction.GetBehaviors(dependencyObject);
-
-        if (eventArgs.NewValue is not Behaviors eventBehaviors)
+        if (eventArgs.NewValue is not Behaviors newBehaviors)
         {
             return;
         }
 
-        foreach (var behavior in eventBehaviors)
+        var behaviors = Interaction.GetBehaviors(dependencyObject);
+
+        foreach (var behavior in newBehaviors)
         {
             behaviors.Add(behavior);
         }
@@ -61,12 +55,12 @@ public static class SupplementaryInteraction
 
     private static void OnPropertyTriggersChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs eventArgs)
     {
-        var triggers = Interaction.GetTriggers(dependencyObject);
-
         if (eventArgs.NewValue is not Triggers newTriggers)
         {
             return;
         }
+
+        var triggers = Interaction.GetTriggers(dependencyObject);
 
         foreach (var trigger in newTriggers)
         {

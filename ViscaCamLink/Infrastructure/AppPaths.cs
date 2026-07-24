@@ -1,5 +1,6 @@
 namespace ViscaCamLink.Infrastructure;
 
+using System;
 using System.IO;
 
 public static class AppPaths
@@ -16,18 +17,15 @@ public static class AppPaths
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "ViscaCamLink");
 
-    private static readonly string PresetsBase = Path.Combine(RoamingBase, "presets");
+    public static string SettingsFile => Path.Combine(RoamingBase, "settings.json");
 
-    public static string Settings => Path.Combine(RoamingBase, "settings.json");
+    public static string LogsDirectory => Path.Combine(LocalBase, "logs");
 
-    public static string PresetsForCamera(Guid cameraId) => Path.Combine(PresetsBase, $"presets-{cameraId:N}.json");
+    public static string PresetsDirectory => Path.Combine(RoamingBase, "presets");
 
-    public static string HotKeys => Path.Combine(RoamingBase, "hotkeys.json");
-
-    public static string Logs => Path.Combine(LocalBase, "logs");
+    public static string HotKeysFile => Path.Combine(RoamingBase, "hotkeys.json");
 
     // ViscaCamLink 0.3.0 wrote user.config here via .NET Framework Properties.Settings.
-    // Path used to migrate settings from there.
-    // TODO: Remove this with 1.1.0 or later
+    // Path used to migrate settings from there. Remove with 1.1.0 or later.
     public static string LegacyUserDataRoot => LegacyLocalBase;
 }
