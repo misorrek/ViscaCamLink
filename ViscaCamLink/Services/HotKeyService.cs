@@ -1,31 +1,26 @@
 namespace ViscaCamLink.Services;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.HotKeys;
 using ViscaCamLink.Repositories.HotKeys;
 
-public sealed class HotKeyService : IHotKeyService, IDisposable
+public class HotKeyService(
+    IHotKeyManager hotKeyManager,
+    IHotKeyRepository repository,
+    ISettingsService settings) : IHotKeyService, IDisposable
 {
-    private readonly IHotKeyManager _hotKeyManager;
-    private readonly IHotKeyRepository _repository;
-    private readonly ISettingsService _settings;
     private readonly Dictionary<HotKeyAction, Action> _actions = [];
     private readonly Dictionary<HotKeyAction, Action> _releaseActions = [];
 
-    private List<HotKeyBinding> _bindings;
-
-    public HotKeyService(IHotKeyManager hotKeyManager, IHotKeyRepository repository, ISettingsService settings)
-    {
-        _hotKeyManager = hotKeyManager;
-        _repository = repository;
-        _settings = settings;
-        _bindings = [.. _repository.Load().Select(binding => binding.Copy())];
-    }
+    private List<HotKeyBinding> _bindings = [.. repository.Load().Select(binding => binding.Copy())];
 
     public IReadOnlyList<HotKeyBinding> Bindings => [.. _bindings.Select(binding => binding.Copy())];
 
-    public void Dispose() => _hotKeyManager.Dispose();
+    public void Dispose() => hotKeyManager.Dispose();
 
     public void RegisterActions(IEnumerable<HotKeyActionRegistration> registrations)
     {
@@ -34,17 +29,22 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
         foreach (var registration in registrations)
         {
             _actions[registration.Action] = registration.Callback;
+
             if (registration.ReleaseCallback is not null)
+            {
                 _releaseActions[registration.Action] = registration.ReleaseCallback;
+            }
             else
+            {
                 _releaseActions.Remove(registration.Action);
+            }
         }
 
         RegisterConfiguredBindings();
     }
 
     public bool RegisterHotKey(ModifierKeys modifier, Key key, Action action) =>
-        _hotKeyManager.RegisterHotKey(modifier, key, action);
+        hotKeyManager.RegisterHotKey(modifier, key, action);
 
     public HotKeyBindingValidationResult ValidateBindings(IEnumerable<HotKeyBinding> bindings)
     {
@@ -85,7 +85,7 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
 
         _bindings = [.. bindings.Select(binding => binding.Copy())];
 
-        _repository.Save(_bindings);
+        repository.Save(_bindings);
         RegisterConfiguredBindings();
 
         return true;
@@ -93,8 +93,8 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
 
     private void RegisterConfiguredBindings()
     {
-        _hotKeyManager.UseGlobalHotKeys = _settings.UseGlobalHotKeys;
-        _hotKeyManager.UnregisterAll();
+        hotKeyManager.UseGlobalHotKeys = settings.UseGlobalHotKeys;
+        hotKeyManager.UnregisterAll();
 
         var validation = ValidateBindings(_bindings);
 
@@ -110,12 +110,18 @@ public sealed class HotKeyService : IHotKeyService, IDisposable
                 continue;
             }
 
-            if (_actions.TryGetValue(binding.Action, out var action))
+            if (!_actions.TryGetValue(binding.Action, out var action))
             {
-                if (_releaseActions.TryGetValue(binding.Action, out var releaseAction))
-                    _hotKeyManager.RegisterHoldHotKey(binding.Modifier, binding.Key, action, releaseAction);
-                else
-                    _hotKeyManager.RegisterHotKey(binding.Modifier, binding.Key, action);
+                continue;
+            }
+
+            if (_releaseActions.TryGetValue(binding.Action, out var releaseAction))
+            {
+                hotKeyManager.RegisterHoldHotKey(binding.Modifier, binding.Key, action, releaseAction);
+            }
+            else
+            {
+                hotKeyManager.RegisterHotKey(binding.Modifier, binding.Key, action);
             }
         }
     }

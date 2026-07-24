@@ -1,76 +1,73 @@
 namespace ViscaCamLink.Services;
 
+using System;
 using System.Net.Http;
-using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Velopack;
 using Velopack.Sources;
 
 using AppUpdateInfo = ViscaCamLink.Updater.UpdateInfo;
 
-/// <summary>
-/// Update service implementation using Velopack's UpdateManager with GitHub Releases as the source.
-/// This is an alternative to the standard <see cref="UpdateService"/> (which uses <see cref="IGitHubUpdateChecker"/>).
-/// Velopack offers delta updates, in-process apply, and silent restart — no separate installer download needed.
-/// </summary>
-public sealed class VelopackUpdateService : IUpdateService
+
+
+public class VelopackUpdateService : IUpdateService
 {
     private const string RepoUrl = "https://github.com/misorrek/ViscaCamLink";
 
-    private readonly UpdateManager _updateManager;
-    private Velopack.UpdateInfo? _pendingUpdate;
+    private readonly UpdateManager _updateManager = new(new GithubSource(RepoUrl, accessToken: null, prerelease: false));
 
-    public VelopackUpdateService()
-    {
-        _updateManager = new UpdateManager(new GithubSource(RepoUrl, null, false));
-    }
+    private Velopack.UpdateInfo? _pendingUpdate;
 
     public event EventHandler<AppUpdateInfo>? UpdateAvailable;
 
-    /// <summary>
-    /// Whether there is a pending update that has been checked but not yet applied.
-    /// </summary>
     public bool HasPendingUpdate => _pendingUpdate is not null;
 
-    public async Task StartAsync(CancellationToken ct = default)
+    public async Task CheckForUpdateAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             var newVersion = await _updateManager.CheckForUpdatesAsync().ConfigureAwait(false);
 
             if (newVersion is null)
+            {
                 return;
+            }
 
             _pendingUpdate = newVersion;
 
-            var currentVersion = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0);
             var targetVersion = Version.Parse(newVersion.TargetFullRelease.Version.ToString());
-
-            var info = new AppUpdateInfo(
+            var updateInfo = new AppUpdateInfo(
                 Version: targetVersion,
                 ReleaseNotes: newVersion.TargetFullRelease.NotesMarkdown ?? string.Empty,
                 InstallerAssetUrl: string.Empty,
                 PortableAssetUrl: null,
                 HtmlUrl: $"{RepoUrl}/releases/tag/v{targetVersion}");
 
-            UpdateAvailable?.Invoke(this, info);
+            UpdateAvailable?.Invoke(this, updateInfo);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
         {
-            // Silent failure — same behaviour as the GitHub API checker
+            // A failed update check must never disturb the running app; the next start checks again.
         }
     }
 
     /// <summary>
     /// Downloads the pending update (delta if available) and applies it, restarting the application.
-    /// Call this after <see cref="StartAsync"/> has raised <see cref="UpdateAvailable"/>.
+    /// Requires a preceding <see cref="CheckForUpdateAsync"/> that raised <see cref="UpdateAvailable"/>.
     /// </summary>
-    public async Task DownloadAndApplyAsync(IProgress<int>? progress = null, CancellationToken ct = default)
+    public async Task DownloadAndApplyAsync(IProgress<int>? progress = null, CancellationToken cancellationToken = default)
     {
         if (_pendingUpdate is null)
-            throw new InvalidOperationException("No pending update. Call StartAsync first.");
+        {
+            throw new InvalidOperationException($"No pending update. Call {nameof(CheckForUpdateAsync)} first.");
+        }
 
-        await _updateManager.DownloadUpdatesAsync(_pendingUpdate, progress: i => progress?.Report(i)).ConfigureAwait(false);
+        await _updateManager
+            .DownloadUpdatesAsync(_pendingUpdate, percent => progress?.Report(percent), cancellationToken)
+            .ConfigureAwait(false);
+
         _updateManager.ApplyUpdatesAndRestart(_pendingUpdate);
     }
 }

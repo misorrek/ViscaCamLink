@@ -1,5 +1,8 @@
 namespace ViscaCamLink.Services;
 
+using System;
+using System.Collections.Generic;
+
 using Microsoft.Extensions.Logging;
 
 using ViscaCamLink.Infrastructure.Localization;
@@ -52,5 +55,5 @@ public interface ISettingsService
 
     void Save();
 
-    void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool minimizeToCompactWindow, Theme theme);
+    void ApplyOptions(OptionsSelection selection);
 }

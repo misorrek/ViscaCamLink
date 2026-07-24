@@ -1,5 +1,7 @@
-using ViscaCamLink.Repositories.HotKeys;
-
 namespace ViscaCamLink.Services;
 
-public sealed record HotKeyActionRegistration(HotKeyAction Action, Action Callback, Action? ReleaseCallback = null);
+using System;
+
+using ViscaCamLink.Repositories.HotKeys;
+
+public record HotKeyActionRegistration(HotKeyAction Action, Action Callback, Action? ReleaseCallback = null);

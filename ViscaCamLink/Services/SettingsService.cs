@@ -1,5 +1,9 @@
 namespace ViscaCamLink.Services;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 using Microsoft.Extensions.Logging;
 
 using ViscaCamLink.Infrastructure.Localization;
@@ -40,7 +44,7 @@ public class SettingsService(
     public IReadOnlyList<CameraProfile> CameraProfiles => settings.CameraProfiles;
 
     public CameraProfile? ActiveCameraProfile =>
-        settings.CameraProfiles.FirstOrDefault(c => c.Id == settings.ActiveCameraProfileId)
+        settings.CameraProfiles.FirstOrDefault(profile => profile.Id == settings.ActiveCameraProfileId)
         ?? settings.CameraProfiles.FirstOrDefault();
 
     public Guid ActiveCameraProfileId => ActiveCameraProfile?.Id ?? Guid.Empty;
@@ -107,7 +111,7 @@ public class SettingsService(
 
     public void AddCameraProfile(CameraProfile profile)
     {
-        if (settings.CameraProfiles.Any(c => c.Id == profile.Id))
+        if (settings.CameraProfiles.Any(existing => existing.Id == profile.Id))
         {
             throw new InvalidOperationException($"Camera profile with id {profile.Id} already exists.");
         }
@@ -124,7 +128,7 @@ public class SettingsService(
 
     public void RemoveCameraProfile(Guid id)
     {
-        var profileToDelete = settings.CameraProfiles.FirstOrDefault(c => c.Id == id);
+        var profileToDelete = settings.CameraProfiles.FirstOrDefault(profile => profile.Id == id);
 
         if (profileToDelete is null)
         {
@@ -143,7 +147,7 @@ public class SettingsService(
 
     public void UpdateCameraProfile(CameraProfile profile)
     {
-        var index = settings.CameraProfiles.FindIndex(c => c.Id == profile.Id);
+        var index = settings.CameraProfiles.FindIndex(existing => existing.Id == profile.Id);
 
         if (index < 0)
         {
@@ -157,7 +161,7 @@ public class SettingsService(
 
     public void SetActiveCameraProfile(Guid id)
     {
-        if (settings.CameraProfiles.All(c => c.Id != id))
+        if (settings.CameraProfiles.All(profile => profile.Id != id))
         {
             return;
         }
@@ -169,51 +173,50 @@ public class SettingsService(
 
     public void Save() => settingsRepository.Save(settings);
 
-    // TODO: Create options model with all these settings that this service and the callers of this method use
-    public void ApplyOptions(Language language, bool numpadLayout, bool globalHotKeys, bool usePresetGroups, bool minimizeToCompactWindow, Theme theme)
+    public void ApplyOptions(OptionsSelection selection)
     {
-        if (!Language.Equals(language))
+        if (!Language.Equals(selection.Language))
         {
-            Language = language;
+            Language = selection.Language;
 
             Save();
-            applyLocalization(language);
+            applyLocalization(selection.Language);
         }
 
-        if (UseNumpadLayout != numpadLayout)
+        if (Theme != selection.Theme)
         {
-            UseNumpadLayout = numpadLayout;
+            Theme = selection.Theme;
 
             Save();
+            applyTheme(selection.Theme);
         }
 
-        if (UseGlobalHotKeys != globalHotKeys)
+        if (UseCompactView != selection.UseCompactView)
         {
-            UseGlobalHotKeys = globalHotKeys;
-
-            Save();
-        }
-
-        if (UsePresetGroups != usePresetGroups)
-        {
-            UsePresetGroups = usePresetGroups;
+            UseCompactView = selection.UseCompactView;
 
             Save();
         }
 
-        if (UseCompactView != minimizeToCompactWindow)
+        if (UsePresetGroups != selection.UsePresetGroups)
         {
-            UseCompactView = minimizeToCompactWindow;
+            UsePresetGroups = selection.UsePresetGroups;
 
             Save();
         }
 
-        if (Theme != theme)
+        if (UseNumpadLayout != selection.UseNumpadLayout)
         {
-            Theme = theme;
+            UseNumpadLayout = selection.UseNumpadLayout;
 
             Save();
-            applyTheme(theme);
+        }
+
+        if (UseGlobalHotKeys != selection.UseGlobalHotKeys)
+        {
+            UseGlobalHotKeys = selection.UseGlobalHotKeys;
+
+            Save();
         }
     }
 }

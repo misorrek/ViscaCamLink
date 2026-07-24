@@ -1,10 +1,11 @@
 namespace ViscaCamLink.Services;
 
+using System;
 using System.Windows;
 
-public sealed class WindowModeCoordinator(ISettingsService settingsService) : IWindowModeCoordinator
+public class WindowModeCoordinator(ISettingsService settingsService) : IWindowModeCoordinator
 {
-    private const double Margin = 24.0;
+    private const double ScreenEdgeMargin = 24.0;
 
     private Window? _mainWindow;
     private Window? _compactWindow;
@@ -20,11 +21,14 @@ public sealed class WindowModeCoordinator(ISettingsService settingsService) : IW
     public void EnterCompactMode()
     {
         if (_compactWindow is null || _mainWindow is null)
+        {
             return;
+        }
 
         var workArea = SystemParameters.WorkArea;
+
         (_compactWindow.Left, _compactWindow.Top) = CalculateBottomRightPosition(
-            workArea, _compactWindow.Width, _compactWindow.Height, Margin);
+            workArea, _compactWindow.Width, _compactWindow.Height, ScreenEdgeMargin);
 
         _compactWindow.Topmost = true;
         _compactWindow.Show();
@@ -34,9 +38,12 @@ public sealed class WindowModeCoordinator(ISettingsService settingsService) : IW
     public void ExitCompactMode()
     {
         if (_mainWindow is null || _compactWindow is null)
+        {
             return;
+        }
 
         _isTransitioning = true;
+
         try
         {
             _mainWindow.WindowState = WindowState.Normal;
@@ -52,7 +59,9 @@ public sealed class WindowModeCoordinator(ISettingsService settingsService) : IW
     public void MinimizeCompact()
     {
         if (_compactWindow is null)
+        {
             return;
+        }
 
         _compactWindow.WindowState = WindowState.Minimized;
     }
@@ -66,26 +75,28 @@ public sealed class WindowModeCoordinator(ISettingsService settingsService) : IW
     /// <summary>
     /// Calculates the Left and Top position to place a window in the bottom-right of the
     /// work area (excludes taskbar) with the given margin from both edges.
-    /// Extracted as a pure method for unit-testability.
     /// </summary>
     public static (double Left, double Top) CalculateBottomRightPosition(
-        Rect workArea, double windowWidth, double windowHeight, double margin)
+        Rect workArea,
+        double windowWidth,
+        double windowHeight,
+        double margin)
     {
         return (workArea.Right - windowWidth - margin, workArea.Bottom - windowHeight - margin);
     }
 
-    private void OnMainWindowStateChanged(object? sender, EventArgs e)
+    private void OnMainWindowStateChanged(object? sender, EventArgs eventArgs)
     {
         if (_isTransitioning || _mainWindow is null || _compactWindow is null)
+        {
             return;
+        }
 
-        if (_mainWindow.WindowState == WindowState.Minimized &&
-            settingsService.UseCompactView)
+        if (_mainWindow.WindowState == WindowState.Minimized && settingsService.UseCompactView)
         {
             EnterCompactMode();
         }
-        else if (_mainWindow.WindowState == WindowState.Normal &&
-                 _compactWindow.IsVisible)
+        else if (_mainWindow.WindowState == WindowState.Normal && _compactWindow.IsVisible)
         {
             ExitCompactMode();
         }

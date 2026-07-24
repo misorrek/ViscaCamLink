@@ -1,9 +1,12 @@
 namespace ViscaCamLink.Services;
 
+using System;
+using System.Threading.Tasks;
+
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
 
-public sealed class CameraMovementService(IViscaController viscaController) : ICameraMovementService
+public class CameraMovementService(IViscaController viscaController) : ICameraMovementService
 {
     public int MaxPanTiltSpeed => viscaController.MaxPanSpeed;
 
@@ -19,14 +22,14 @@ public sealed class CameraMovementService(IViscaController viscaController) : IC
     }
 
     public Task PanTiltAsync(PanTiltDirection panTiltDirection, byte panSpeed, byte tiltSpeed) =>
-        viscaController.ContinuousPanTilt(panTiltDirection, panSpeed, tiltSpeed);
+        viscaController.ContinuousPanTiltAsync(panTiltDirection, panSpeed, tiltSpeed);
 
     public Task StopPanTiltAsync() =>
-        viscaController.ContinuousPanTilt(PanTiltDirection.None, 0, 0);
+        viscaController.ContinuousPanTiltAsync(PanTiltDirection.None, 0, 0);
 
     public Task ZoomAsync(ZoomDirection zoomDirection, byte speed) =>
-        viscaController.ContinuousZoom(zoomDirection, speed);
+        viscaController.ContinuousZoomAsync(zoomDirection, speed);
 
     public Task GoHomeAsync() =>
-        viscaController.GoHome();
+        viscaController.GoHomeAsync();
 }

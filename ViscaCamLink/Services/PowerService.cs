@@ -1,39 +1,43 @@
 namespace ViscaCamLink.Services;
 
+using System;
+using System.Threading.Tasks;
+
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
 
-public sealed class PowerService(IViscaController viscaController) : IPowerService
+public class PowerService(IViscaController viscaController) : IPowerService
 {
     public event EventHandler<PowerStatus>? PowerStatusChanged;
+
     public event EventHandler? SwitchingPower;
 
     public async Task RefreshPowerStatusAsync()
     {
-        var status = await viscaController.GetPowerStatus().ConfigureAwait(false);
+        var status = await viscaController.GetPowerStatusAsync().ConfigureAwait(false);
 
         PowerStatusChanged?.Invoke(this, status);
     }
 
     public async Task SwitchPowerAsync()
     {
-        var currentStatus = await viscaController.GetPowerStatus().ConfigureAwait(false);
+        var currentStatus = await viscaController.GetPowerStatusAsync().ConfigureAwait(false);
 
         switch (currentStatus)
         {
             case PowerStatus.On:
                 SwitchingPower?.Invoke(this, EventArgs.Empty);
-                await viscaController.PowerOff().ConfigureAwait(false);
+                await viscaController.PowerOffAsync().ConfigureAwait(false);
                 break;
             case PowerStatus.Standby:
                 SwitchingPower?.Invoke(this, EventArgs.Empty);
-                await viscaController.PowerOn().ConfigureAwait(false);
+                await viscaController.PowerOnAsync().ConfigureAwait(false);
                 break;
             default:
                 return;
         }
 
-        var newStatus = await viscaController.GetUpdatedPowerStatus(currentStatus).ConfigureAwait(false);
+        var newStatus = await viscaController.GetUpdatedPowerStatusAsync(currentStatus).ConfigureAwait(false);
 
         PowerStatusChanged?.Invoke(this, newStatus);
     }

@@ -1,6 +1,10 @@
-using ViscaCamLink.Repositories.Presets;
-
 namespace ViscaCamLink.Services;
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using ViscaCamLink.Repositories.Presets;
 
 public interface IPresetService
 {
@@ -8,7 +12,7 @@ public interface IPresetService
 
     IReadOnlyList<PresetGroup> Groups { get; }
 
-    string ActiveGroupId { get; }
+    Guid ActiveGroupId { get; }
 
     event Action? PresetsChanged;
 
@@ -22,13 +26,13 @@ public interface IPresetService
 
     void RenamePreset(int slotIndex, string name);
 
-    void SwitchGroup(string groupId);
+    void SwitchGroup(Guid groupId);
 
     void AddGroup(string name);
 
-    void RemoveGroup(string groupId);
+    void RemoveGroup(Guid groupId);
 
-    void RenameGroup(string groupId, string name);
+    void RenameGroup(Guid groupId, string name);
 
     void SwitchCameraProfile(Guid profileId);
 }

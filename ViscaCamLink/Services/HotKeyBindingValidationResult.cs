@@ -1,6 +1,6 @@
 namespace ViscaCamLink.Services;
 
-public sealed class HotKeyBindingValidationResult
+public class HotKeyBindingValidationResult
 {
     private HotKeyBindingValidationResult(bool isValid, string? message)
     {

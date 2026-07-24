@@ -1,6 +1,8 @@
-using ViscaCamLink.Visca.Types;
-
 namespace ViscaCamLink.Services;
+
+using System.Threading.Tasks;
+
+using ViscaCamLink.Visca.Types;
 
 public interface ICameraMovementService
 {

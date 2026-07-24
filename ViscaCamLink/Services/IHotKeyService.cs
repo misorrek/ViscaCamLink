@@ -1,6 +1,9 @@
 namespace ViscaCamLink.Services;
 
+using System;
+using System.Collections.Generic;
 using System.Windows.Input;
+
 using ViscaCamLink.Repositories.HotKeys;
 
 public interface IHotKeyService

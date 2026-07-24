@@ -1,5 +1,8 @@
 namespace ViscaCamLink.Services;
 
+using System;
+using System.Threading.Tasks;
+
 using ViscaCamLink.Visca.Types;
 
 public interface IPowerService

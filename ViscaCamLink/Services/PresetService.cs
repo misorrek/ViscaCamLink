@@ -1,20 +1,21 @@
 namespace ViscaCamLink.Services;
 
-using System.Windows.Markup;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 using ViscaCamLink.Repositories.Presets;
 using ViscaCamLink.Visca;
 
-public sealed class PresetService : IPresetService
+public class PresetService : IPresetService
 {
-    private const int PresetsPerGroup = 10;
-    private const int MaxCameraSlots = 256;
-
     private readonly IViscaController _viscaController;
     private readonly IPresetRepository _repository;
     private readonly ISettingsService _settingsService;
 
     private PresetData _presetData;
-    private string _activeGroupId;
+    private Guid _activeGroupId;
 
     public PresetService(IViscaController viscaController, IPresetRepository repository, ISettingsService settingsService)
     {
@@ -25,32 +26,32 @@ public sealed class PresetService : IPresetService
         _activeGroupId = _presetData.Groups[0].Id;
     }
 
-    public IReadOnlyList<PresetMetadata> Presets => ActiveGroup.Presets;
-
-    public IReadOnlyList<PresetGroup> Groups => _presetData.Groups;
-
-    public string ActiveGroupId => _activeGroupId;
-
     public event Action? PresetsChanged;
 
     public event Action? GroupsChanged;
 
-    private PresetGroup ActiveGroup => _presetData.Groups.First(g => g.Id == _activeGroupId);
+    public IReadOnlyList<PresetMetadata> Presets => ActiveGroup.Presets;
 
-    public Task SetMemoryAsync(byte slot) => _viscaController.MemorySet(slot);
+    public IReadOnlyList<PresetGroup> Groups => _presetData.Groups;
 
-    public Task RecallMemoryAsync(byte slot) => _viscaController.MemoryRecall(slot);
+    public Guid ActiveGroupId => _activeGroupId;
+
+    private PresetGroup ActiveGroup => _presetData.Groups.First(group => group.Id == _activeGroupId);
+
+    public Task SetMemoryAsync(byte slot) => _viscaController.MemorySetAsync(slot);
+
+    public Task RecallMemoryAsync(byte slot) => _viscaController.MemoryRecallAsync(slot);
 
     public string GetPresetName(int slotIndex)
     {
-        var preset = ActiveGroup.Presets.FirstOrDefault(p => p.SlotIndex == slotIndex);
+        var preset = ActiveGroup.Presets.FirstOrDefault(candidate => candidate.SlotIndex == slotIndex);
 
         return preset?.Name ?? slotIndex.ToString();
     }
 
     public void RenamePreset(int slotIndex, string name)
     {
-        var preset = ActiveGroup.Presets.FirstOrDefault(p => p.SlotIndex == slotIndex);
+        var preset = ActiveGroup.Presets.FirstOrDefault(candidate => candidate.SlotIndex == slotIndex);
 
         if (preset is null)
         {
@@ -63,9 +64,9 @@ public sealed class PresetService : IPresetService
         PresetsChanged?.Invoke();
     }
 
-    public void SwitchGroup(string groupId)
+    public void SwitchGroup(Guid groupId)
     {
-        if (_presetData.Groups.All(g => g.Id != groupId))
+        if (_presetData.Groups.All(group => group.Id != groupId))
         {
             return;
         }
@@ -78,25 +79,25 @@ public sealed class PresetService : IPresetService
     public void AddGroup(string name)
     {
         var usedSlots = _presetData.Groups
-            .SelectMany(g => g.Presets)
-            .Select(p => p.SlotIndex)
+            .SelectMany(group => group.Presets)
+            .Select(preset => preset.SlotIndex)
             .ToHashSet();
 
         var nextBaseSlot = FindNextAvailableBaseSlot(usedSlots);
 
-        if (nextBaseSlot < 0)
+        if (nextBaseSlot is null)
         {
-            return; // No more camera slots available
+            return;
         }
 
-        var groupId = Guid.NewGuid().ToString("N")[..8];
-        var presets = new List<PresetMetadata>(PresetsPerGroup);
+        var groupId = Guid.NewGuid();
+        var presets = new List<PresetMetadata>(PresetLayout.PresetsPerGroup);
 
-        for (var i = 0; i < PresetsPerGroup; i++)
+        for (var presetIndex = 0; presetIndex < PresetLayout.PresetsPerGroup; presetIndex++)
         {
-            var slot = nextBaseSlot + i;
+            var slot = nextBaseSlot.Value + presetIndex;
 
-            if (slot >= MaxCameraSlots)
+            if (slot >= PresetLayout.MaxCameraSlots)
             {
                 break;
             }
@@ -105,7 +106,7 @@ public sealed class PresetService : IPresetService
             {
                 GroupId = groupId,
                 SlotIndex = slot,
-                Name = (i % PresetsPerGroup).ToString(),
+                Name = presetIndex.ToString(),
             });
         }
 
@@ -120,14 +121,15 @@ public sealed class PresetService : IPresetService
         GroupsChanged?.Invoke();
     }
 
-    public void RemoveGroup(string groupId)
+    public void RemoveGroup(Guid groupId)
     {
+        // The presets UI always needs an active group, so the last one cannot be removed.
         if (_presetData.Groups.Count <= 1)
         {
-            return; // Cannot remove the last group
+            return;
         }
 
-        var group = _presetData.Groups.FirstOrDefault(g => g.Id == groupId);
+        var group = _presetData.Groups.FirstOrDefault(candidate => candidate.Id == groupId);
 
         if (group is null)
         {
@@ -139,6 +141,7 @@ public sealed class PresetService : IPresetService
         if (_activeGroupId == groupId)
         {
             _activeGroupId = _presetData.Groups[0].Id;
+
             PresetsChanged?.Invoke();
         }
 
@@ -146,9 +149,9 @@ public sealed class PresetService : IPresetService
         GroupsChanged?.Invoke();
     }
 
-    public void RenameGroup(string groupId, string name)
+    public void RenameGroup(Guid groupId, string name)
     {
-        var group = _presetData.Groups.FirstOrDefault(g => g.Id == groupId);
+        var group = _presetData.Groups.FirstOrDefault(candidate => candidate.Id == groupId);
 
         if (group is null)
         {
@@ -173,15 +176,15 @@ public sealed class PresetService : IPresetService
     private void SavePresetData() =>
         _repository.SaveForCameraProfile(_settingsService.ActiveCameraProfileId, _presetData);
 
-    private static int FindNextAvailableBaseSlot(HashSet<int> usedSlots)
+    private static int? FindNextAvailableBaseSlot(HashSet<int> usedSlots)
     {
-        for (var baseSlot = 0; baseSlot < MaxCameraSlots; baseSlot += PresetsPerGroup)
+        for (var baseSlot = 0; baseSlot < PresetLayout.MaxCameraSlots; baseSlot += PresetLayout.PresetsPerGroup)
         {
             var allFree = true;
 
-            for (var i = 0; i < PresetsPerGroup && baseSlot + i < MaxCameraSlots; i++)
+            for (var presetIndex = 0; presetIndex < PresetLayout.PresetsPerGroup && baseSlot + presetIndex < PresetLayout.MaxCameraSlots; presetIndex++)
             {
-                if (usedSlots.Contains(baseSlot + i))
+                if (usedSlots.Contains(baseSlot + presetIndex))
                 {
                     allFree = false;
                     break;
@@ -194,6 +197,6 @@ public sealed class PresetService : IPresetService
             }
         }
 
-        return -1;
+        return null;
     }
 }
