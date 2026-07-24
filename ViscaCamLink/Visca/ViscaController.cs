@@ -1,15 +1,17 @@
 namespace ViscaCamLink.Visca;
 
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Visca.Types;
 
-public sealed partial class ViscaController(IViscaClient viscaClient, ILogger logger) : IViscaController
+public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaController> logger) : IViscaController
 {
-    private readonly Stopwatch performanceTimer = Stopwatch.StartNew();
-
     private static readonly ViscaPacket PowerOnPacket = ViscaPacket.FromBytesWithPreformatting(
         ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
         ViscaProtocol.CmdPower, ViscaProtocol.PowerOnArg, ViscaProtocol.Terminator);
@@ -26,23 +28,28 @@ public sealed partial class ViscaController(IViscaClient viscaClient, ILogger lo
         ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
         ViscaProtocol.CmdHome, ViscaProtocol.Terminator);
 
+    private readonly Stopwatch _performanceTimer = Stopwatch.StartNew();
+
     public bool? Connected => viscaClient.IsConnected();
+
     public byte MaxPanSpeed => ViscaProtocol.MaxPanSpeed;
+
     public byte MaxTiltSpeed => ViscaProtocol.MaxTiltSpeed;
+
     public byte MaxZoomSpeed => ViscaProtocol.MaxZoomSpeed;
 
     public void Dispose() => viscaClient.Dispose();
 
-    public Task Reconnect(CancellationToken cancellationToken, string? host = null, int? port = null) =>
-        viscaClient.Reconnect(cancellationToken, host, port);
+    public Task ReconnectAsync(string? host = null, int? port = null, CancellationToken cancellationToken = default) =>
+        viscaClient.ReconnectAsync(host, port, cancellationToken);
 
-    public async Task PowerOn(CancellationToken cancellationToken = default) =>
+    public async Task PowerOnAsync(CancellationToken cancellationToken = default) =>
         await SendCommandAsync(PowerOnPacket, cancellationToken).ConfigureAwait(false);
 
-    public async Task PowerOff(CancellationToken cancellationToken = default) =>
+    public async Task PowerOffAsync(CancellationToken cancellationToken = default) =>
         await SendCommandAsync(PowerOffPacket, cancellationToken).ConfigureAwait(false);
 
-    public async Task<PowerStatus> GetPowerStatus(CancellationToken cancellationToken = default)
+    public async Task<PowerStatus> GetPowerStatusAsync(CancellationToken cancellationToken = default)
     {
         var response = await SendCommandAsync(PowerStatusInquiryPacket, cancellationToken).ConfigureAwait(false);
 
@@ -52,8 +59,8 @@ public sealed partial class ViscaController(IViscaClient viscaClient, ILogger lo
         }
 
         var rawStatus = response[ViscaProtocol.PowerStatusByteIndex];
-        
-        if (!Enum.IsDefined(typeof(PowerStatus), (int)rawStatus))
+
+        if (!Enum.IsDefined((PowerStatus)rawStatus))
         {
             throw new ViscaProtocolException($"Unexpected power status value '{rawStatus}'. Packet: {response}");
         }
@@ -61,81 +68,88 @@ public sealed partial class ViscaController(IViscaClient viscaClient, ILogger lo
         return (PowerStatus)rawStatus;
     }
 
-    public async Task<PowerStatus> GetUpdatedPowerStatus(PowerStatus lastPowerStatus, CancellationToken cancellationToken = default)
+    public async Task<PowerStatus> GetUpdatedPowerStatusAsync(PowerStatus lastPowerStatus, CancellationToken cancellationToken = default)
     {
-        int attemptsRemaining = ViscaProtocol.PowerStatusPollAttempts;
+        var attemptsRemaining = ViscaProtocol.PowerStatusPollAttempts;
 
         while (attemptsRemaining > 0)
         {
             try
             {
-                using var perAttemptTimeout = new CancellationTokenSource(ViscaProtocol.PerOperationTimeoutMs);
-                using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, perAttemptTimeout.Token);
+                using var pollTimeout = new CancellationTokenSource(ViscaProtocol.PowerStatusPollTimeout);
+                using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, pollTimeout.Token);
 
-                var currentStatus = await GetPowerStatus(linkedCancellation.Token).ConfigureAwait(false);
+                var currentStatus = await GetPowerStatusAsync(linkedCancellation.Token).ConfigureAwait(false);
 
                 if (currentStatus != PowerStatus.Unknown && currentStatus != lastPowerStatus)
                 {
                     return currentStatus;
                 }
             }
-            catch (Exception) when (!cancellationToken.IsCancellationRequested) { }
+            catch (Exception) when (!cancellationToken.IsCancellationRequested)
+            {
+                // A failed poll attempt is expected while the camera is switching power; keep polling.
+            }
 
             attemptsRemaining--;
 
             if (attemptsRemaining > 0)
             {
-                await Task.Delay(ViscaProtocol.PerOperationDelayMs, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(ViscaProtocol.PowerStatusPollDelay, cancellationToken).ConfigureAwait(false);
             }
         }
 
         return PowerStatus.Unknown;
     }
 
-    public async Task MemorySet(byte slot, CancellationToken cancellationToken = default)
+    public async Task MemorySetAsync(byte slot, CancellationToken cancellationToken = default)
     {
         byte[] packet =
         [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdMemoryReset, ViscaProtocol.MemorySubSet, slot, ViscaProtocol.Terminator
         ];
+
         await SendCommandAsync(packet, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task MemoryRecall(byte slot, CancellationToken cancellationToken = default)
+    public async Task MemoryRecallAsync(byte slot, CancellationToken cancellationToken = default)
     {
         byte[] packet =
         [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdMemoryReset, ViscaProtocol.MemorySubRecall, slot, ViscaProtocol.Terminator
         ];
+
         await SendCommandAsync(packet, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task GoHome(CancellationToken cancellationToken = default) =>
+    public async Task GoHomeAsync(CancellationToken cancellationToken = default) =>
         await SendCommandAsync(GoHomePacket, cancellationToken).ConfigureAwait(false);
 
-    public async Task ContinuousPanTilt(PanTiltDirection panTiltDirection, byte panSpeed, byte tiltSpeed, CancellationToken cancellationToken = default)
+    public async Task ContinuousPanTiltAsync(PanTiltDirection panTiltDirection, byte panSpeed, byte tiltSpeed, CancellationToken cancellationToken = default)
     {
-        var panTiltTuple = EncodePanTiltDirection(panTiltDirection);
+        var (panDirection, tiltDirection) = EncodePanTiltDirection(panTiltDirection);
 
         byte[] packet =
         [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
-            ViscaProtocol.CmdContinuousPanTilt, panSpeed, tiltSpeed, panTiltTuple.Item1, panTiltTuple.Item2, ViscaProtocol.Terminator
+            ViscaProtocol.CmdContinuousPanTilt, panSpeed, tiltSpeed, panDirection, tiltDirection, ViscaProtocol.Terminator
         ];
+
         await SendCommandAsync(packet, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task ContinuousZoom(ZoomDirection zoomDirection, byte zoomSpeed, CancellationToken cancellationToken = default)
+    public async Task ContinuousZoomAsync(ZoomDirection zoomDirection, byte zoomSpeed, CancellationToken cancellationToken = default)
     {
-        byte zoomParameter = EncodeZoomDirection(zoomDirection, zoomSpeed);
+        var zoomParameter = EncodeZoomDirection(zoomDirection, zoomSpeed);
 
         byte[] packet =
         [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdZoomVariable, zoomParameter, ViscaProtocol.Terminator
         ];
+
         await SendCommandAsync(packet, cancellationToken).ConfigureAwait(false);
     }
 
@@ -150,36 +164,37 @@ public sealed partial class ViscaController(IViscaClient viscaClient, ILogger lo
     {
         using var timeoutSource = new CancellationTokenSource(ViscaProtocol.DefaultCommandTimeout);
         using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
+
         LogSendingCommand(logger, commandName);
 
-        var ticksBefore = performanceTimer.ElapsedTicks;
+        var ticksBefore = _performanceTimer.ElapsedTicks;
         var response = await viscaClient.SendAsync(packet, linkedCancellation.Token).ConfigureAwait(false);
-        var ticksAfter = performanceTimer.ElapsedTicks;
-
+        var ticksAfter = _performanceTimer.ElapsedTicks;
         var elapsedMilliseconds = (ticksAfter - ticksBefore) * 1000 / Stopwatch.Frequency;
+
         LogCompletedCommand(logger, commandName, elapsedMilliseconds);
 
         return response;
     }
 
-    private static Tuple<byte, byte> EncodePanTiltDirection(PanTiltDirection moveDirection)
+    private static (byte Pan, byte Tilt) EncodePanTiltDirection(PanTiltDirection moveDirection)
     {
         if (moveDirection == PanTiltDirection.None)
         {
-            return Tuple.Create(ViscaProtocol.DirectionStop, ViscaProtocol.DirectionStop);
+            return (ViscaProtocol.DirectionStop, ViscaProtocol.DirectionStop);
         }
 
-        bool? panLeft =
+        var panLeft =
             moveDirection.HasFlag(PanTiltDirection.PanLeft) ? true :
             moveDirection.HasFlag(PanTiltDirection.PanRight) ? false :
-            null;
+            (bool?)null;
 
-        bool? tiltUp =
+        var tiltUp =
             moveDirection.HasFlag(PanTiltDirection.TiltUp) ? true :
             moveDirection.HasFlag(PanTiltDirection.TiltDown) ? false :
-            null;
+            (bool?)null;
 
-        return Tuple.Create(EncodeDirection(panLeft), EncodeDirection(tiltUp));
+        return (EncodeDirection(panLeft), EncodeDirection(tiltUp));
     }
 
     private static byte EncodeDirection(bool? directionUpOrLeft)
@@ -208,5 +223,4 @@ public sealed partial class ViscaController(IViscaClient viscaClient, ILogger lo
 
     [LoggerMessage(EventId = 1102, Level = LogLevel.Debug, Message = "VISCA command '{Command}' completed in {Millis}ms")]
     private static partial void LogCompletedCommand(ILogger logger, string? command, long millis);
-
 }

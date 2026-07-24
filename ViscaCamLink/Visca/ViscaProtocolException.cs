@@ -1,5 +1,7 @@
 namespace ViscaCamLink.Visca;
 
+using System;
+
 public class ViscaProtocolException : Exception
 {
     public ViscaProtocolException()

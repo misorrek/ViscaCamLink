@@ -1,100 +1,105 @@
 namespace ViscaCamLink.Visca;
 
+using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-public sealed partial class TcpViscaClient(string host, int port, ILogger logger) : ViscaClientBase(logger)
+public partial class TcpViscaClient(string host, int port, ILogger logger) : ViscaClientBase(logger)
 {
-    private readonly ReadBuffer readBuffer = new();
-    private readonly byte[] writeBuffer = new byte[16];
+    private readonly ReadBuffer _readBuffer = new();
+    private readonly byte[] _writeBuffer = new byte[ViscaPacket.MaximumLength];
 
-    private string host = host;
-    private int port = port;
-    private bool isFirstConnection = true;
-    private TcpClient? tcpClient;
-    private Stream? networkStream;
+    private string _host = host;
+    private int _port = port;
+    private bool _isFirstConnection = true;
+    private TcpClient? _tcpClient;
+    private Stream? _networkStream;
 
     public override void Dispose()
     {
-        tcpClient?.Dispose();
+        _tcpClient?.Dispose();
     }
 
     public override bool? IsConnected()
     {
-        return tcpClient?.Connected;
+        return _tcpClient?.Connected;
     }
 
-    public override Task Reconnect(CancellationToken cancellationToken, string? host = null, int? port = null)
+    public override Task ReconnectAsync(string? host = null, int? port = null, CancellationToken cancellationToken = default)
     {
-        this.host = host ?? this.host;
-        this.port = port ?? this.port;
+        _host = host ?? _host;
+        _port = port ?? _port;
 
         return ConnectAsync(cancellationToken);
     }
 
-    protected override void Disconnect()
-    {
-        readBuffer.Clear();
-        tcpClient?.Dispose();
-        tcpClient = null;
-    }
-
     protected override async Task ConnectAsync(CancellationToken cancellationToken)
     {
-        if (isFirstConnection)
+        if (_isFirstConnection)
         {
-            LogConnecting(Logger, host, port);
+            LogConnecting(Logger, _host, _port);
 
-            isFirstConnection = false;
+            _isFirstConnection = false;
         }
         else
         {
-            LogReconnecting(Logger, host, port);
+            LogReconnecting(Logger, _host, _port);
         }
 
-        readBuffer.Clear();
-        tcpClient?.Dispose();
-        tcpClient = new TcpClient { NoDelay = true };
+        _readBuffer.Clear();
+        _tcpClient?.Dispose();
+        _tcpClient = new TcpClient { NoDelay = true };
 
         try
         {
-            await tcpClient.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
+            await _tcpClient.ConnectAsync(_host, _port, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            tcpClient = null;
-            LogConnectFailed(Logger, host, port, ex);
+            _tcpClient = null;
+
+            LogConnectFailed(Logger, _host, _port, exception);
 
             throw;
         }
 
-        networkStream = tcpClient.GetStream();
+        _networkStream = _tcpClient.GetStream();
+    }
+
+    protected override void Disconnect()
+    {
+        _readBuffer.Clear();
+        _tcpClient?.Dispose();
+        _tcpClient = null;
     }
 
     protected override async Task SendPacketAsync(ViscaPacket packet, CancellationToken cancellationToken)
     {
-        if (tcpClient is null)
+        if (_tcpClient is null)
         {
             await ConnectAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        for (int i = 0; i < packet.Length; i++)
+        for (var i = 0; i < packet.Length; i++)
         {
-            writeBuffer[i] = packet[i];
+            _writeBuffer[i] = packet[i];
         }
 
-        await networkStream!.WriteAsync(writeBuffer.AsMemory(0, packet.Length), cancellationToken).ConfigureAwait(false);
+        await _networkStream!.WriteAsync(_writeBuffer.AsMemory(0, packet.Length), cancellationToken).ConfigureAwait(false);
     }
 
     protected override Task<ViscaPacket> ReceivePacketAsync(CancellationToken cancellationToken)
     {
-        if (networkStream is null)
+        if (_networkStream is null)
         {
             throw new ViscaProtocolException("Cannot receive a packet before sending one");
         }
-        return readBuffer.ReadAsync(networkStream, cancellationToken);
+
+        return _readBuffer.ReadAsync(_networkStream, cancellationToken);
     }
 
     [LoggerMessage(EventId = 1001, Level = LogLevel.Information, Message = "Connecting to {Host}:{Port}")]
@@ -104,5 +109,5 @@ public sealed partial class TcpViscaClient(string host, int port, ILogger logger
     private static partial void LogReconnecting(ILogger logger, string host, int port);
 
     [LoggerMessage(EventId = 1003, Level = LogLevel.Error, Message = "Failed to connect to {Host}:{Port}")]
-    private static partial void LogConnectFailed(ILogger logger, string host, int port, Exception ex);
+    private static partial void LogConnectFailed(ILogger logger, string host, int port, Exception exception);
 }

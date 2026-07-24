@@ -1,19 +1,21 @@
 namespace ViscaCamLink.Visca;
 
+using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class ReadBuffer
 {
     private const int MaxBufferSize = 256;
-    private const byte PacketTerminator = 0xff;
 
-    private readonly byte[] buffer = new byte[MaxBufferSize];
+    private readonly byte[] _buffer = new byte[MaxBufferSize];
 
-    private int bytesInBuffer;
+    private int _bytesInBuffer;
 
     public void Clear()
     {
-        bytesInBuffer = 0;
+        _bytesInBuffer = 0;
     }
 
     public async Task<ViscaPacket> ReadAsync(Stream stream, CancellationToken cancellationToken)
@@ -25,45 +27,46 @@ public class ReadBuffer
                 return ConsumePacket(packetLength);
             }
 
-            if (bytesInBuffer == buffer.Length)
+            if (_bytesInBuffer == _buffer.Length)
             {
-                throw new ViscaProtocolException($"Read {bytesInBuffer} bytes without reaching the end of a VISCA packet");
+                throw new ViscaProtocolException($"Read {_bytesInBuffer} bytes without reaching the end of a VISCA packet");
             }
 
             using var streamCloseOnCancel = cancellationToken.Register(stream.Close);
-            int bytesRead = await stream.ReadAsync(buffer.AsMemory(bytesInBuffer, buffer.Length - bytesInBuffer), cancellationToken).ConfigureAwait(false);
+            var bytesRead = await stream.ReadAsync(_buffer.AsMemory(_bytesInBuffer, _buffer.Length - _bytesInBuffer), cancellationToken).ConfigureAwait(false);
 
             if (bytesRead == 0)
             {
                 throw new ViscaProtocolException("Reached end of VISCA stream");
             }
 
-            bytesInBuffer += bytesRead;
+            _bytesInBuffer += bytesRead;
         }
     }
 
     private int? FindTerminatorPosition()
     {
-        for (int i = 0; i < bytesInBuffer; i++)
+        for (var i = 0; i < _bytesInBuffer; i++)
         {
-            if (buffer[i] == PacketTerminator)
+            if (_buffer[i] == ViscaProtocol.Terminator)
             {
                 return i + 1;
             }
         }
+
         return null;
     }
 
     private ViscaPacket ConsumePacket(int packetLengthIncludingTerminator)
     {
-        int packetDataLength = packetLengthIncludingTerminator - 1;
-        var packet = ViscaPacket.FromBytes(buffer, 0, packetDataLength);
+        var packetDataLength = packetLengthIncludingTerminator - 1;
+        var packet = ViscaPacket.FromBytes(_buffer, 0, packetDataLength);
 
-        bytesInBuffer -= packetLengthIncludingTerminator;
+        _bytesInBuffer -= packetLengthIncludingTerminator;
 
-        if (bytesInBuffer > 0)
+        if (_bytesInBuffer > 0)
         {
-            Buffer.BlockCopy(buffer, packetLengthIncludingTerminator, buffer, 0, bytesInBuffer);
+            Buffer.BlockCopy(_buffer, packetLengthIncludingTerminator, _buffer, 0, _bytesInBuffer);
         }
 
         return packet;

@@ -1,5 +1,8 @@
 namespace ViscaCamLink.Visca;
 
+using System.Threading;
+using System.Threading.Tasks;
+
 using Microsoft.Extensions.Logging;
 
 public abstract partial class ViscaClientBase(ILogger logger) : IViscaClient
@@ -10,24 +13,21 @@ public abstract partial class ViscaClientBase(ILogger logger) : IViscaClient
     private const int ResponseTypeError = 6;
     private const int MinimumResponseLength = 2;
 
-    public abstract void Dispose();
-    public abstract bool? IsConnected();
-    public abstract Task Reconnect(CancellationToken cancellationToken, string? host = null, int? port = null);
-
-    protected abstract Task SendPacketAsync(ViscaPacket packet, CancellationToken cancellationToken);
-    protected abstract Task<ViscaPacket> ReceivePacketAsync(CancellationToken cancellationToken);
-    protected abstract Task ConnectAsync(CancellationToken cancellationToken);
-    protected abstract void Disconnect();
+    private readonly SemaphoreSlim _sendReceiveLock = new(1);
 
     protected ILogger Logger { get; } = logger;
 
-    private readonly SemaphoreSlim sendReceiveLock = new(1);
+    public abstract void Dispose();
+
+    public abstract bool? IsConnected();
+
+    public abstract Task ReconnectAsync(string? host = null, int? port = null, CancellationToken cancellationToken = default);
 
     async Task<ViscaPacket> IViscaClient.SendAsync(ViscaPacket request, CancellationToken cancellationToken)
     {
         var shouldDisconnect = true;
 
-        await sendReceiveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await _sendReceiveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -73,10 +73,18 @@ public abstract partial class ViscaClientBase(ILogger logger) : IViscaClient
             }
             finally
             {
-                sendReceiveLock.Release();
+                _sendReceiveLock.Release();
             }
         }
     }
+
+    protected abstract Task ConnectAsync(CancellationToken cancellationToken);
+
+    protected abstract void Disconnect();
+
+    protected abstract Task SendPacketAsync(ViscaPacket packet, CancellationToken cancellationToken);
+
+    protected abstract Task<ViscaPacket> ReceivePacketAsync(CancellationToken cancellationToken);
 
     [LoggerMessage(EventId = 1201, Level = LogLevel.Trace, Message = "Sent VISCA packet: {Packet}")]
     private static partial void LogPacketSent(ILogger logger, ViscaPacket packet);

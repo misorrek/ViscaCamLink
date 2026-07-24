@@ -1,5 +1,7 @@
 namespace ViscaCamLink.Visca;
 
+using System;
+
 public class ViscaResponseException : Exception
 {
     public ViscaResponseException()

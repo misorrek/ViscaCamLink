@@ -1,5 +1,7 @@
 namespace ViscaCamLink.Visca;
 
+using System;
+
 public static class ViscaProtocol
 {
     public const int ResponseTypeByteIndex = 1;
@@ -44,10 +46,9 @@ public static class ViscaProtocol
     public const byte MaxTiltSpeed = 0x14;
     public const byte MaxZoomSpeed = 0x07;
 
-    public static readonly TimeSpan DefaultCommandTimeout = TimeSpan.FromSeconds(15);
-
     public const int PowerStatusPollAttempts = 20;
 
-    public const int PerOperationTimeoutMs = 1000;
-    public const int PerOperationDelayMs = 2000;
+    public static readonly TimeSpan DefaultCommandTimeout = TimeSpan.FromSeconds(15);
+    public static readonly TimeSpan PowerStatusPollTimeout = TimeSpan.FromSeconds(1);
+    public static readonly TimeSpan PowerStatusPollDelay = TimeSpan.FromSeconds(2);
 }

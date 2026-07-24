@@ -1,5 +1,6 @@
 namespace ViscaCamLink;
 
+using System;
 using System.Diagnostics;
 
 using Velopack;

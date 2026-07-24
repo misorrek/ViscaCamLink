@@ -1,24 +1,23 @@
 namespace ViscaCamLink.Visca;
 
+using System;
 using System.Text;
 
-public readonly struct ViscaPacket
+public readonly struct ViscaPacket(long head, long tail, int length, string? cachedText)
 {
+    public const int MinimumLength = 1;
+    public const int MaximumLength = BytesPerSegment * 2;
+
     private const int BytesPerSegment = 8;
     private const int BitsPerByte = 8;
-    private const int MinimumPacketLength = 1;
-    private const int MaximumPacketLength = BytesPerSegment * 2;
     private const int MostSignificantByteShift = (BytesPerSegment - 1) * BitsPerByte;
     private const int BitsPerViscaNibble = 4;
 
-    private readonly long head;
-    private readonly long tail;
-    private readonly string? cachedText;
+    private readonly long _head = head;
+    private readonly long _tail = tail;
+    private readonly string? _cachedText = cachedText;
 
-    private ViscaPacket(long head, long tail, int length, string? cachedText) =>
-        (this.head, this.tail, Length, this.cachedText) = (head, tail, length, cachedText);
-
-    public int Length { get; }
+    public int Length { get; } = length;
 
     public byte this[int index]
     {
@@ -28,7 +27,7 @@ public readonly struct ViscaPacket
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Length);
 
             var isHeadSegment = index < BytesPerSegment;
-            var segment = isHeadSegment ? head : tail;
+            var segment = isHeadSegment ? _head : _tail;
             var segmentIndex = isHeadSegment ? index : index - BytesPerSegment;
 
             return (byte)(segment >> (MostSignificantByteShift - (segmentIndex * BitsPerByte)));
@@ -64,19 +63,20 @@ public readonly struct ViscaPacket
         const int HexCharsPerByte = 2;
         const char ByteSeparator = '-';
 
-        if (cachedText is not null)
+        if (_cachedText is not null)
         {
-            return cachedText;
+            return _cachedText;
         }
 
         var builder = new StringBuilder((Length * StringCharsPerFormattedByte) - 1);
 
-        for (int i = 0; i < Length; i++)
+        for (var i = 0; i < Length; i++)
         {
             if (i > 0)
             {
                 builder.Append(ByteSeparator);
             }
+
             builder.AppendFormat($"{{0:x{HexCharsPerByte}}}", this[i]);
         }
 
@@ -87,9 +87,9 @@ public readonly struct ViscaPacket
     {
         ArgumentNullException.ThrowIfNull(bytes);
         ArgumentOutOfRangeException.ThrowIfNegative(start);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(start, bytes.Length - MinimumPacketLength);
-        ArgumentOutOfRangeException.ThrowIfLessThan(length, MinimumPacketLength);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, MaximumPacketLength);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(start, bytes.Length - MinimumLength);
+        ArgumentOutOfRangeException.ThrowIfLessThan(length, MinimumLength);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, MaximumLength);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(length, bytes.Length - start);
 
         var head = PackBytesIntoLong(bytes, start, length, byteOffset: 0);
@@ -105,7 +105,7 @@ public readonly struct ViscaPacket
     {
         long result = 0;
 
-        for (int i = byteOffset; i < byteOffset + BytesPerSegment; i++)
+        for (var i = byteOffset; i < byteOffset + BytesPerSegment; i++)
         {
             if (i < length)
             {

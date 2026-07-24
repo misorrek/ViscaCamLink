@@ -1,201 +1,202 @@
-﻿namespace ViscaCamLink
+namespace ViscaCamLink;
+
+using System;
+using System.Threading;
+using System.Windows;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Win32;
+
+using ViscaCamLink.Infrastructure;
+using ViscaCamLink.Infrastructure.HotKeys;
+using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Localization;
+using ViscaCamLink.Infrastructure.Logging;
+using ViscaCamLink.Infrastructure.Theming;
+using ViscaCamLink.Repositories.AppSettings;
+using ViscaCamLink.Repositories.HotKeys;
+using ViscaCamLink.Repositories.Presets;
+using ViscaCamLink.Services;
+using ViscaCamLink.ViewModels;
+using ViscaCamLink.Views;
+using ViscaCamLink.Visca;
+
+public partial class App : Application
 {
-    using System.Windows;
+    private IServiceProvider? _serviceProvider;
+    private CancellationTokenSource? _updateCheckCancellation;
 
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.Win32;
-
-    using ViscaCamLink.Infrastructure;
-    using ViscaCamLink.Infrastructure.HotKeys;
-    using ViscaCamLink.Infrastructure.Interface;
-    using ViscaCamLink.Infrastructure.Localization;
-    using ViscaCamLink.Infrastructure.Logging;
-    using ViscaCamLink.Infrastructure.Theming;
-    using ViscaCamLink.Repositories.AppSettings;
-    using ViscaCamLink.Repositories.HotKeys;
-    using ViscaCamLink.Repositories.Presets;
-    using ViscaCamLink.Services;
-    using ViscaCamLink.ViewModels;
-    using ViscaCamLink.Views;
-    using ViscaCamLink.Visca;
-
-    public partial class App : Application
+    private void Application_Startup(object sender, StartupEventArgs startupEventArgs)
     {
-        private IServiceProvider? _serviceProvider;
-        private CancellationTokenSource? _updateCheckCts;
+        var settingsRepository = new AppSettingsRepository(AppPaths.SettingsFile, AppPaths.LegacyUserDataRoot);
+        var appSettings = settingsRepository.Load();
 
-        private void Application_Startup(object sender, StartupEventArgs startupEventArgs)
+        EnsureCameraProfileExists(appSettings, settingsRepository);
+        LocalizationHelper.ApplyLocalization(appSettings.Language);
+        ThemeHelper.ApplyTheme(appSettings.Theme);
+
+        _serviceProvider = ConfigureServices(appSettings, settingsRepository);
+
+        var viscaCamLinkViewModel = _serviceProvider.GetRequiredService<ViscaCamLinkViewModel>();
+        var viscaCamLinkView = _serviceProvider.GetRequiredService<ViscaCamLinkView>();
+        var compactWindow = _serviceProvider.GetRequiredService<CompactWindow>();
+        var windowModeCoordinator = _serviceProvider.GetRequiredService<IWindowModeCoordinator>();
+        var hotKeyManager = _serviceProvider.GetRequiredService<IHotKeyManager>();
+        var startupUpdateCheckService = _serviceProvider.GetRequiredService<IStartupUpdateCheckService>();
+
+        viscaCamLinkViewModel.UpdateAvailable += viscaCamLinkView.ShowUpdateButton;
+        viscaCamLinkView.DataContext = viscaCamLinkViewModel;
+        viscaCamLinkView.Closed += OnClosed;
+
+        compactWindow.DataContext = viscaCamLinkViewModel;
+        windowModeCoordinator.Initialize(viscaCamLinkView, compactWindow);
+        hotKeyManager.AddLocalKeyTarget(compactWindow);
+
+        _updateCheckCancellation = new CancellationTokenSource();
+        _ = startupUpdateCheckService.RunAsync(_updateCheckCancellation.Token);
+
+        viscaCamLinkView.Show();
+
+        ShowMigrationDialogIfNeeded(appSettings, settingsRepository,
+            _serviceProvider.GetRequiredService<IDialogService>());
+    }
+
+    private static ServiceProvider ConfigureServices(AppSettings appSettings, AppSettingsRepository settingsRepository)
+    {
+        var services = new ServiceCollection();
+
+        services.AddLogging(builder => builder
+            .SetMinimumLevel(appSettings.LogLevel)
+            .AddProvider(new FileLoggerProvider(AppPaths.LogsDirectory, TimeProvider.System)));
+
+        services.AddSingleton(settingsRepository);
+        services.AddSingleton(appSettings);
+
+        services.AddSingleton<ISettingsService>(provider => new SettingsService(
+            provider.GetRequiredService<AppSettings>(),
+            provider.GetRequiredService<AppSettingsRepository>(),
+            LocalizationHelper.ApplyLocalization,
+            ThemeHelper.ApplyTheme));
+
+        services.AddSingleton<IViscaClient>(provider =>
         {
-            var settingsRepository = new AppSettingsRepository(AppPaths.Settings, AppPaths.LegacyUserDataRoot);
-            var appSettings = settingsRepository.Load();
+            var settings = provider.GetRequiredService<ISettingsService>();
+            var camera = settings.ActiveCameraProfile;
 
-            // Ensure there is always at least one camera profile.
-            if (appSettings.CameraProfiles.Count == 0)
-            {
-                var defaultCamera = new CameraProfile();
+            return new TcpViscaClient(
+                camera?.Ip ?? CameraProfile.DefaultIp,
+                camera?.Port ?? CameraProfile.DefaultPort,
+                provider.GetRequiredService<ILogger<TcpViscaClient>>());
+        });
+        services.AddSingleton<IViscaController, ViscaController>();
 
-                appSettings.CameraProfiles.Add(defaultCamera);
-                appSettings.ActiveCameraProfileId = defaultCamera.Id;
-                settingsRepository.Save(appSettings);
-            }
+        services.AddSingleton<IHotKeyManager>(provider => new HotKeyManager(provider.GetRequiredService<ViscaCamLinkView>()));
+        services.AddSingleton<IHotKeyRepository, HotKeyRepository>();
+        services.AddSingleton<IPresetRepository, PresetRepository>();
 
-            LocalizationHelper.ApplyLocalization(appSettings.Language);
-            ThemeHelper.ApplyTheme(appSettings.Theme);
+        services.AddSingleton<ICameraConnectionService, CameraConnectionService>();
+        services.AddSingleton<ICameraMovementService, CameraMovementService>();
+        services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IHotKeyService, HotKeyService>();
+        services.AddSingleton<IPowerService, PowerService>();
+        services.AddSingleton<IPresetService, PresetService>();
+        services.AddSingleton<IStartupUpdateCheckService, StartupUpdateCheckService>();
+        services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
+        services.AddSingleton<IUpdateService, VelopackUpdateService>();
+        services.AddSingleton<IWindowModeCoordinator, WindowModeCoordinator>();
 
-            _serviceProvider = ConfigureServices(appSettings, settingsRepository);
+        services.AddSingleton<ViscaCamLinkViewModel>();
+        services.AddSingleton<ConnectionViewModel>();
+        services.AddSingleton<PresetsViewModel>();
+        services.AddSingleton<MovementViewModel>();
+        services.AddSingleton<ZoomViewModel>();
+        services.AddSingleton<ViscaCamLinkView>();
+        services.AddSingleton<CompactWindow>();
 
-            var viscaCamLinkViewModel = _serviceProvider.GetRequiredService<ViscaCamLinkViewModel>();
-            var viscaCamLinkView = _serviceProvider.GetRequiredService<ViscaCamLinkView>();
-            var compactWindow = _serviceProvider.GetRequiredService<CompactWindow>();
-            var windowModeCoordinator = _serviceProvider.GetRequiredService<IWindowModeCoordinator>();
-            var hotKeyManager = _serviceProvider.GetRequiredService<IHotKeyManager>();
-            var startupUpdateCheckService = _serviceProvider.GetRequiredService<IStartupUpdateCheckService>();
+        return services.BuildServiceProvider();
+    }
 
-            viscaCamLinkViewModel.UpdateAvailable += viscaCamLinkView.ShowUpdateButton;
-            viscaCamLinkView.DataContext = viscaCamLinkViewModel;
-            viscaCamLinkView.Closed += OnClosed;
-
-            compactWindow.DataContext = viscaCamLinkViewModel;
-            windowModeCoordinator.Initialize(viscaCamLinkView, compactWindow);
-            hotKeyManager.AddLocalKeyTarget(compactWindow);
-
-            _updateCheckCts = new CancellationTokenSource();
-            _ = startupUpdateCheckService.RunAsync(_updateCheckCts.Token);
-
-            viscaCamLinkView.Show();
-
-            ShowMigrationDialogIfNeeded(appSettings, settingsRepository,
-                _serviceProvider.GetRequiredService<IDialogService>());
+    private static void EnsureCameraProfileExists(AppSettings appSettings, AppSettingsRepository settingsRepository)
+    {
+        if (appSettings.CameraProfiles.Count > 0)
+        {
+            return;
         }
 
-        // TODO Maybe use IInjectable?
-        private static ServiceProvider ConfigureServices(AppSettings appSettings, AppSettingsRepository settingsRepository)
+        var defaultCamera = new CameraProfile();
+
+        appSettings.CameraProfiles.Add(defaultCamera);
+        appSettings.ActiveCameraProfileId = defaultCamera.Id;
+        settingsRepository.Save(appSettings);
+    }
+
+    private void OnClosed(object? sender, EventArgs eventArgs)
+    {
+        _updateCheckCancellation?.Cancel();
+        _updateCheckCancellation?.Dispose();
+
+        if (_serviceProvider is IDisposable disposable)
         {
-            var services = new ServiceCollection();
-
-            services.AddLogging(b => b
-                .SetMinimumLevel(appSettings.LogLevel)
-                .AddProvider(new FileLoggerProvider(AppPaths.Logs, TimeProvider.System)));
-
-            services.AddSingleton(settingsRepository);
-            services.AddSingleton(appSettings);
-            services.AddSingleton<ISettingsService>(sp => new SettingsService(
-                sp.GetRequiredService<AppSettings>(),
-                sp.GetRequiredService<AppSettingsRepository>(),
-                LocalizationHelper.ApplyLocalization,
-                ThemeHelper.ApplyTheme));
-            services.AddSingleton<IPresetRepository, PresetRepository>();
-            services.AddSingleton<IViscaClient>(sp =>
-            {
-                var settings = sp.GetRequiredService<ISettingsService>();
-                var camera = settings.ActiveCameraProfile;
-
-                return new TcpViscaClient(
-                    camera?.Ip ?? CameraProfile.DefaultIp,
-                    camera?.Port ?? CameraProfile.DefaultPort,
-                    sp.GetRequiredService<ILogger<TcpViscaClient>>());
-            });
-            services.AddSingleton<IViscaController>(sp => new ViscaController(
-                sp.GetRequiredService<IViscaClient>(),
-                sp.GetRequiredService<ILogger<ViscaController>>()));
-            services.AddSingleton<ICameraConnectionService>(sp => new CameraConnectionService(
-                sp.GetRequiredService<IViscaController>(),
-                sp.GetRequiredService<ISettingsService>(),
-                sp.GetRequiredService<IPresetService>()));
-            services.AddSingleton<IPowerService, PowerService>();
-            services.AddSingleton<IPresetService>(sp => new PresetService(
-                sp.GetRequiredService<IViscaController>(),
-                sp.GetRequiredService<IPresetRepository>(),
-                sp.GetRequiredService<ISettingsService>()));
-            services.AddSingleton<ICameraMovementService, CameraMovementService>();
-            services.AddSingleton<IHotKeyManager>(sp => new HotKeyManager(sp.GetRequiredService<ViscaCamLinkView>()));
-            services.AddSingleton<IHotKeyRepository, HotKeyRepository>();
-            services.AddSingleton<IHotKeyService, HotKeyService>();
-            services.AddSingleton<IWindowModeCoordinator, WindowModeCoordinator>();
-            services.AddSingleton<IDialogService, DialogService>();
-            services.AddSingleton<IOptionsViewModelFactory, OptionsViewModelFactory>();
-            services.AddSingleton<IStartupUpdateCheckService>(sp =>
-                new StartupUpdateCheckService(sp.GetRequiredService<IUpdateService>()));
-            services.AddSingleton<VelopackUpdateService>();
-            services.AddSingleton<IUpdateService>(sp => sp.GetRequiredService<VelopackUpdateService>());
-            services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
-            services.AddSingleton<ViscaCamLinkViewModel>();
-            services.AddSingleton<ConnectionViewModel>();
-            services.AddSingleton<PresetsViewModel>();
-            services.AddSingleton<MovementViewModel>();
-            services.AddSingleton<ZoomViewModel>();
-            services.AddSingleton<ViscaCamLinkView>();
-            services.AddSingleton<CompactWindow>();
-
-            return services.BuildServiceProvider();
+            disposable.Dispose();
         }
 
-        private void OnClosed(object? sender, EventArgs eventArgs)
+        Current.Shutdown();
+    }
+
+    private static void ShowMigrationDialogIfNeeded(
+        AppSettings appSettings,
+        AppSettingsRepository settingsRepository,
+        IDialogService dialogService)
+    {
+        if (appSettings.WixUninstallPrompted)
         {
-            _updateCheckCts?.Cancel();
-            _updateCheckCts?.Dispose();
-
-            if (_serviceProvider is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-
-            Current.Shutdown();
+            return;
         }
 
-        private static void ShowMigrationDialogIfNeeded(
-            AppSettings appSettings,
-            AppSettingsRepository settingsRepository,
-            IDialogService dialogService)
+        var uninstallString = FindWixUninstallString();
+
+        // Mark as prompted regardless of whether WiX was found so this
+        // code path only runs once per installation.
+        appSettings.WixUninstallPrompted = true;
+        settingsRepository.Save(appSettings);
+
+        if (uninstallString is not null)
         {
-            if (appSettings.WixUninstallPrompted)
-            {
-                return;
-            }
-
-            var uninstallString = FindWixUninstallString();
-
-            // Mark as prompted regardless of whether WiX was found so this
-            // code path only runs once per installation.
-            appSettings.WixUninstallPrompted = true;
-            settingsRepository.Save(appSettings);
-
-            if (uninstallString is not null)
-            {
-                dialogService.ShowMigrationDialog(uninstallString);
-            }
+            dialogService.ShowMigrationDialog(uninstallString);
         }
+    }
 
-        private static string? FindWixUninstallString()
+    private static string? FindWixUninstallString()
+    {
+        string[] searchPaths =
+        [
+            @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+            @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+        ];
+
+        foreach (var searchPath in searchPaths)
         {
-            string[] searchPaths =
-            [
-                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
-                @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
-            ];
+            using var parentKey = Registry.LocalMachine.OpenSubKey(searchPath);
 
-            foreach (var searchPath in searchPaths)
+            if (parentKey is null)
             {
-                using var parent = Registry.LocalMachine.OpenSubKey(searchPath);
-                if (parent is null)
+                continue;
+            }
+
+            foreach (var subKeyName in parentKey.GetSubKeyNames())
+            {
+                using var subKey = parentKey.OpenSubKey(subKeyName);
+
+                if (subKey?.GetValue("DisplayName") is string displayName
+                    && displayName.Equals("ViscaCamLink", StringComparison.OrdinalIgnoreCase)
+                    && subKey.GetValue("UninstallString") is string uninstallString)
                 {
-                    continue;
-                }
-
-                foreach (var name in parent.GetSubKeyNames())
-                {
-                    using var key = parent.OpenSubKey(name);
-                    if (key?.GetValue("DisplayName") is string displayName
-                        && displayName.Equals("ViscaCamLink", StringComparison.OrdinalIgnoreCase)
-                        && key.GetValue("UninstallString") is string uninstallString)
-                    {
-                        return uninstallString;
-                    }
+                    return uninstallString;
                 }
             }
-
-            return null;
         }
+
+        return null;
     }
 }
