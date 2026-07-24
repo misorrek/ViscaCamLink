@@ -23,7 +23,8 @@ public class PresetService : IPresetService
         _repository = repository;
         _settingsService = settingsService;
         _presetData = _repository.LoadForCameraProfile(_settingsService.ActiveCameraProfileId);
-        _activeGroupId = _presetData.Groups[0].Id;
+        _activeGroupId = ResolveActiveGroupId(_presetData);
+        _presetData.ActiveGroupId = _activeGroupId;
     }
 
     public event Action? PresetsChanged;
@@ -72,7 +73,9 @@ public class PresetService : IPresetService
         }
 
         _activeGroupId = groupId;
+        _presetData.ActiveGroupId = groupId;
 
+        SavePresetData();
         PresetsChanged?.Invoke();
     }
 
@@ -141,6 +144,7 @@ public class PresetService : IPresetService
         if (_activeGroupId == groupId)
         {
             _activeGroupId = _presetData.Groups[0].Id;
+            _presetData.ActiveGroupId = _activeGroupId;
 
             PresetsChanged?.Invoke();
         }
@@ -167,7 +171,8 @@ public class PresetService : IPresetService
     public void SwitchCameraProfile(Guid profileId)
     {
         _presetData = _repository.LoadForCameraProfile(profileId);
-        _activeGroupId = _presetData.Groups[0].Id;
+        _activeGroupId = ResolveActiveGroupId(_presetData);
+        _presetData.ActiveGroupId = _activeGroupId;
 
         GroupsChanged?.Invoke();
         PresetsChanged?.Invoke();
@@ -175,6 +180,18 @@ public class PresetService : IPresetService
 
     private void SavePresetData() =>
         _repository.SaveForCameraProfile(_settingsService.ActiveCameraProfileId, _presetData);
+
+    private static Guid ResolveActiveGroupId(PresetData presetData)
+    {
+        var activeGroupId = presetData.ActiveGroupId;
+
+        if (presetData.Groups.Any(group => group.Id == activeGroupId))
+        {
+            return activeGroupId;
+        }
+
+        return presetData.Groups[0].Id;
+    }
 
     private static int? FindNextAvailableBaseSlot(HashSet<int> usedSlots)
     {

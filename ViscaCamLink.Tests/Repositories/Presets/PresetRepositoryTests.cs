@@ -180,4 +180,25 @@ public sealed class PresetRepositoryTests : IDisposable
         loaded.Groups[1].Presets.Count.ShouldBe(10);
         loaded.Groups[1].Presets[0].SlotIndex.ShouldBe(10);
     }
+
+    [Fact]
+    public void SaveForCameraProfile_WhenActiveGroupIdIsSet_RoundTripsActiveGroupId()
+    {
+        var secondGroupId = Guid.NewGuid();
+        var data = _repository.LoadForCameraProfile(_cameraId);
+
+        data.Groups.Add(new PresetGroup
+        {
+            Id = secondGroupId,
+            Name = "Second",
+            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = secondGroupId, SlotIndex = i, Name = i.ToString() })],
+        });
+        data.ActiveGroupId = secondGroupId;
+
+        _repository.SaveForCameraProfile(_cameraId, data);
+
+        var loaded = _repository.LoadForCameraProfile(_cameraId);
+
+        loaded.ActiveGroupId.ShouldBe(secondGroupId);
+    }
 }

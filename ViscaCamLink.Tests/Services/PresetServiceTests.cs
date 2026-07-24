@@ -24,10 +24,14 @@ public sealed class PresetServiceTests
     private readonly Mock<ISettingsService> _settingsService = new();
     private readonly Guid _cameraId = Guid.NewGuid();
     private readonly PresetService _presetService;
+    private PresetData? _lastSavedPresetData;
 
     public PresetServiceTests()
     {
         _settingsService.Setup(s => s.ActiveCameraProfileId).Returns(_cameraId);
+        _repository
+            .Setup(r => r.SaveForCameraProfile(_cameraId, It.IsAny<PresetData>()))
+            .Callback<Guid, PresetData>((_, data) => _lastSavedPresetData = data);
         _repository.Setup(r => r.LoadForCameraProfile(_cameraId)).Returns(CreateDefaultPresetData());
 
         _presetService = new PresetService(_viscaController.Object, _repository.Object, _settingsService.Object);
@@ -145,6 +149,38 @@ public sealed class PresetServiceTests
 
         raised.ShouldBeFalse();
         _presetService.ActiveGroupId.ShouldBe(DefaultGroupId);
+    }
+
+    [Fact]
+    public void SwitchGroup_PersistsActiveGroupId()
+    {
+        _presetService.AddGroup("Second");
+
+        var secondGroupId = _presetService.Groups[1].Id;
+
+        _presetService.SwitchGroup(secondGroupId);
+
+        _lastSavedPresetData.ShouldNotBeNull();
+        _lastSavedPresetData.ActiveGroupId.ShouldBe(secondGroupId);
+    }
+
+    [Fact]
+    public void Constructor_AppliesSavedActiveGroupId()
+    {
+        var secondGroupId = Guid.NewGuid();
+        var data = CreateDefaultPresetData();
+        data.Groups.Add(new PresetGroup
+        {
+            Id = secondGroupId,
+            Name = "Second",
+            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = secondGroupId, SlotIndex = i, Name = i.ToString() })],
+        });
+        data.ActiveGroupId = secondGroupId;
+        _repository.Setup(r => r.LoadForCameraProfile(_cameraId)).Returns(data);
+
+        var service = new PresetService(_viscaController.Object, _repository.Object, _settingsService.Object);
+
+        service.ActiveGroupId.ShouldBe(secondGroupId);
     }
 
     [Fact]
