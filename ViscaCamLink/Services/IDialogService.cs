@@ -1,7 +1,5 @@
 namespace ViscaCamLink.Services;
 
-using ViscaCamLink.Updater;
-
 public interface IDialogService
 {
     void ShowOptionsDialog();

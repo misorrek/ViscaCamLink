@@ -4,8 +4,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ViscaCamLink.Updater;
-
 public interface IUpdateService
 {
     event EventHandler<UpdateInfo>? UpdateAvailable;

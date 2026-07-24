@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Resources;
-using ViscaCamLink.Updater;
+using ViscaCamLink.Services;
 
 public class UpdateViewModel : ViewModelBase
 {

@@ -31,10 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ViscaCamLink.Updater\ViscaCamLink.Updater.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Include="Resources\update_available_dialog.gif" />
     <Resource Include="Resources\update_available_sidebar.gif" />
   </ItemGroup>

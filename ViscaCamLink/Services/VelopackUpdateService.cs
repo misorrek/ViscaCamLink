@@ -8,8 +8,6 @@ using System.Threading.Tasks;
 using Velopack;
 using Velopack.Sources;
 
-using AppUpdateInfo = ViscaCamLink.Updater.UpdateInfo;
-
 
 
 public class VelopackUpdateService : IUpdateService
@@ -20,7 +18,7 @@ public class VelopackUpdateService : IUpdateService
 
     private Velopack.UpdateInfo? _pendingUpdate;
 
-    public event EventHandler<AppUpdateInfo>? UpdateAvailable;
+    public event EventHandler<UpdateInfo>? UpdateAvailable;
 
     public bool HasPendingUpdate => _pendingUpdate is not null;
 
@@ -38,7 +36,7 @@ public class VelopackUpdateService : IUpdateService
             _pendingUpdate = newVersion;
 
             var targetVersion = Version.Parse(newVersion.TargetFullRelease.Version.ToString());
-            var updateInfo = new AppUpdateInfo(
+            var updateInfo = new UpdateInfo(
                 Version: targetVersion,
                 ReleaseNotes: newVersion.TargetFullRelease.NotesMarkdown ?? string.Empty,
                 InstallerAssetUrl: string.Empty,

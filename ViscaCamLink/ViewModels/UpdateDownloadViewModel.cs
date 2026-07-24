@@ -7,8 +7,6 @@ using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Services;
-using ViscaCamLink.Updater;
-
 public class UpdateDownloadViewModel : ViewModelBase
 {
     private readonly UpdateInfo _updateInfo;

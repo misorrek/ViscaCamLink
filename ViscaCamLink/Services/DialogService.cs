@@ -2,7 +2,6 @@ namespace ViscaCamLink.Services;
 
 using System.Reflection;
 
-using ViscaCamLink.Updater;
 using ViscaCamLink.ViewModels;
 using ViscaCamLink.Views;
 
