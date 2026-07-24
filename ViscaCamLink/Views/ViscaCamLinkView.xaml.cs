@@ -16,11 +16,8 @@ using WpfAnimatedGif;
 
 public partial class ViscaCamLinkView : Window
 {
-    [LibraryImport("user32.dll", EntryPoint = "GetWindowLongA")]
-    private static partial int GetWindowLong(IntPtr hWnd, int nIndex);
-
-    [LibraryImport("user32.dll", EntryPoint = "SetWindowLongA")]
-    private static partial int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    private const int GWL_STYLE = -16;
+    private const int WS_MAXIMIZEBOX = 0x10000;
 
     private readonly ISettingsService _settingsService;
 
@@ -45,44 +42,6 @@ public partial class ViscaCamLinkView : Window
         Closing += OnClosing;
     }
 
-    private void OnSourceInitialized(object? sender, EventArgs e)
-    {
-        const int GWL_STYLE = -16;
-        const int WS_MAXIMIZEBOX = 0x10000;
-
-        if (sender is Window window)
-        {
-            var hwnd = new WindowInteropHelper(window).Handle;
-            var value = GetWindowLong(hwnd, GWL_STYLE);
-
-            _ = SetWindowLong(hwnd, GWL_STYLE, (int)(value & ~WS_MAXIMIZEBOX));
-        }
-
-        if (_settingsService.WindowPlacement is { } placement)
-        {
-            _restoredWindowState = WindowPlacementHelper.Restore(this, placement);
-        }
-    }
-
-    private void OnContentRendered(object? sender, EventArgs e)
-    {
-        // Apply maximized state after first render to avoid DWM black flash.
-        if (_restoredWindowState == WindowState.Maximized)
-            WindowState = WindowState.Maximized;
-        ContentRendered -= OnContentRendered;
-    }
-
-    private void OnClosing(object? sender, CancelEventArgs e)
-    {
-        _settingsService.WindowPlacement = WindowPlacementHelper.Save(this);
-        _settingsService.Save();
-    }
-
-    private void Window_LayoutUpdated(object sender, EventArgs e)
-    {
-        SizeToContent = SizeToContent.Height;
-    }
-
     public void ShowUpdateButton()
     {
         var updateButtonTemplate = UpdateButton.Template;
@@ -95,19 +54,65 @@ public partial class ViscaCamLinkView : Window
         animationController.Play();
     }
 
-    private void Window_Deactivated(object sender, EventArgs e)
+    private void OnSourceInitialized(object? sender, EventArgs eventArgs)
     {
-        if (DataContext is ViscaCamLinkViewModel vm && vm.Movement.IsMousePanning)
-            vm.Movement.MousePanEndCommand.Execute(null);
-    }
-
-    private void Window_Activated(object sender, EventArgs e)
-    {
-        if (DataContext is ViscaCamLinkViewModel vm &&
-            vm.Movement.IsMousePanning &&
-            Mouse.LeftButton == MouseButtonState.Released)
+        if (sender is Window window)
         {
-            vm.Movement.MousePanEndCommand.Execute(null);
+            var windowHandle = new WindowInteropHelper(window).Handle;
+            var windowStyle = GetWindowLong(windowHandle, GWL_STYLE);
+
+            _ = SetWindowLong(windowHandle, GWL_STYLE, (int)(windowStyle & ~WS_MAXIMIZEBOX));
+        }
+
+        if (_settingsService.WindowPlacement is { } placement)
+        {
+            _restoredWindowState = WindowPlacementHelper.Restore(this, placement);
         }
     }
+
+    private void OnContentRendered(object? sender, EventArgs eventArgs)
+    {
+        // Apply maximized state after first render to avoid the DWM black flash.
+        if (_restoredWindowState == WindowState.Maximized)
+        {
+            WindowState = WindowState.Maximized;
+        }
+
+        ContentRendered -= OnContentRendered;
+    }
+
+    private void OnClosing(object? sender, CancelEventArgs eventArgs)
+    {
+        _settingsService.WindowPlacement = WindowPlacementHelper.Save(this);
+        _settingsService.Save();
+    }
+
+    private void Window_LayoutUpdated(object sender, EventArgs eventArgs)
+    {
+        SizeToContent = SizeToContent.Height;
+    }
+
+    private void Window_Deactivated(object sender, EventArgs eventArgs)
+    {
+        if (DataContext is ViscaCamLinkViewModel viewModel && viewModel.Movement.IsMousePanning)
+        {
+            viewModel.Movement.MousePanEndCommand.Execute(null);
+        }
+    }
+
+    private void Window_Activated(object sender, EventArgs eventArgs)
+    {
+        if (DataContext is ViscaCamLinkViewModel viewModel &&
+            viewModel.Movement.IsMousePanning &&
+            Mouse.LeftButton == MouseButtonState.Released)
+        {
+            viewModel.Movement.MousePanEndCommand.Execute(null);
+        }
+    }
+
+    [LibraryImport("user32.dll", EntryPoint = "GetWindowLongA")]
+    private static partial int GetWindowLong(IntPtr hWnd, int nIndex);
+
+    [LibraryImport("user32.dll", EntryPoint = "SetWindowLongA")]
+    private static partial int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 }

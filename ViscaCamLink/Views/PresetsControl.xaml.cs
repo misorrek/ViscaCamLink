@@ -15,45 +15,48 @@ public partial class PresetsControl : UserControl
         InitializeComponent();
     }
 
-    protected override void OnPreviewKeyDown(KeyEventArgs e)
+    protected override void OnPreviewKeyDown(KeyEventArgs eventArgs)
     {
-        base.OnPreviewKeyDown(e);
+        base.OnPreviewKeyDown(eventArgs);
 
-        if (DataContext is not PresetsViewModel vm) return;
-
-        if (e.Key == Key.Return)
+        if (DataContext is not PresetsViewModel viewModel)
         {
-            if (vm.RenamingSlotIndex >= 0)
+            return;
+        }
+
+        if (eventArgs.Key == Key.Return)
+        {
+            if (viewModel.RenamingSlotIndex >= 0)
             {
-                vm.MemoryRenameConfirmCommand.Execute(null);
-                e.Handled = true;
+                viewModel.MemoryRenameConfirmCommand.Execute(null);
+                eventArgs.Handled = true;
             }
-            else if (vm.PresetGroups.Any(g => g.IsRenaming))
+            else if (viewModel.PresetGroups.Any(group => group.IsRenaming))
             {
-                vm.GroupRenameConfirmCommand.Execute(null);
-                e.Handled = true;
+                viewModel.GroupRenameConfirmCommand.Execute(null);
+                eventArgs.Handled = true;
             }
         }
-        else if (e.Key == Key.Escape)
+        else if (eventArgs.Key == Key.Escape)
         {
-            if (vm.RenamingSlotIndex >= 0)
+            if (viewModel.RenamingSlotIndex >= 0)
             {
-                vm.MemoryRenameCancelCommand.Execute(null);
-                e.Handled = true;
+                viewModel.MemoryRenameCancelCommand.Execute(null);
+                eventArgs.Handled = true;
             }
-            else if (vm.PresetGroups.Any(g => g.IsRenaming))
+            else if (viewModel.PresetGroups.Any(group => group.IsRenaming))
             {
-                vm.GroupRenameCancelCommand.Execute(null);
-                e.Handled = true;
+                viewModel.GroupRenameCancelCommand.Execute(null);
+                eventArgs.Handled = true;
             }
         }
     }
 
-    private void RenameTextBox_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    private void RenameTextBox_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs eventArgs)
     {
-        if (sender is TextBox tb && (bool)e.NewValue)
+        if (sender is TextBox textBox && eventArgs.NewValue is true)
         {
-            Dispatcher.InvokeAsync(() => tb.Focus(), DispatcherPriority.Input);
+            Dispatcher.InvokeAsync(() => textBox.Focus(), DispatcherPriority.Input);
         }
     }
 }

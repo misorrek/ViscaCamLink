@@ -13,7 +13,6 @@
         Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"          
         Width="700"
         Height="500"
-        Loaded="Window_Loaded"
         ContentRendered="Window_ContentRendered">
 
     <Window.Resources>

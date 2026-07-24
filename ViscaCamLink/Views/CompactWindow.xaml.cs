@@ -1,6 +1,8 @@
 namespace ViscaCamLink.Views;
 
+using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -14,44 +16,52 @@ public partial class CompactWindow : Window
     public CompactWindow(IWindowModeCoordinator coordinator)
     {
         _coordinator = coordinator;
+
         InitializeComponent();
     }
 
-    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs eventArgs)
     {
         // Skip DragMove if the click originated on a Button (or a child of a Button).
-        DependencyObject? source = e.OriginalSource as DependencyObject;
+        var source = eventArgs.OriginalSource as DependencyObject;
+
         while (source is not null)
         {
-            if (source is System.Windows.Controls.Button) return;
+            if (source is Button)
+            {
+                return;
+            }
+
             source = VisualTreeHelper.GetParent(source);
         }
 
         DragMove();
     }
 
-    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    private void MinimizeButton_Click(object sender, RoutedEventArgs eventArgs)
         => _coordinator.MinimizeCompact();
 
-    private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+    private void MaximizeButton_Click(object sender, RoutedEventArgs eventArgs)
         => _coordinator.ExitCompactMode();
 
-    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    private void CloseButton_Click(object sender, RoutedEventArgs eventArgs)
         => _coordinator.CloseApplication();
 
-    private void Window_Deactivated(object sender, EventArgs e)
+    private void Window_Deactivated(object sender, EventArgs eventArgs)
     {
-        if (DataContext is ViscaCamLinkViewModel vm && vm.Movement.IsMousePanning)
-            vm.Movement.MousePanEndCommand.Execute(null);
+        if (DataContext is ViscaCamLinkViewModel viewModel && viewModel.Movement.IsMousePanning)
+        {
+            viewModel.Movement.MousePanEndCommand.Execute(null);
+        }
     }
 
-    private void Window_Activated(object sender, EventArgs e)
+    private void Window_Activated(object sender, EventArgs eventArgs)
     {
-        if (DataContext is ViscaCamLinkViewModel vm &&
-            vm.Movement.IsMousePanning &&
+        if (DataContext is ViscaCamLinkViewModel viewModel &&
+            viewModel.Movement.IsMousePanning &&
             Mouse.LeftButton == MouseButtonState.Released)
         {
-            vm.Movement.MousePanEndCommand.Execute(null);
+            viewModel.Movement.MousePanEndCommand.Execute(null);
         }
     }
 }

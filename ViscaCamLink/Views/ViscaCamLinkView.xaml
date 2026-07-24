@@ -80,28 +80,28 @@
 
                 <interface:SidebarButton DockPanel.Dock="Top"
                                          Command="{Binding SidebarCommand}"
-                                         CommandParameter="Connection"
+                                         CommandParameter="{x:Static viewmodels:SidebarContainer.Connection}"
                                          Icon="{StaticResource Connection}"
                                          IsActive="{Binding ConnectionContainerVisible}"
                                          Style="{StaticResource SidebarButton}" />
 
                 <interface:SidebarButton DockPanel.Dock="Top"
                                          Command="{Binding SidebarCommand}"
-                                         CommandParameter="Memory"
+                                         CommandParameter="{x:Static viewmodels:SidebarContainer.Memory}"
                                          Icon="{StaticResource Numpad}"
                                          IsActive="{Binding MemoryContainerVisible}"
                                          Style="{StaticResource SidebarButton}" />
 
                 <interface:SidebarButton DockPanel.Dock="Top"
                                          Command="{Binding SidebarCommand}"
-                                         CommandParameter="Move"
+                                         CommandParameter="{x:Static viewmodels:SidebarContainer.Move}"
                                          Icon="{StaticResource MoveArrows}"
                                          IsActive="{Binding MoveContainerVisible}"
                                          Style="{StaticResource SidebarButton}" />
 
                 <interface:SidebarButton DockPanel.Dock="Top"
                                          Command="{Binding SidebarCommand}"
-                                         CommandParameter="Zoom"
+                                         CommandParameter="{x:Static viewmodels:SidebarContainer.Zoom}"
                                          Icon="{StaticResource Zoom}"
                                          IsActive="{Binding ZoomContainerVisible}"
                                          Style="{StaticResource SidebarButton}" />

@@ -1,13 +1,10 @@
-﻿namespace ViscaCamLink.Views;
+namespace ViscaCamLink.Views;
 
 using System;
 using System.Windows;
 
 using WpfAnimatedGif;
 
-/// <summary>
-/// Interaction logic for UpdateView.xaml
-/// </summary>
 public partial class UpdateView : Window
 {
     public UpdateView()
@@ -15,21 +12,11 @@ public partial class UpdateView : Window
         InitializeComponent();
     }
 
-    private void Window_Loaded(Object sender, RoutedEventArgs e)
-    {
-        //StartUpdateAnimation();
-    }
-
-    private void StartUpdateAnimation()
+    private void Window_ContentRendered(object sender, EventArgs eventArgs)
     {
         var animationController = ImageBehavior.GetAnimationController(UpdateAnimationImage);
 
         animationController.GotoFrame(0);
         animationController.Play();
     }
-
-    private void Window_ContentRendered(Object sender, EventArgs e)
-    {
-        StartUpdateAnimation();
-    }
-}    
+}

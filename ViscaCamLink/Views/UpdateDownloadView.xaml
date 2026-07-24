@@ -37,7 +37,7 @@
                 <StackPanel Visibility="{Binding IsDownloading, Converter={StaticResource FalseToCollapsedConverter}}">
                     <TextBlock Text="{Binding [Updater_Downloading], Source={x:Static localization:TranslationSource.Instance}}"
                                Style="{StaticResource HeaderTextBlock}" />
-                    <TextBlock Text="{Binding AssetName}"
+                    <TextBlock Text="{Binding VersionText}"
                                Margin="0,4,0,0"
                                Style="{StaticResource BaseTextBlock}" />
                     <ProgressBar Height="8"
