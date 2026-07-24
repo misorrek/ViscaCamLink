@@ -53,7 +53,7 @@ public sealed class CameraConnectionServiceTests
 
         statuses.ShouldBe([ConnectionStatus.Working, ConnectionStatus.Ok]);
         service.Status.ShouldBe(ConnectionStatus.Ok);
-        _viscaController.Verify(v => v.Reconnect(It.IsAny<CancellationToken>(), "192.168.1.100", 5678), Times.Once);
+        _viscaController.Verify(v => v.ReconnectAsync("192.168.1.100", 5678, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class CameraConnectionServiceTests
     {
         _viscaController.Setup(v => v.Connected).Returns((bool?)null);
         _viscaController
-            .Setup(v => v.Reconnect(It.IsAny<CancellationToken>(), It.IsAny<string>(), It.IsAny<int>()))
+            .Setup(v => v.ReconnectAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("network error"));
 
         using var service = CreateSut();
@@ -88,7 +88,7 @@ public sealed class CameraConnectionServiceTests
     {
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
+            .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(PowerStatus.On);
 
         using var service = CreateSut(FastInterval);
@@ -117,7 +117,7 @@ public sealed class CameraConnectionServiceTests
     {
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
+            .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(PowerStatus.On);
 
         using var service = CreateSut(FastInterval);
@@ -139,7 +139,7 @@ public sealed class CameraConnectionServiceTests
     {
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
+            .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("connection lost"));
 
         using var service = CreateSut(FastInterval);
@@ -163,7 +163,7 @@ public sealed class CameraConnectionServiceTests
 
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
+            .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() =>
             {
                 if (probeCount++ == 0)
@@ -202,7 +202,7 @@ public sealed class CameraConnectionServiceTests
     {
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
-            .Setup(v => v.GetPowerStatus(It.IsAny<CancellationToken>()))
+            .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("connection lost"));
 
         var service = CreateSut(FastInterval);

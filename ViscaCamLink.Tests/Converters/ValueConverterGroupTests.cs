@@ -37,12 +37,12 @@ public sealed class ValueConverterGroupTests
     }
 
     [Fact]
-    public void ConvertBack_ThrowsNotImplementedException()
+    public void ConvertBack_ThrowsNotSupportedException()
     {
         var group = new ValueConverterGroup();
 
         void act() => group.ConvertBack(true, typeof(bool), null!, CultureInfo.InvariantCulture);
 
-        Should.Throw<NotImplementedException>(act);
+        Should.Throw<NotSupportedException>(act);
     }
 }

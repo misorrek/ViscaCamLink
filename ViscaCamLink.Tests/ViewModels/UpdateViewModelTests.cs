@@ -5,7 +5,7 @@ using System;
 using Shouldly;
 
 using ViscaCamLink.Resources;
-using ViscaCamLink.Updater;
+using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;
 
 using Xunit;

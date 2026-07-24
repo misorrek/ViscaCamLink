@@ -49,6 +49,17 @@ public sealed class CommandTests
     }
 
     [Fact]
+    public void Execute_WhenCanExecuteReturnsFalse_DoesNotExecute()
+    {
+        var executed = false;
+        var command = new Command(() => executed = true, () => false);
+
+        command.Execute(null);
+
+        executed.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Invalidate_Success()
     {
         var command = new Command(() => { });

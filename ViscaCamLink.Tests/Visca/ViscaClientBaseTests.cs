@@ -94,7 +94,7 @@ public sealed class ViscaClientBaseTests
 
         public override bool? IsConnected() => true;
 
-        public override Task Reconnect(CancellationToken cancellationToken, string? host = null, int? port = null) =>
+        public override Task ReconnectAsync(string? host = null, int? port = null, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
 
         protected override Task SendPacketAsync(ViscaPacket packet, CancellationToken cancellationToken) =>

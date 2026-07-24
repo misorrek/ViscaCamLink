@@ -8,30 +8,34 @@ using Moq;
 
 using Shouldly;
 
-using ViscaCamLink.Updater;
+using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;
 
 using Xunit;
 
 public sealed class UpdateDownloadViewModelTests
 {
-    private const string AssetUrl = "https://example.test/files/installer.exe";
+    private static readonly UpdateInfo TestUpdateInfo = new(
+        Version: new Version(2, 0, 0),
+        ReleaseNotes: string.Empty,
+        InstallerAssetUrl: string.Empty,
+        PortableAssetUrl: null,
+        HtmlUrl: "https://example.test/releases/v2.0.0");
 
-    private readonly Mock<IUpdateDownloader> _downloader = new();
-    private readonly Mock<IInstallerLauncher> _launcher = new();
+    private readonly Mock<IUpdateService> _updateService = new();
     private readonly UpdateDownloadViewModel _viewModel;
 
     private bool _closed;
 
     public UpdateDownloadViewModelTests()
     {
-        _viewModel = new UpdateDownloadViewModel(AssetUrl, _downloader.Object, _launcher.Object, () => _closed = true);
+        _viewModel = new UpdateDownloadViewModel(TestUpdateInfo, _updateService.Object, () => _closed = true);
     }
 
     [Fact]
-    public void AssetName_Success()
+    public void VersionText_Success()
     {
-        _viewModel.AssetName.ShouldBe("installer.exe");
+        _viewModel.VersionText.ShouldBe("v2.0.0");
     }
 
     [Fact]
@@ -42,10 +46,27 @@ public sealed class UpdateDownloadViewModelTests
     }
 
     [Fact]
+    public async Task StartDownloadAsync_Success()
+    {
+        IProgress<int>? capturedProgress = null;
+
+        _updateService
+            .Setup(u => u.DownloadAndApplyAsync(It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()))
+            .Callback<IProgress<int>?, CancellationToken>((progress, _) => capturedProgress = progress)
+            .Returns(Task.CompletedTask);
+
+        await _viewModel.StartDownloadAsync();
+
+        capturedProgress.ShouldNotBeNull();
+        _viewModel.HasError.ShouldBeFalse();
+        _updateService.Verify(u => u.DownloadAndApplyAsync(It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task StartDownloadAsync_WhenDownloadIsCancelled_InvokesCloseHandler()
     {
-        _downloader
-            .Setup(d => d.DownloadAsync(AssetUrl, "installer.exe", It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()))
+        _updateService
+            .Setup(u => u.DownloadAndApplyAsync(It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new OperationCanceledException());
 
         await _viewModel.StartDownloadAsync();
@@ -57,8 +78,8 @@ public sealed class UpdateDownloadViewModelTests
     [Fact]
     public async Task StartDownloadAsync_WhenDownloadFails_SetsErrorState()
     {
-        _downloader
-            .Setup(d => d.DownloadAsync(AssetUrl, "installer.exe", It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()))
+        _updateService
+            .Setup(u => u.DownloadAndApplyAsync(It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("network broke"));
 
         await _viewModel.StartDownloadAsync();
@@ -81,15 +102,13 @@ public sealed class UpdateDownloadViewModelTests
     [Fact]
     public void RetryCommand_Success()
     {
-        _downloader
-            .Setup(d => d.DownloadAsync(AssetUrl, "installer.exe", It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()))
+        _updateService
+            .Setup(u => u.DownloadAndApplyAsync(It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("still broken"));
 
         _viewModel.RetryCommand.Execute(null);
 
-        _downloader.Verify(
-            d => d.DownloadAsync(AssetUrl, "installer.exe", It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()),
-            Times.Once);
+        _updateService.Verify(u => u.DownloadAndApplyAsync(It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()), Times.Once);
         _viewModel.HasError.ShouldBeTrue();
     }
 }

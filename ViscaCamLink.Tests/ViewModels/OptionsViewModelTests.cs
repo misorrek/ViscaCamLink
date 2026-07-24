@@ -82,13 +82,15 @@ public sealed class OptionsViewModelTests
 
         _viewModel.OkCommand.Execute(null);
 
-        _settings.Verify(s => s.ApplyOptions(
+        var expectedSelection = new OptionsSelection(
             Language.German,
-            false,
-            false,
-            true,
-            false,
-            Theme.Light), Times.Once);
+            Theme.Light,
+            UseCompactView: false,
+            UsePresetGroups: true,
+            UseNumpadLayout: false,
+            UseGlobalHotKeys: false);
+
+        _settings.Verify(s => s.ApplyOptions(expectedSelection), Times.Once);
         _hotKeyService.Verify(h => h.ApplyBindings(It.IsAny<IReadOnlyList<HotKeyBinding>>()), Times.Once);
         _closed.ShouldBeTrue();
     }
@@ -108,13 +110,7 @@ public sealed class OptionsViewModelTests
 
         viewModel.OkCommand.Execute(null);
 
-        _settings.Verify(s => s.ApplyOptions(
-            It.IsAny<Language>(),
-            It.IsAny<bool>(),
-            It.IsAny<bool>(),
-            It.IsAny<bool>(),
-            It.IsAny<bool>(),
-            It.IsAny<Theme>()), Times.Never);
+        _settings.Verify(s => s.ApplyOptions(It.IsAny<OptionsSelection>()), Times.Never);
         _closed.ShouldBeFalse();
     }
 
@@ -124,13 +120,7 @@ public sealed class OptionsViewModelTests
         _viewModel.CancelCommand.Execute(null);
 
         _closed.ShouldBeTrue();
-        _settings.Verify(s => s.ApplyOptions(
-            It.IsAny<Language>(),
-            It.IsAny<bool>(),
-            It.IsAny<bool>(),
-            It.IsAny<bool>(),
-            It.IsAny<bool>(),
-            It.IsAny<Theme>()), Times.Never);
+        _settings.Verify(s => s.ApplyOptions(It.IsAny<OptionsSelection>()), Times.Never);
     }
 
     [Fact]

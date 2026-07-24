@@ -1,14 +1,11 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.3.32804.467
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.7.11903.348 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViscaCamLink", "ViscaCamLink\ViscaCamLink.csproj", "{47B7098C-99B1-498E-8BAE-0BA99191F1D9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViscaCamLink.Tests", "ViscaCamLink.Tests\ViscaCamLink.Tests.csproj", "{B021D576-0BC7-4B5C-8706-C70D1B81C32F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViscaCamLink.Updater", "ViscaCamLink.Updater\ViscaCamLink.Updater.csproj", "{71609D9A-2B20-41EA-BC41-A5110426244D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViscaCamLink.Updater.Tests", "ViscaCamLink.Updater.Tests\ViscaCamLink.Updater.Tests.csproj", "{CFE0D3F0-A8B3-4847-9ABA-3F6706CFB236}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViscaCamLink.Simulator", "ViscaCamLink.Simulator\ViscaCamLink.Simulator.csproj", "{5CD84CFA-99AD-4741-A4C1-C5FDB68CBF59}"
 EndProject
@@ -26,14 +23,6 @@ Global
 		{B021D576-0BC7-4B5C-8706-C70D1B81C32F}.Debug|x64.Build.0 = Debug|Any CPU
 		{B021D576-0BC7-4B5C-8706-C70D1B81C32F}.Release|x64.ActiveCfg = Release|Any CPU
 		{B021D576-0BC7-4B5C-8706-C70D1B81C32F}.Release|x64.Build.0 = Release|Any CPU
-		{71609D9A-2B20-41EA-BC41-A5110426244D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{71609D9A-2B20-41EA-BC41-A5110426244D}.Debug|x64.Build.0 = Debug|Any CPU
-		{71609D9A-2B20-41EA-BC41-A5110426244D}.Release|x64.ActiveCfg = Release|Any CPU
-		{71609D9A-2B20-41EA-BC41-A5110426244D}.Release|x64.Build.0 = Release|Any CPU
-		{CFE0D3F0-A8B3-4847-9ABA-3F6706CFB236}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CFE0D3F0-A8B3-4847-9ABA-3F6706CFB236}.Debug|x64.Build.0 = Debug|Any CPU
-		{CFE0D3F0-A8B3-4847-9ABA-3F6706CFB236}.Release|x64.ActiveCfg = Release|Any CPU
-		{CFE0D3F0-A8B3-4847-9ABA-3F6706CFB236}.Release|x64.Build.0 = Release|Any CPU
 		{5CD84CFA-99AD-4741-A4C1-C5FDB68CBF59}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{5CD84CFA-99AD-4741-A4C1-C5FDB68CBF59}.Debug|x64.Build.0 = Debug|Any CPU
 		{5CD84CFA-99AD-4741-A4C1-C5FDB68CBF59}.Release|x64.ActiveCfg = Release|Any CPU

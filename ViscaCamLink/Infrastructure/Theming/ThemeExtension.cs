@@ -1,6 +1,5 @@
-namespace ViscaCamLink.Extensions;
+namespace ViscaCamLink.Infrastructure.Theming;
 
-using ViscaCamLink.Infrastructure.Theming;
 using ViscaCamLink.Resources;
 
 public static class ThemeExtension

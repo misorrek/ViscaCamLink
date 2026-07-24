@@ -27,7 +27,7 @@ public sealed class ViscaControllerTests
             .Setup(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreateAckPacket());
 
-        _controller = new ViscaController(_viscaClient.Object, NullLogger.Instance);
+        _controller = new ViscaController(_viscaClient.Object, NullLogger<ViscaController>.Instance);
     }
 
     [Fact]
@@ -57,19 +57,19 @@ public sealed class ViscaControllerTests
     }
 
     [Fact]
-    public async Task Reconnect_Success()
+    public async Task ReconnectAsync_Success()
     {
-        await _controller.Reconnect(CancellationToken.None, "10.0.0.1", 5678);
+        await _controller.ReconnectAsync("10.0.0.1", 5678);
 
-        _viscaClient.Verify(c => c.Reconnect(It.IsAny<CancellationToken>(), "10.0.0.1", 5678), Times.Once);
+        _viscaClient.Verify(c => c.ReconnectAsync("10.0.0.1", 5678, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task PowerOn_Success()
+    public async Task PowerOnAsync_Success()
     {
         var sent = CapturePacket();
 
-        await _controller.PowerOn();
+        await _controller.PowerOnAsync();
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -78,11 +78,11 @@ public sealed class ViscaControllerTests
     }
 
     [Fact]
-    public async Task PowerOff_Success()
+    public async Task PowerOffAsync_Success()
     {
         var sent = CapturePacket();
 
-        await _controller.PowerOff();
+        await _controller.PowerOffAsync();
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -93,47 +93,47 @@ public sealed class ViscaControllerTests
     [Theory]
     [InlineData(PowerStatus.On)]
     [InlineData(PowerStatus.Standby)]
-    public async Task GetPowerStatus_Success(PowerStatus powerStatus)
+    public async Task GetPowerStatusAsync_Success(PowerStatus powerStatus)
     {
         SetupResponse([0x90, 0x50, (byte)powerStatus, 0xff]);
 
-        var status = await _controller.GetPowerStatus();
+        var status = await _controller.GetPowerStatusAsync();
 
         status.ShouldBe(powerStatus);
     }
 
     [Fact]
-    public async Task GetPowerStatus_WhenResponseIsTooShort_ThrowsViscaProtocolException()
+    public async Task GetPowerStatusAsync_WhenResponseIsTooShort_ThrowsViscaProtocolException()
     {
         SetupResponse([0x90, 0x50, 0xff]);
 
-        Task<PowerStatus> act() => _controller.GetPowerStatus();
+        Task<PowerStatus> act() => _controller.GetPowerStatusAsync();
 
         await Should.ThrowAsync<ViscaProtocolException>((Func<Task<PowerStatus>>)act);
     }
 
     [Fact]
-    public async Task GetPowerStatus_WhenStatusValueIsUnknown_ThrowsViscaProtocolException()
+    public async Task GetPowerStatusAsync_WhenStatusValueIsUnknown_ThrowsViscaProtocolException()
     {
         SetupResponse([0x90, 0x50, 0x7f, 0xff]);
 
-        Task<PowerStatus> act() => _controller.GetPowerStatus();
+        Task<PowerStatus> act() => _controller.GetPowerStatusAsync();
 
         await Should.ThrowAsync<ViscaProtocolException>((Func<Task<PowerStatus>>)act);
     }
 
     [Fact]
-    public async Task GetUpdatedPowerStatus_Success()
+    public async Task GetUpdatedPowerStatusAsync_Success()
     {
         SetupResponse([0x90, 0x50, (byte)PowerStatus.Standby, 0xff]);
 
-        var status = await _controller.GetUpdatedPowerStatus(PowerStatus.On);
+        var status = await _controller.GetUpdatedPowerStatusAsync(PowerStatus.On);
 
         status.ShouldBe(PowerStatus.Standby);
     }
 
     [Fact]
-    public async Task GetUpdatedPowerStatus_WhenCancelledWhileStatusIsUnchanged_ThrowsOperationCanceledException()
+    public async Task GetUpdatedPowerStatusAsync_WhenCancelledWhileStatusIsUnchanged_ThrowsOperationCanceledException()
     {
         SetupResponse([0x90, 0x50, (byte)PowerStatus.On, 0xff]);
 
@@ -141,7 +141,7 @@ public sealed class ViscaControllerTests
 
         cancellationSource.Cancel();
 
-        Task<PowerStatus> act() => _controller.GetUpdatedPowerStatus(PowerStatus.On, cancellationSource.Token);
+        Task<PowerStatus> act() => _controller.GetUpdatedPowerStatusAsync(PowerStatus.On, cancellationSource.Token);
 
         await Should.ThrowAsync<OperationCanceledException>((Func<Task<PowerStatus>>)act);
     }
@@ -150,11 +150,11 @@ public sealed class ViscaControllerTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(5)]
-    public async Task MemorySet_Success(byte slot)
+    public async Task MemorySetAsync_Success(byte slot)
     {
         var sent = CapturePacket();
 
-        await _controller.MemorySet(slot);
+        await _controller.MemorySetAsync(slot);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -166,11 +166,11 @@ public sealed class ViscaControllerTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(5)]
-    public async Task MemoryRecall_Success(byte slot)
+    public async Task MemoryRecallAsync_Success(byte slot)
     {
         var sent = CapturePacket();
 
-        await _controller.MemoryRecall(slot);
+        await _controller.MemoryRecallAsync(slot);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -179,11 +179,11 @@ public sealed class ViscaControllerTests
     }
 
     [Fact]
-    public async Task GoHome_Success()
+    public async Task GoHomeAsync_Success()
     {
         var sent = CapturePacket();
 
-        await _controller.GoHome();
+        await _controller.GoHomeAsync();
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -195,7 +195,7 @@ public sealed class ViscaControllerTests
     [InlineData(PanTiltDirection.PanRightTiltUp, 0x10, 0x08, ViscaProtocol.DirectionPositive, ViscaProtocol.DirectionNegative)]
     [InlineData(PanTiltDirection.PanLeftTiltDown, 0x05, 0x03, ViscaProtocol.DirectionNegative, ViscaProtocol.DirectionPositive)]
     [InlineData(PanTiltDirection.None, 0x00, 0x00, ViscaProtocol.DirectionStop, ViscaProtocol.DirectionStop)]
-    public async Task ContinuousPanTilt_Success(
+    public async Task ContinuousPanTiltAsync_Success(
         PanTiltDirection direction,
         byte panSpeed,
         byte tiltSpeed,
@@ -204,7 +204,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.ContinuousPanTilt(direction, panSpeed, tiltSpeed);
+        await _controller.ContinuousPanTiltAsync(direction, panSpeed, tiltSpeed);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -217,11 +217,11 @@ public sealed class ViscaControllerTests
     [InlineData(ZoomDirection.In, 0x05, ViscaProtocol.ZoomInMask | 0x05)]
     [InlineData(ZoomDirection.Out, 0x03, ViscaProtocol.ZoomOutMask | 0x03)]
     [InlineData(ZoomDirection.None, 0x00, ViscaProtocol.ZoomStop)]
-    public async Task ContinuousZoom_Success(ZoomDirection direction, byte zoomSpeed, byte expectedZoomByte)
+    public async Task ContinuousZoomAsync_Success(ZoomDirection direction, byte zoomSpeed, byte expectedZoomByte)
     {
         var sent = CapturePacket();
 
-        await _controller.ContinuousZoom(direction, zoomSpeed);
+        await _controller.ContinuousZoomAsync(direction, zoomSpeed);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [

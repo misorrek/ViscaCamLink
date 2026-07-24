@@ -3,7 +3,6 @@ namespace ViscaCamLink.Infrastructure.Localization;
 using System.Globalization;
 using System.Threading;
 
-using ViscaCamLink.Extensions;
 using ViscaCamLink.Resources;
 
 public static class LocalizationHelper
@@ -12,7 +11,7 @@ public static class LocalizationHelper
     {
         var culture = language == Language.System
             ? CultureInfo.CurrentCulture
-            : CultureInfo.GetCultureInfo(language.GetDescription());
+            : CultureInfo.GetCultureInfo(language.GetLanguageCode());
 
         Thread.CurrentThread.CurrentCulture = culture;
         Thread.CurrentThread.CurrentUICulture = culture;

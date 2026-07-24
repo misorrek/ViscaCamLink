@@ -1,6 +1,5 @@
 namespace ViscaCamLink.ViewModels;
 
-using ViscaCamLink.Extensions;
 using ViscaCamLink.Infrastructure.Localization;
 
 public class LanguageItem(Language language)

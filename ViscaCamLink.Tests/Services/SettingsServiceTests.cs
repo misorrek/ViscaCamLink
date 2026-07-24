@@ -184,13 +184,13 @@ public sealed class SettingsServiceTests : IDisposable
     [Fact]
     public void ApplyOptions_Success()
     {
-        _settingsService.ApplyOptions(
+        _settingsService.ApplyOptions(new OptionsSelection(
             Language.German,
-            numpadLayout: false,
-            globalHotKeys: false,
-            usePresetGroups: false,
-            minimizeToCompactWindow: false,
-            theme: Theme.Dark);
+            Theme.Dark,
+            UseCompactView: false,
+            UsePresetGroups: false,
+            UseNumpadLayout: false,
+            UseGlobalHotKeys: false));
 
         _settingsService.Language.ShouldBe(Language.German);
         _settingsService.UseNumpadLayout.ShouldBeFalse();
@@ -206,13 +206,13 @@ public sealed class SettingsServiceTests : IDisposable
     [Fact]
     public void ApplyOptions_WhenNothingChanged_DoesNotSaveOrApplyCallbacks()
     {
-        _settingsService.ApplyOptions(
+        _settingsService.ApplyOptions(new OptionsSelection(
             Language.System,
-            numpadLayout: true,
-            globalHotKeys: true,
-            usePresetGroups: true,
-            minimizeToCompactWindow: true,
-            theme: Theme.System);
+            Theme.System,
+            UseCompactView: true,
+            UsePresetGroups: true,
+            UseNumpadLayout: true,
+            UseGlobalHotKeys: true));
 
         _appliedLanguages.ShouldBeEmpty();
         _appliedThemes.ShouldBeEmpty();

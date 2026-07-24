@@ -1,6 +1,5 @@
 namespace ViscaCamLink.ViewModels;
 
-using ViscaCamLink.Extensions;
 using ViscaCamLink.Infrastructure.Theming;
 
 public class ThemeItem(Theme theme)

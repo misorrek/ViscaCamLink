@@ -56,7 +56,7 @@ public sealed class CameraMovementServiceTests
         await _movementService.PanTiltAsync(PanTiltDirection.PanRightTiltDown, 10, 5);
 
         _viscaController.Verify(
-            v => v.ContinuousPanTilt(PanTiltDirection.PanRightTiltDown, 10, 5, It.IsAny<CancellationToken>()),
+            v => v.ContinuousPanTiltAsync(PanTiltDirection.PanRightTiltDown, 10, 5, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -66,7 +66,7 @@ public sealed class CameraMovementServiceTests
         await _movementService.StopPanTiltAsync();
 
         _viscaController.Verify(
-            v => v.ContinuousPanTilt(PanTiltDirection.None, 0, 0, It.IsAny<CancellationToken>()),
+            v => v.ContinuousPanTiltAsync(PanTiltDirection.None, 0, 0, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -79,7 +79,7 @@ public sealed class CameraMovementServiceTests
         await _movementService.ZoomAsync(zoomDirection, speed);
 
         _viscaController.Verify(
-            v => v.ContinuousZoom(zoomDirection, speed, It.IsAny<CancellationToken>()),
+            v => v.ContinuousZoomAsync(zoomDirection, speed, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -88,6 +88,6 @@ public sealed class CameraMovementServiceTests
     {
         await _movementService.GoHomeAsync();
 
-        _viscaController.Verify(v => v.GoHome(It.IsAny<CancellationToken>()), Times.Once);
+        _viscaController.Verify(v => v.GoHomeAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

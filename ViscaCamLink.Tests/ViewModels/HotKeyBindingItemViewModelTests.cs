@@ -7,6 +7,7 @@ using Shouldly;
 
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Repositories.HotKeys;
+using ViscaCamLink.Resources;
 using ViscaCamLink.ViewModels;
 
 using Xunit;
@@ -34,7 +35,7 @@ public sealed class HotKeyBindingItemViewModelTests
     {
         var viewModel = CreateViewModel(ModifierKeys.None, Key.None);
 
-        viewModel.GestureText.ShouldBe(TranslationSource.Instance["HotKey_NotSet"]);
+        viewModel.GestureText.ShouldBe(TranslationSource.Instance[nameof(Strings.HotKey_NotSet)]);
     }
 
     [Fact]
@@ -52,7 +53,7 @@ public sealed class HotKeyBindingItemViewModelTests
 
         viewModel.IsCapturing = true;
 
-        viewModel.ButtonText.ShouldBe("Press a key...");
+        viewModel.ButtonText.ShouldBe(Strings.HotKey_PressKey);
     }
 
     [Fact]

@@ -19,6 +19,8 @@ using Xunit;
 
 public sealed class ViscaCamLinkViewModelTests
 {
+    private static readonly Guid DefaultGroupId = Guid.NewGuid();
+
     private readonly Mock<ISettingsService> _settings = new();
     private readonly Mock<ICameraConnectionService> _connectionService = new();
     private readonly Mock<IPowerService> _powerService = new();
@@ -49,8 +51,8 @@ public sealed class ViscaCamLinkViewModelTests
         _movementService.Setup(m => m.MaxPanTiltSpeed).Returns(24);
         _movementService.Setup(m => m.MaxZoomSpeed).Returns(7);
         _presetService.Setup(p => p.Presets).Returns(CreatePresets());
-        _presetService.Setup(p => p.Groups).Returns([new PresetGroup { Id = "default", Name = "Default", Presets = CreatePresets() }]);
-        _presetService.Setup(p => p.ActiveGroupId).Returns("default");
+        _presetService.Setup(p => p.Groups).Returns([new PresetGroup { Id = DefaultGroupId, Name = "Default", Presets = CreatePresets() }]);
+        _presetService.Setup(p => p.ActiveGroupId).Returns(DefaultGroupId);
         _uiDispatcher
             .Setup(d => d.InvokeAsync(It.IsAny<Action>()))
             .Returns<Action>(action =>
@@ -80,7 +82,8 @@ public sealed class ViscaCamLinkViewModelTests
             _movement,
             _zoom,
             _updateService.Object,
-            _dialogService.Object);
+            _dialogService.Object,
+            _uiDispatcher.Object);
     }
 
     [Fact]
@@ -95,11 +98,11 @@ public sealed class ViscaCamLinkViewModelTests
     [Fact]
     public void SidebarCommand_Success()
     {
-        _viewModel.SidebarCommand.Execute("Memory");
+        _viewModel.SidebarCommand.Execute(SidebarContainer.Memory);
 
         _viewModel.MemoryContainerVisible.ShouldBeFalse();
 
-        _viewModel.SidebarCommand.Execute("Memory");
+        _viewModel.SidebarCommand.Execute(SidebarContainer.Memory);
 
         _viewModel.MemoryContainerVisible.ShouldBeTrue();
     }
@@ -111,7 +114,7 @@ public sealed class ViscaCamLinkViewModelTests
         _settings.Object.MoveContainerVisible = false;
         _settings.Object.ZoomContainerVisible = false;
 
-        _viewModel.SidebarCommand.Execute("Connection");
+        _viewModel.SidebarCommand.Execute(SidebarContainer.Connection);
 
         _viewModel.ConnectionContainerVisible.ShouldBeTrue();
     }
@@ -139,6 +142,6 @@ public sealed class ViscaCamLinkViewModelTests
 
     private static List<PresetMetadata> CreatePresets()
     {
-        return [.. Enumerable.Range(0, 10).Select(i => new PresetMetadata { GroupId = "default", SlotIndex = i, Name = i.ToString() })];
+        return [.. Enumerable.Range(0, 10).Select(i => new PresetMetadata { GroupId = DefaultGroupId, SlotIndex = i, Name = i.ToString() })];
     }
 }

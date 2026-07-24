@@ -17,6 +17,8 @@ using Xunit;
 
 public sealed class PresetServiceTests
 {
+    private static readonly Guid DefaultGroupId = Guid.NewGuid();
+
     private readonly Mock<IViscaController> _viscaController = new();
     private readonly Mock<IPresetRepository> _repository = new();
     private readonly Mock<ISettingsService> _settingsService = new();
@@ -43,13 +45,13 @@ public sealed class PresetServiceTests
     public void Groups_Success()
     {
         _presetService.Groups.Count.ShouldBe(1);
-        _presetService.Groups[0].Id.ShouldBe("default");
+        _presetService.Groups[0].Id.ShouldBe(DefaultGroupId);
     }
 
     [Fact]
     public void ActiveGroupId_Success()
     {
-        _presetService.ActiveGroupId.ShouldBe("default");
+        _presetService.ActiveGroupId.ShouldBe(DefaultGroupId);
     }
 
     [Theory]
@@ -61,7 +63,7 @@ public sealed class PresetServiceTests
     {
         await _presetService.SetMemoryAsync(slot);
 
-        _viscaController.Verify(v => v.MemorySet(slot, It.IsAny<CancellationToken>()), Times.Once);
+        _viscaController.Verify(v => v.MemorySetAsync(slot, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -73,7 +75,7 @@ public sealed class PresetServiceTests
     {
         await _presetService.RecallMemoryAsync(slot);
 
-        _viscaController.Verify(v => v.MemoryRecall(slot, It.IsAny<CancellationToken>()), Times.Once);
+        _viscaController.Verify(v => v.MemoryRecallAsync(slot, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -139,10 +141,10 @@ public sealed class PresetServiceTests
 
         _presetService.PresetsChanged += () => raised = true;
 
-        _presetService.SwitchGroup("nonexistent");
+        _presetService.SwitchGroup(Guid.NewGuid());
 
         raised.ShouldBeFalse();
-        _presetService.ActiveGroupId.ShouldBe("default");
+        _presetService.ActiveGroupId.ShouldBe(DefaultGroupId);
     }
 
     [Fact]
@@ -179,14 +181,14 @@ public sealed class PresetServiceTests
         _presetService.RemoveGroup(secondGroupId);
 
         _presetService.Groups.Count.ShouldBe(1);
-        _presetService.Groups[0].Id.ShouldBe("default");
+        _presetService.Groups[0].Id.ShouldBe(DefaultGroupId);
         raised.ShouldBeTrue();
     }
 
     [Fact]
     public void RemoveGroup_WhenOnlyOneGroupExists_DoesNotRemove()
     {
-        _presetService.RemoveGroup("default");
+        _presetService.RemoveGroup(DefaultGroupId);
 
         _presetService.Groups.Count.ShouldBe(1);
     }
@@ -201,7 +203,7 @@ public sealed class PresetServiceTests
         _presetService.SwitchGroup(secondGroupId);
         _presetService.RemoveGroup(secondGroupId);
 
-        _presetService.ActiveGroupId.ShouldBe("default");
+        _presetService.ActiveGroupId.ShouldBe(DefaultGroupId);
     }
 
     [Fact]
@@ -211,7 +213,7 @@ public sealed class PresetServiceTests
 
         _presetService.GroupsChanged += () => raised = true;
 
-        _presetService.RenameGroup("default", "Main Camera");
+        _presetService.RenameGroup(DefaultGroupId, "Main Camera");
 
         _presetService.Groups[0].Name.ShouldBe("Main Camera");
         raised.ShouldBeTrue();
@@ -221,7 +223,7 @@ public sealed class PresetServiceTests
     [Fact]
     public void RenameGroup_WhenGroupIdIsUnknown_DoesNotSave()
     {
-        _presetService.RenameGroup("nonexistent", "Whatever");
+        _presetService.RenameGroup(Guid.NewGuid(), "Whatever");
 
         _repository.Verify(r => r.SaveForCameraProfile(_cameraId, It.IsAny<PresetData>()), Times.Never);
     }
@@ -231,7 +233,7 @@ public sealed class PresetServiceTests
         var presets = Enumerable.Range(0, 10)
             .Select(i => new PresetMetadata
             {
-                GroupId = "default",
+                GroupId = DefaultGroupId,
                 SlotIndex = i,
                 Name = i.ToString(),
             })
@@ -243,7 +245,7 @@ public sealed class PresetServiceTests
             [
                 new PresetGroup
                 {
-                    Id = "default",
+                    Id = DefaultGroupId,
                     Name = "Default",
                     Presets = presets,
                 },

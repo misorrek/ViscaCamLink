@@ -5,6 +5,7 @@ using Moq;
 using Shouldly;
 
 using ViscaCamLink.Repositories.AppSettings;
+using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;
 
@@ -84,9 +85,9 @@ public sealed class CameraProfilesViewModelTests
         _viewModel.AddCommand.Execute(null);
 
         _viewModel.IsEditing.ShouldBeTrue();
-        _viewModel.EditName.ShouldBe("Camera");
-        _viewModel.EditIp.ShouldBe("192.168.0.1");
-        _viewModel.EditPort.ShouldBe("5678");
+        _viewModel.EditName.ShouldBe(string.Format(Strings.CameraProfile_DefaultName, 3));
+        _viewModel.EditIp.ShouldBe(CameraProfile.DefaultIp);
+        _viewModel.EditPort.ShouldBe(CameraProfile.DefaultPort.ToString());
         _viewModel.AddCommand.CanExecute(null).ShouldBeFalse();
     }
 
@@ -155,6 +156,14 @@ public sealed class CameraProfilesViewModelTests
         var viewModel = CreateSut();
 
         viewModel.DeleteCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void CloseCommand_Success()
+    {
+        _viewModel.CloseCommand.Execute(null);
+
+        _closed.ShouldBeTrue();
     }
 
     private CameraProfilesViewModel CreateSut()

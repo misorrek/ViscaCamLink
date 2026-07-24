@@ -21,6 +21,9 @@ using Xunit;
 
 public sealed class PresetsViewModelTests
 {
+    private static readonly Guid DefaultGroupId = Guid.NewGuid();
+    private static readonly Guid SecondGroupId = Guid.NewGuid();
+
     private readonly Mock<IPresetService> _presetService = new();
     private readonly Mock<ISettingsService> _settings = new();
     private readonly Mock<IHotKeyService> _hotKeyService = new();
@@ -38,13 +41,13 @@ public sealed class PresetsViewModelTests
         _presets = CreatePresets(0, 10);
         _groups =
         [
-            new PresetGroup { Id = "default", Name = "Default", Presets = _presets },
-            new PresetGroup { Id = "second", Name = "Second", Presets = CreatePresets(10, 10) },
+            new PresetGroup { Id = DefaultGroupId, Name = "Default", Presets = _presets },
+            new PresetGroup { Id = SecondGroupId, Name = "Second", Presets = CreatePresets(10, 10) },
         ];
 
         _presetService.Setup(p => p.Presets).Returns(() => _presets);
         _presetService.Setup(p => p.Groups).Returns(() => _groups);
-        _presetService.Setup(p => p.ActiveGroupId).Returns("default");
+        _presetService.Setup(p => p.ActiveGroupId).Returns(DefaultGroupId);
         _settings.SetupProperty(s => s.UseNumpadLayout, true);
         _settings.SetupProperty(s => s.UsePresetGroups, true);
         _settings.Setup(s => s.ActiveCameraProfile).Returns(new CameraProfile());
@@ -84,8 +87,28 @@ public sealed class PresetsViewModelTests
         _viewModel.UseNumpadLayout = false;
 
         _viewModel.GridPresets.Select(p => p.SlotIndex).ShouldBe([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-        _settings.Object.UseNumpadLayout.ShouldBeFalse();
-        _settings.Verify(s => s.Save(), Times.Once);
+    }
+
+    [Fact]
+    public void UseNumpadLayout_WhenSet_DoesNotTouchSettings()
+    {
+        _viewModel.UseNumpadLayout = false;
+
+        _settings.Object.UseNumpadLayout.ShouldBeTrue();
+        _settings.Verify(s => s.Save(), Times.Never);
+    }
+
+    [Fact]
+    public void RefreshLayout_Success()
+    {
+        _settings.Object.UseNumpadLayout = false;
+        _settings.Object.UsePresetGroups = false;
+
+        _viewModel.RefreshLayout();
+
+        _viewModel.UseNumpadLayout.ShouldBeFalse();
+        _viewModel.UsePresetGroups.ShouldBeFalse();
+        _viewModel.GridPresets.Select(p => p.SlotIndex).ShouldBe([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     }
 
     [Fact]
@@ -165,11 +188,11 @@ public sealed class PresetsViewModelTests
     [Fact]
     public void GroupSwitchCommand_Success()
     {
-        _viewModel.GroupSwitchCommand.Execute("second");
+        _viewModel.GroupSwitchCommand.Execute(SecondGroupId);
 
-        _presetService.Verify(p => p.SwitchGroup("second"), Times.Once);
-        _viewModel.PresetGroups.First(g => g.Id == "second").IsActive.ShouldBeTrue();
-        _viewModel.PresetGroups.First(g => g.Id == "default").IsActive.ShouldBeFalse();
+        _presetService.Verify(p => p.SwitchGroup(SecondGroupId), Times.Once);
+        _viewModel.PresetGroups.First(g => g.Id == SecondGroupId).IsActive.ShouldBeTrue();
+        _viewModel.PresetGroups.First(g => g.Id == DefaultGroupId).IsActive.ShouldBeFalse();
     }
 
     [Fact]
@@ -177,16 +200,16 @@ public sealed class PresetsViewModelTests
     {
         _viewModel.GroupAddCommand.Execute(null);
 
-        _presetService.Verify(p => p.AddGroup("Group 3"), Times.Once);
-        _presetService.Verify(p => p.SwitchGroup("second"), Times.Once);
+        _presetService.Verify(p => p.AddGroup(string.Format(Strings.PresetGroup_NewName, 3)), Times.Once);
+        _presetService.Verify(p => p.SwitchGroup(SecondGroupId), Times.Once);
     }
 
     [Fact]
     public void GroupRenameConfirmCommand_Success()
     {
-        _viewModel.GroupRenameCommand.Execute("second");
+        _viewModel.GroupRenameCommand.Execute(SecondGroupId);
 
-        var group = _viewModel.PresetGroups.First(g => g.Id == "second");
+        var group = _viewModel.PresetGroups.First(g => g.Id == SecondGroupId);
 
         _viewModel.RenamingGroupText.ShouldBe("Second");
         group.IsRenaming.ShouldBeTrue();
@@ -195,7 +218,7 @@ public sealed class PresetsViewModelTests
 
         _viewModel.GroupRenameConfirmCommand.Execute(null);
 
-        _presetService.Verify(p => p.RenameGroup("second", "Stage"), Times.Once);
+        _presetService.Verify(p => p.RenameGroup(SecondGroupId, "Stage"), Times.Once);
         group.Name.ShouldBe("Stage");
         group.IsRenaming.ShouldBeFalse();
         _viewModel.RenamingGroupText.ShouldBe(string.Empty);
@@ -204,13 +227,13 @@ public sealed class PresetsViewModelTests
     [Fact]
     public void GroupRenameConfirmCommand_WhenTextIsWhitespace_KeepsOldName()
     {
-        _viewModel.GroupRenameCommand.Execute("second");
+        _viewModel.GroupRenameCommand.Execute(SecondGroupId);
 
         _viewModel.RenamingGroupText = "   ";
 
         _viewModel.GroupRenameConfirmCommand.Execute(null);
 
-        _presetService.Verify(p => p.RenameGroup("second", "Second"), Times.Once);
+        _presetService.Verify(p => p.RenameGroup(SecondGroupId, "Second"), Times.Once);
     }
 
     [Fact]
@@ -264,7 +287,7 @@ public sealed class PresetsViewModelTests
 
         _presetService.Raise(p => p.GroupsChanged += null);
 
-        _viewModel.PresetGroups.ShouldHaveSingleItem().Id.ShouldBe("default");
+        _viewModel.PresetGroups.ShouldHaveSingleItem().Id.ShouldBe(DefaultGroupId);
         _viewModel.HasMultipleGroups.ShouldBeFalse();
     }
 
@@ -283,6 +306,6 @@ public sealed class PresetsViewModelTests
 
     private static List<PresetMetadata> CreatePresets(int startSlot, int count)
     {
-        return [.. Enumerable.Range(startSlot, count).Select(i => new PresetMetadata { GroupId = "default", SlotIndex = i, Name = i.ToString() })];
+        return [.. Enumerable.Range(startSlot, count).Select(i => new PresetMetadata { GroupId = DefaultGroupId, SlotIndex = i, Name = i.ToString() })];
     }
 }

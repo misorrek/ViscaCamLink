@@ -30,7 +30,7 @@ public sealed class StartupUpdateCheckServiceTests
         await service.RunAsync();
 
         delayCalls.ShouldHaveSingleItem().ShouldBe(TimeSpan.FromMilliseconds(10));
-        _updateService.Verify(s => s.StartAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _updateService.Verify(s => s.CheckForUpdateAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class StartupUpdateCheckServiceTests
 
         await service.RunAsync(cancellationSource.Token);
 
-        _updateService.Verify(s => s.StartAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _updateService.Verify(s => s.CheckForUpdateAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class StartupUpdateCheckServiceTests
         Exception? reported = null;
 
         _updateService
-            .Setup(s => s.StartAsync(It.IsAny<CancellationToken>()))
+            .Setup(s => s.CheckForUpdateAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(thrown);
 
         var service = CreateSut(reportException: exception => reported = exception);

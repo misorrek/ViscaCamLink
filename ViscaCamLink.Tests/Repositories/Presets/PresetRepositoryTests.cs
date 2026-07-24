@@ -40,14 +40,14 @@ public sealed class PresetRepositoryTests : IDisposable
 
         data.ShouldNotBeNull();
         data.Groups.Count.ShouldBe(1);
-        data.Groups[0].Id.ShouldBe("default");
-        data.Groups[0].Presets.Count.ShouldBe(10);
+        data.Groups[0].Id.ShouldNotBe(Guid.Empty);
+        data.Groups[0].Presets.Count.ShouldBe(PresetLayout.PresetsPerGroup);
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < PresetLayout.PresetsPerGroup; i++)
         {
             data.Groups[0].Presets[i].SlotIndex.ShouldBe(i);
             data.Groups[0].Presets[i].Name.ShouldBe(i.ToString());
-            data.Groups[0].Presets[i].GroupId.ShouldBe("default");
+            data.Groups[0].Presets[i].GroupId.ShouldBe(data.Groups[0].Id);
         }
     }
 
@@ -59,7 +59,7 @@ public sealed class PresetRepositoryTests : IDisposable
         var data = _repository.LoadForCameraProfile(_cameraId);
 
         data.Groups.Count.ShouldBe(1);
-        data.Groups[0].Id.ShouldBe("default");
+        data.Groups[0].Id.ShouldNotBe(Guid.Empty);
         File.Exists($"{PresetsFilePath}.bak").ShouldBeTrue();
     }
 
@@ -71,7 +71,7 @@ public sealed class PresetRepositoryTests : IDisposable
         var data = _repository.LoadForCameraProfile(_cameraId);
 
         data.Groups.Count.ShouldBe(1);
-        data.Groups[0].Id.ShouldBe("default");
+        data.Groups[0].Id.ShouldNotBe(Guid.Empty);
         File.Exists($"{PresetsFilePath}.bak").ShouldBeTrue();
     }
 
@@ -82,10 +82,10 @@ public sealed class PresetRepositoryTests : IDisposable
             {
                 "groups": [
                     {
-                        "id": "default",
+                        "id": "11111111-1111-1111-1111-111111111111",
                         "name": "Default",
                         "presets": [
-                            { "groupId": "default", "slotIndex": 256, "name": "Bad" }
+                            { "groupId": "11111111-1111-1111-1111-111111111111", "slotIndex": 256, "name": "Bad" }
                         ]
                     }
                 ]
@@ -95,7 +95,7 @@ public sealed class PresetRepositoryTests : IDisposable
         var data = _repository.LoadForCameraProfile(_cameraId);
 
         data.Groups.Count.ShouldBe(1);
-        data.Groups[0].Id.ShouldBe("default");
+        data.Groups[0].Id.ShouldNotBe(Guid.Empty);
         File.Exists($"{PresetsFilePath}.bak").ShouldBeTrue();
     }
 
@@ -106,17 +106,17 @@ public sealed class PresetRepositoryTests : IDisposable
             {
                 "groups": [
                     {
-                        "id": "first",
+                        "id": "11111111-1111-1111-1111-111111111111",
                         "name": "First",
                         "presets": [
-                            { "groupId": "first", "slotIndex": 0, "name": "0" }
+                            { "groupId": "11111111-1111-1111-1111-111111111111", "slotIndex": 0, "name": "0" }
                         ]
                     },
                     {
-                        "id": "second",
+                        "id": "22222222-2222-2222-2222-222222222222",
                         "name": "Second",
                         "presets": [
-                            { "groupId": "second", "slotIndex": 0, "name": "0" }
+                            { "groupId": "22222222-2222-2222-2222-222222222222", "slotIndex": 0, "name": "0" }
                         ]
                     }
                 ]
@@ -126,7 +126,6 @@ public sealed class PresetRepositoryTests : IDisposable
         var data = _repository.LoadForCameraProfile(_cameraId);
 
         data.Groups.Count.ShouldBe(1);
-        data.Groups[0].Id.ShouldBe("default");
         File.Exists($"{PresetsFilePath}.bak").ShouldBeTrue();
     }
 
@@ -161,13 +160,14 @@ public sealed class PresetRepositoryTests : IDisposable
     [Fact]
     public void SaveForCameraProfile_WhenMultipleGroupsExist_RoundTripsAllGroups()
     {
+        var secondGroupId = Guid.NewGuid();
         var data = _repository.LoadForCameraProfile(_cameraId);
 
         data.Groups.Add(new PresetGroup
         {
-            Id = "second",
+            Id = secondGroupId,
             Name = "Second",
-            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = "second", SlotIndex = i, Name = i.ToString() })],
+            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = secondGroupId, SlotIndex = i, Name = i.ToString() })],
         });
 
         _repository.SaveForCameraProfile(_cameraId, data);
@@ -175,7 +175,7 @@ public sealed class PresetRepositoryTests : IDisposable
         var loaded = _repository.LoadForCameraProfile(_cameraId);
 
         loaded.Groups.Count.ShouldBe(2);
-        loaded.Groups[1].Id.ShouldBe("second");
+        loaded.Groups[1].Id.ShouldBe(secondGroupId);
         loaded.Groups[1].Name.ShouldBe("Second");
         loaded.Groups[1].Presets.Count.ShouldBe(10);
         loaded.Groups[1].Presets[0].SlotIndex.ShouldBe(10);
