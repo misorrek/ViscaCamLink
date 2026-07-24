@@ -1,24 +1,14 @@
 namespace ViscaCamLink.ViewModels;
 
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System;
 
-public sealed class PresetGroupViewModel : INotifyPropertyChanged
+public class PresetGroupViewModel(Guid id, string name, bool isActive) : ViewModelBase
 {
-    private string _name;
-    private bool _isActive;
+    private string _name = name;
+    private bool _isActive = isActive;
     private bool _isRenaming;
 
-    public PresetGroupViewModel(string id, string name, bool isActive)
-    {
-        Id = id;
-        _name = name;
-        _isActive = isActive;
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    public string Id { get; }
+    public Guid Id { get; } = id;
 
     public string Name
     {
@@ -31,7 +21,8 @@ public sealed class PresetGroupViewModel : INotifyPropertyChanged
             }
 
             _name = value;
-            OnPropertyChanged();
+
+            NotifyPropertyChanged();
         }
     }
 
@@ -46,7 +37,8 @@ public sealed class PresetGroupViewModel : INotifyPropertyChanged
             }
 
             _isActive = value;
-            OnPropertyChanged();
+
+            NotifyPropertyChanged();
         }
     }
 
@@ -61,12 +53,8 @@ public sealed class PresetGroupViewModel : INotifyPropertyChanged
             }
 
             _isRenaming = value;
-            OnPropertyChanged();
-        }
-    }
 
-    private void OnPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            NotifyPropertyChanged();
+        }
     }
 }

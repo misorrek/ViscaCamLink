@@ -8,7 +8,7 @@ using System.Windows.Input;
 using ViscaCamLink.Infrastructure.HotKeys;
 using ViscaCamLink.Repositories.HotKeys;
 
-public class HotKeyService(
+public sealed class HotKeyService(
     IHotKeyManager hotKeyManager,
     IHotKeyRepository repository,
     ISettingsService settings) : IHotKeyService, IDisposable

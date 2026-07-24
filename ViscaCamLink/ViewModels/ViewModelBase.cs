@@ -2,6 +2,7 @@ namespace ViscaCamLink.ViewModels;
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 public abstract class ViewModelBase : INotifyPropertyChanged
 {

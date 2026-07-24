@@ -1,62 +1,59 @@
 namespace ViscaCamLink.ViewModels;
 
+using System;
 using System.Diagnostics;
 using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Interface;
 
-public sealed class MigrationViewModel : ViewModelBase
+public class MigrationViewModel(string uninstallString, Action closeAction) : ViewModelBase
 {
-    public MigrationViewModel(string uninstallString, Action closeAction)
-    {
-        UninstallCommand = new Command(() =>
+    public ICommand UninstallCommand { get; } = new Command(() =>
         {
             LaunchUninstaller(uninstallString);
             closeAction();
         });
 
-        CloseCommand = new Command(closeAction);
-    }
-
-    public ICommand UninstallCommand { get; }
-
-    public ICommand CloseCommand { get; }
+    public ICommand CloseCommand { get; } = new Command(closeAction);
 
     private static void LaunchUninstaller(string uninstallString)
     {
-        var (exe, args) = ParseUninstallString(uninstallString);
+        var (executable, arguments) = ParseUninstallString(uninstallString);
+
         try
         {
             Process.Start(new ProcessStartInfo
             {
-                FileName = exe,
-                Arguments = args,
+                FileName = executable,
+                Arguments = arguments,
                 UseShellExecute = true,
             });
         }
         catch
         {
-            // Best-effort: if launch fails the user can still remove the old
-            // version via Windows Settings → Apps.
+            // Best-effort: if launch fails the user can still remove the old version manually.
         }
     }
 
-    private static (string exe, string args) ParseUninstallString(string uninstallString)
+    private static (string Executable, string Arguments) ParseUninstallString(string uninstallString)
     {
         uninstallString = uninstallString.Trim();
 
         if (uninstallString.StartsWith('"'))
         {
             var closingQuote = uninstallString.IndexOf('"', 1);
+
             if (closingQuote >= 0)
             {
-                var exe = uninstallString[1..closingQuote];
-                var args = uninstallString[(closingQuote + 1)..].Trim();
-                return (exe, args);
+                var executable = uninstallString[1..closingQuote];
+                var arguments = uninstallString[(closingQuote + 1)..].Trim();
+
+                return (executable, arguments);
             }
         }
 
         var spaceIndex = uninstallString.IndexOf(' ');
+
         return spaceIndex >= 0
             ? (uninstallString[..spaceIndex], uninstallString[(spaceIndex + 1)..])
             : (uninstallString, string.Empty);

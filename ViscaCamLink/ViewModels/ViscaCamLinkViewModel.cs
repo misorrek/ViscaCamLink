@@ -1,6 +1,6 @@
 namespace ViscaCamLink.ViewModels;
 
-using System.Windows;
+using System;
 using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Interface;
@@ -13,6 +13,7 @@ public class ViscaCamLinkViewModel : ViewModelBase
     private readonly ISettingsService _settings;
     private readonly IUpdateService _updateService;
     private readonly IDialogService _dialogService;
+    private readonly IUiDispatcher _uiDispatcher;
 
     private UpdateInfo? _lastUpdateInfo;
 
@@ -23,11 +24,13 @@ public class ViscaCamLinkViewModel : ViewModelBase
         MovementViewModel movement,
         ZoomViewModel zoom,
         IUpdateService updateService,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        IUiDispatcher uiDispatcher)
     {
         _settings = settings;
         _updateService = updateService;
         _dialogService = dialogService;
+        _uiDispatcher = uiDispatcher;
 
         Connection = connection;
         Presets = presets;
@@ -70,6 +73,7 @@ public class ViscaCamLinkViewModel : ViewModelBase
         set
         {
             _settings.ConnectionContainerVisible = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -80,6 +84,7 @@ public class ViscaCamLinkViewModel : ViewModelBase
         set
         {
             _settings.MemoryContainerVisible = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -90,6 +95,7 @@ public class ViscaCamLinkViewModel : ViewModelBase
         set
         {
             _settings.MoveContainerVisible = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -100,42 +106,41 @@ public class ViscaCamLinkViewModel : ViewModelBase
         set
         {
             _settings.ZoomContainerVisible = value;
+
             NotifyPropertyChanged();
         }
     }
 
     private void ExecuteSidebar(object? parameter)
     {
-        if (parameter is string container)
+        if (parameter is not SidebarContainer container)
         {
-            switch (container)
-            {
-                case "Connection":
-                    ConnectionContainerVisible = ToggleContainer(ConnectionContainerVisible);
-                    break;
-                case "Memory":
-                    MemoryContainerVisible = ToggleContainer(MemoryContainerVisible);
-                    break;
-                case "Move":
-                    MoveContainerVisible = ToggleContainer(MoveContainerVisible);
-                    break;
-                case "Zoom":
-                    ZoomContainerVisible = ToggleContainer(ZoomContainerVisible);
-                    break;
-            }
+            return;
+        }
+
+        switch (container)
+        {
+            case SidebarContainer.Connection:
+                ConnectionContainerVisible = ToggleContainer(ConnectionContainerVisible);
+                break;
+            case SidebarContainer.Memory:
+                MemoryContainerVisible = ToggleContainer(MemoryContainerVisible);
+                break;
+            case SidebarContainer.Move:
+                MoveContainerVisible = ToggleContainer(MoveContainerVisible);
+                break;
+            case SidebarContainer.Zoom:
+                ZoomContainerVisible = ToggleContainer(ZoomContainerVisible);
+                break;
         }
     }
 
     private bool ToggleContainer(bool currentVisibility)
     {
-        if (currentVisibility)
+        // At least one container must stay visible.
+        if (currentVisibility && CountVisibleContainers() <= 1)
         {
-            var visibleCount = CountVisibleContainers();
-
-            if (visibleCount <= 1)
-            {
-                return true;
-            }
+            return true;
         }
 
         return !currentVisibility;
@@ -153,16 +158,19 @@ public class ViscaCamLinkViewModel : ViewModelBase
         return count;
     }
 
-    private void OnUpdateAvailable(object? sender, UpdateInfo info)
+    private void OnUpdateAvailable(object? sender, UpdateInfo updateInfo)
     {
-        _lastUpdateInfo = info;
-        Application.Current.Dispatcher.Invoke(() => UpdateAvailable?.Invoke());
+        _lastUpdateInfo = updateInfo;
+
+        _uiDispatcher.Post(() => UpdateAvailable?.Invoke());
     }
 
     private void OpenUpdateDialog()
     {
         if (_lastUpdateInfo is null)
+        {
             return;
+        }
 
         _dialogService.ShowUpdateDialog(_lastUpdateInfo);
     }
@@ -174,7 +182,7 @@ public class ViscaCamLinkViewModel : ViewModelBase
         Presets.RefreshLayout();
     }
 
-    private void OnLanguageChanged(object? sender, EventArgs e)
+    private void OnLanguageChanged(object? sender, EventArgs eventArgs)
     {
         Connection.OnLanguageChanged();
         Presets.OnLanguageChanged();

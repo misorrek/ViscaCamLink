@@ -1,9 +1,9 @@
-﻿namespace ViscaCamLink.ViewModels;
+namespace ViscaCamLink.ViewModels;
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Interface;
@@ -11,25 +11,36 @@ using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Infrastructure.Theming;
 using ViscaCamLink.Services;
 
-public class OptionsViewModel : INotifyPropertyChanged
+public class OptionsViewModel : ViewModelBase
 {
     private readonly ISettingsService _settings;
     private readonly IHotKeyService _hotKeyService;
+    private readonly Action _closeHandler;
     private readonly Command _okCommand;
+
+    private Language _selectedLanguage;
+    private Theme _selectedTheme;
+    private bool _useNumpadLayout;
+    private bool _useGlobalHotKeys;
+    private bool _usePresetGroups;
+    private bool _useCompactView;
+    private bool _hasHotKeyConflicts;
+    private string _hotKeyValidationMessage = string.Empty;
+    private HotKeyBindingItemViewModel? _capturingHotKey;
 
     public OptionsViewModel(ISettingsService settings, IHotKeyService hotKeyService, Action closeHandler)
     {
         _settings = settings;
         _hotKeyService = hotKeyService;
-        CloseHandler = closeHandler;
+        _closeHandler = closeHandler;
 
         _okCommand = new Command(ExecuteOk, () => !HasHotKeyConflicts);
         OkCommand = _okCommand;
         CancelCommand = new Command(ExecuteCancel);
         HotKeyCaptureCommand = new Command(ExecuteHotKeyCapture);
         HotKeyPreviewKeyDownCommand = new Command(ExecuteHotKeyPreviewKeyDown);
-        LanguageItems = GetLanguageItems();
-        ThemeItems = GetThemeItems();
+        LanguageItems = CreateLanguageItems();
+        ThemeItems = CreateThemeItems();
         HotKeyBindings = new ObservableCollection<HotKeyBindingItemViewModel>(
             _hotKeyService.Bindings.Select(binding => new HotKeyBindingItemViewModel(binding)));
 
@@ -39,10 +50,9 @@ public class OptionsViewModel : INotifyPropertyChanged
         _useGlobalHotKeys = _settings.UseGlobalHotKeys;
         _usePresetGroups = _settings.UsePresetGroups;
         _useCompactView = _settings.UseCompactView;
+
         RefreshHotKeyValidation();
     }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand OkCommand { get; }
 
@@ -63,8 +73,13 @@ public class OptionsViewModel : INotifyPropertyChanged
         get => _hasHotKeyConflicts;
         private set
         {
-            if (_hasHotKeyConflicts == value) return;
+            if (_hasHotKeyConflicts == value)
+            {
+                return;
+            }
+
             _hasHotKeyConflicts = value;
+
             NotifyPropertyChanged();
             _okCommand.Invalidate();
         }
@@ -75,8 +90,13 @@ public class OptionsViewModel : INotifyPropertyChanged
         get => _hotKeyValidationMessage;
         private set
         {
-            if (_hotKeyValidationMessage == value) return;
+            if (_hotKeyValidationMessage == value)
+            {
+                return;
+            }
+
             _hotKeyValidationMessage = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -84,7 +104,6 @@ public class OptionsViewModel : INotifyPropertyChanged
     public Language SelectedLanguage
     {
         get => _selectedLanguage;
-
         set
         {
             _selectedLanguage = value;
@@ -96,7 +115,6 @@ public class OptionsViewModel : INotifyPropertyChanged
     public Theme SelectedTheme
     {
         get => _selectedTheme;
-
         set
         {
             _selectedTheme = value;
@@ -108,10 +126,10 @@ public class OptionsViewModel : INotifyPropertyChanged
     public bool UseNumpadLayout
     {
         get => _useNumpadLayout;
-
         set
         {
             _useNumpadLayout = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -119,10 +137,10 @@ public class OptionsViewModel : INotifyPropertyChanged
     public bool UseGlobalHotKeys
     {
         get => _useGlobalHotKeys;
-
         set
         {
             _useGlobalHotKeys = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -130,10 +148,10 @@ public class OptionsViewModel : INotifyPropertyChanged
     public bool UsePresetGroups
     {
         get => _usePresetGroups;
-
         set
         {
             _usePresetGroups = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -141,86 +159,47 @@ public class OptionsViewModel : INotifyPropertyChanged
     public bool UseCompactView
     {
         get => _useCompactView;
-
         set
         {
             _useCompactView = value;
+
             NotifyPropertyChanged();
         }
-    }
-
-    private Action CloseHandler { get; }
-
-    private Language _selectedLanguage;
-    private Theme _selectedTheme;
-    private bool _useNumpadLayout;
-    private bool _useGlobalHotKeys;
-    private bool _usePresetGroups;
-    private bool _useCompactView;
-    private bool _hasHotKeyConflicts;
-    private string _hotKeyValidationMessage = string.Empty;
-    private HotKeyBindingItemViewModel? _capturingHotKey;
-
-    protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private void ExecuteOk()
     {
         RefreshHotKeyValidation();
+
         if (HasHotKeyConflicts)
         {
             return;
         }
 
-        _settings.ApplyOptions(_selectedLanguage, _useNumpadLayout, _useGlobalHotKeys, _usePresetGroups, _useCompactView, _selectedTheme);
-        _hotKeyService.ApplyBindings(HotKeyBindings.Select(binding => binding.ToBinding()).ToList());
+        var selection = new OptionsSelection(
+            Language: _selectedLanguage,
+            Theme: _selectedTheme,
+            UseCompactView: _useCompactView,
+            UsePresetGroups: _usePresetGroups,
+            UseNumpadLayout: _useNumpadLayout,
+            UseGlobalHotKeys: _useGlobalHotKeys);
 
-        CloseHandler.Invoke();
+        _settings.ApplyOptions(selection);
+        _hotKeyService.ApplyBindings([.. HotKeyBindings.Select(binding => binding.ToBinding())]);
+
+        _closeHandler.Invoke();
     }
 
     private void ExecuteCancel()
     {
-        CloseHandler.Invoke();
-    }
-
-    private static List<LanguageItem> GetLanguageItems()
-    {
-        var languages = new List<LanguageItem>();
-
-        foreach (var language in Enum.GetValues<Language>())
-        {
-            languages.Add(new LanguageItem(language));
-        }
-
-        return languages;
-    }
-
-    private static List<ThemeItem> GetThemeItems()
-    {
-        var themes = new List<ThemeItem>();
-
-        foreach (var theme in Enum.GetValues<Theme>())
-        {
-            themes.Add(new ThemeItem(theme));
-        }
-
-        return themes;
+        _closeHandler.Invoke();
     }
 
     private void ExecuteHotKeyCapture(object? parameter)
     {
-        if (_capturingHotKey is not null)
-        {
-            _capturingHotKey.IsCapturing = false;
-        }
-
+        _capturingHotKey?.IsCapturing = false;
         _capturingHotKey = parameter as HotKeyBindingItemViewModel;
-        if (_capturingHotKey is not null)
-        {
-            _capturingHotKey.IsCapturing = true;
-        }
+        _capturingHotKey?.IsCapturing = true;
     }
 
     private void ExecuteHotKeyPreviewKeyDown(object? parameter)
@@ -231,6 +210,7 @@ public class OptionsViewModel : INotifyPropertyChanged
         }
 
         var key = GetPressedKey(eventArgs);
+
         eventArgs.Handled = true;
 
         if (key == Key.Escape)
@@ -273,8 +253,19 @@ public class OptionsViewModel : INotifyPropertyChanged
         }
 
         var validation = _hotKeyService.ValidateBindings(HotKeyBindings.Select(binding => binding.ToBinding()));
+
         HasHotKeyConflicts = !validation.IsValid;
         HotKeyValidationMessage = validation.Message ?? string.Empty;
+    }
+
+    private static List<LanguageItem> CreateLanguageItems()
+    {
+        return [.. Enum.GetValues<Language>().Select(language => new LanguageItem(language))];
+    }
+
+    private static List<ThemeItem> CreateThemeItems()
+    {
+        return [.. Enum.GetValues<Theme>().Select(theme => new ThemeItem(theme))];
     }
 
     private static Key GetPressedKey(KeyEventArgs eventArgs)
@@ -297,18 +288,4 @@ public class OptionsViewModel : INotifyPropertyChanged
         Key.LeftAlt or Key.RightAlt or
         Key.LeftShift or Key.RightShift or
         Key.LWin or Key.RWin;
-}
-
-public class LanguageItem(Language language)
-{
-    public Language LanguageValue { get; } = language;
-
-    public string LanguageDisplay => LanguageValue.ToLocalizedString();
-}
-
-public class ThemeItem(Theme theme)
-{
-    public Theme ThemeValue { get; } = theme;
-
-    public string ThemeDisplay => ThemeValue.ToLocalizedString();
 }

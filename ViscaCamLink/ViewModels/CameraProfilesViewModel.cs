@@ -1,21 +1,23 @@
-﻿namespace ViscaCamLink.ViewModels;
+namespace ViscaCamLink.ViewModels;
 
+using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Repositories.AppSettings;
+using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 
-public partial class CameraProfilesViewModel : INotifyPropertyChanged
+public partial class CameraProfilesViewModel : ViewModelBase
 {
-    [GeneratedRegex(@"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$")]
-    private static partial Regex IpRegex();
+    private const int MinimumPort = 1;
+    private const int MaximumPort = 65535;
 
     private readonly ISettingsService _settings;
+    private readonly Action _closeHandler;
 
     private CameraProfileItemViewModel? _selectedCamera;
     private bool _isEditing;
@@ -27,23 +29,33 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
     public CameraProfilesViewModel(ISettingsService settings, Action closeHandler)
     {
         _settings = settings;
-        CloseHandler = closeHandler;
+        _closeHandler = closeHandler;
 
         Cameras = new ObservableCollection<CameraProfileItemViewModel>(
-            _settings.CameraProfiles.Select(c => new CameraProfileItemViewModel(c)));
+            _settings.CameraProfiles.Select(profile => new CameraProfileItemViewModel(profile)));
 
         AddCommand = new Command(ExecuteAdd, () => !IsEditing);
         EditCommand = new Command(ExecuteEdit, () => SelectedCamera is not null && !IsEditing);
         DeleteCommand = new Command(ExecuteDelete, () => SelectedCamera is not null && !IsEditing && Cameras.Count > 1);
         SaveEditCommand = new Command(ExecuteSaveEdit, () => IsEditNameValid && IsEditIpValid && IsEditPortValid);
         CancelEditCommand = new Command(ExecuteCancelEdit);
-        CloseCommand = new Command(() => CloseHandler());
+        CloseCommand = new Command(() => _closeHandler());
 
-        SelectedCamera = Cameras.FirstOrDefault(c => c.Id == _settings.ActiveCameraProfileId)
+        SelectedCamera = Cameras.FirstOrDefault(camera => camera.Id == _settings.ActiveCameraProfileId)
                          ?? Cameras.FirstOrDefault();
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public ICommand AddCommand { get; }
+
+    public ICommand EditCommand { get; }
+
+    public ICommand DeleteCommand { get; }
+
+    public ICommand SaveEditCommand { get; }
+
+    public ICommand CancelEditCommand { get; }
+
+    public ICommand CloseCommand { get; }
 
     public ObservableCollection<CameraProfileItemViewModel> Cameras { get; }
 
@@ -53,6 +65,7 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
         set
         {
             _selectedCamera = value;
+
             NotifyPropertyChanged();
             InvalidateEditCommands();
         }
@@ -64,6 +77,7 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
         private set
         {
             _isEditing = value;
+
             NotifyPropertyChanged();
             InvalidateEditCommands();
         }
@@ -112,34 +126,23 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
 
     public bool IsEditIpValid => !string.IsNullOrWhiteSpace(EditIp) && IpRegex().IsMatch(EditIp);
 
-    public bool IsEditPortValid => int.TryParse(EditPort, out var p) && p is >= 1 and <= 65535;
-
-    public ICommand AddCommand { get; }
-
-    public ICommand EditCommand { get; }
-
-    public ICommand DeleteCommand { get; }
-
-    public ICommand SaveEditCommand { get; }
-
-    public ICommand CancelEditCommand { get; }
-
-    public ICommand CloseCommand { get; }
-
-    private Action CloseHandler { get; }
+    public bool IsEditPortValid => int.TryParse(EditPort, out var port) && port is >= MinimumPort and <= MaximumPort;
 
     private void ExecuteAdd()
     {
         _editingId = Guid.Empty;
-        EditName = "Camera";
-        EditIp = "192.168.0.1";
-        EditPort = "5678";
+        EditName = string.Format(Strings.CameraProfile_DefaultName, Cameras.Count + 1);
+        EditIp = CameraProfile.DefaultIp;
+        EditPort = CameraProfile.DefaultPort.ToString();
         IsEditing = true;
     }
 
     private void ExecuteEdit()
     {
-        if (SelectedCamera is null) return;
+        if (SelectedCamera is null)
+        {
+            return;
+        }
 
         _editingId = SelectedCamera.Id;
         EditName = SelectedCamera.Name;
@@ -150,15 +153,20 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
 
     private void ExecuteDelete()
     {
-        if (SelectedCamera is null || Cameras.Count <= 1) return;
+        if (SelectedCamera is null || Cameras.Count <= 1)
+        {
+            return;
+        }
 
         var idToDelete = SelectedCamera.Id;
+
         _settings.RemoveCameraProfile(idToDelete);
 
-        var item = Cameras.First(c => c.Id == idToDelete);
+        var item = Cameras.First(camera => camera.Id == idToDelete);
+
         Cameras.Remove(item);
 
-        SelectedCamera = Cameras.FirstOrDefault(c => c.Id == _settings.ActiveCameraProfileId)
+        SelectedCamera = Cameras.FirstOrDefault(camera => camera.Id == _settings.ActiveCameraProfileId)
                          ?? Cameras.FirstOrDefault();
 
         InvalidateEditCommands();
@@ -170,20 +178,23 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
 
         if (_editingId == Guid.Empty)
         {
-            // Add new
             var profile = new CameraProfile { Name = EditName, Ip = EditIp, Port = port };
+
             _settings.AddCameraProfile(profile);
+
             var item = new CameraProfileItemViewModel(profile);
+
             Cameras.Add(item);
             SelectedCamera = item;
         }
         else
         {
-            // Update existing
             var profile = new CameraProfile { Id = _editingId, Name = EditName, Ip = EditIp, Port = port };
+
             _settings.UpdateCameraProfile(profile);
 
-            var item = Cameras.First(c => c.Id == _editingId);
+            var item = Cameras.First(camera => camera.Id == _editingId);
+
             item.Update(profile);
 
             if (SelectedCamera?.Id == _editingId)
@@ -207,52 +218,6 @@ public partial class CameraProfilesViewModel : INotifyPropertyChanged
         ((Command)DeleteCommand).Invalidate();
     }
 
-    protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-}
-
-public class CameraProfileItemViewModel : INotifyPropertyChanged
-{
-    private string _name;
-    private string _ip;
-    private int _port;
-
-    public CameraProfileItemViewModel(CameraProfile profile)
-    {
-        Id = profile.Id;
-        _name = profile.Name;
-        _ip = profile.Ip;
-        _port = profile.Port;
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    public Guid Id { get; }
-
-    public string Name
-    {
-        get => _name;
-        private set { _name = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name))); }
-    }
-
-    public string Ip
-    {
-        get => _ip;
-        private set { _ip = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Ip))); }
-    }
-
-    public int Port
-    {
-        get => _port;
-        private set { _port = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Port))); }
-    }
-
-    public void Update(CameraProfile profile)
-    {
-        Name = profile.Name;
-        Ip = profile.Ip;
-        Port = profile.Port;
-    }
+    [GeneratedRegex(@"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$")]
+    private static partial Regex IpRegex();
 }

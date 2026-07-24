@@ -1,21 +1,10 @@
 namespace ViscaCamLink.ViewModels;
 
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
-public sealed class PresetItemViewModel : INotifyPropertyChanged
+public class PresetItemViewModel(int slotIndex, string name) : ViewModelBase
 {
-    private string _name;
+    private string _name = name;
 
-    public PresetItemViewModel(int slotIndex, string name)
-    {
-        SlotIndex = slotIndex;
-        _name = name;
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    public int SlotIndex { get; }
+    public int SlotIndex { get; } = slotIndex;
 
     public string Name
     {
@@ -28,7 +17,8 @@ public sealed class PresetItemViewModel : INotifyPropertyChanged
             }
 
             _name = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+
+            NotifyPropertyChanged();
         }
     }
 }

@@ -1,48 +1,41 @@
 namespace ViscaCamLink.ViewModels;
 
-using System.ComponentModel;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Windows;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
+
 using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Services;
 using ViscaCamLink.Updater;
 
-public class UpdateDownloadViewModel : INotifyPropertyChanged
+public class UpdateDownloadViewModel : ViewModelBase
 {
-    private readonly IUpdateDownloader _downloader;
-    private readonly IInstallerLauncher _launcher;
-    private readonly string _assetUrl;
+    private readonly UpdateInfo _updateInfo;
+    private readonly IUpdateService _updateService;
     private readonly Action _closeHandler;
 
-    private CancellationTokenSource _cts = new();
+    private CancellationTokenSource _downloadCancellation = new();
     private int _progress;
     private bool _isDownloading = true;
     private bool _hasError;
     private string _errorMessage = string.Empty;
 
-    public UpdateDownloadViewModel(
-        string assetUrl,
-        IUpdateDownloader downloader,
-        IInstallerLauncher launcher,
-        Action closeHandler)
+    public UpdateDownloadViewModel(UpdateInfo updateInfo, IUpdateService updateService, Action closeHandler)
     {
-        _assetUrl = assetUrl;
-        _downloader = downloader;
-        _launcher = launcher;
+        _updateInfo = updateInfo;
+        _updateService = updateService;
         _closeHandler = closeHandler;
 
         CancelCommand = new Command(ExecuteCancel);
         RetryCommand = new Command(ExecuteRetry);
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     public ICommand CancelCommand { get; }
 
     public ICommand RetryCommand { get; }
 
-    public string AssetName => Path.GetFileName(_assetUrl);
+    public string VersionText => $"v{_updateInfo.Version}";
 
     public int Progress
     {
@@ -50,10 +43,15 @@ public class UpdateDownloadViewModel : INotifyPropertyChanged
         private set
         {
             var wasIndeterminate = IsIndeterminate;
+
             _progress = value;
+
             NotifyPropertyChanged();
+
             if (wasIndeterminate != IsIndeterminate)
+            {
                 NotifyPropertyChanged(nameof(IsIndeterminate));
+            }
         }
     }
 
@@ -65,6 +63,7 @@ public class UpdateDownloadViewModel : INotifyPropertyChanged
         private set
         {
             _isDownloading = value;
+
             NotifyPropertyChanged();
             NotifyPropertyChanged(nameof(IsIndeterminate));
         }
@@ -76,6 +75,7 @@ public class UpdateDownloadViewModel : INotifyPropertyChanged
         private set
         {
             _hasError = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -86,6 +86,7 @@ public class UpdateDownloadViewModel : INotifyPropertyChanged
         private set
         {
             _errorMessage = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -99,44 +100,35 @@ public class UpdateDownloadViewModel : INotifyPropertyChanged
 
         try
         {
-            var progress = new Progress<int>(p => Progress = p);
-            var filePath = await _downloader.DownloadAsync(
-                _assetUrl,
-                AssetName,
-                progress,
-                _cts.Token);
+            var progress = new Progress<int>(percent => Progress = percent);
 
-            IsDownloading = false;
-            _launcher.Launch(filePath);
-            Application.Current.Shutdown();
+            // On success the update service applies the update and restarts the application.
+            // No code after this call is reached.
+            await _updateService.DownloadAndApplyAsync(progress, _downloadCancellation.Token);
         }
         catch (OperationCanceledException)
         {
             _closeHandler.Invoke();
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
             IsDownloading = false;
             HasError = true;
-            ErrorMessage = ex.Message;
+            ErrorMessage = exception.Message;
         }
-    }
-
-    protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private void ExecuteCancel()
     {
-        _cts.Cancel();
+        _downloadCancellation.Cancel();
         _closeHandler.Invoke();
     }
 
     private void ExecuteRetry()
     {
-        _cts.Dispose();
-        _cts = new CancellationTokenSource();
+        _downloadCancellation.Dispose();
+        _downloadCancellation = new CancellationTokenSource();
+
         _ = StartDownloadAsync();
     }
 }

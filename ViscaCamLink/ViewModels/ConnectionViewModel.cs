@@ -1,5 +1,9 @@
 namespace ViscaCamLink.ViewModels;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Interface;
@@ -71,6 +75,7 @@ public class ConnectionViewModel : ViewModelBase
         set
         {
             _ip = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -81,6 +86,7 @@ public class ConnectionViewModel : ViewModelBase
         set
         {
             _port = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -91,6 +97,7 @@ public class ConnectionViewModel : ViewModelBase
         set
         {
             _connectionStatus = value;
+
             UpdateConnectionInfo();
             NotifyPropertyChanged();
         }
@@ -102,6 +109,7 @@ public class ConnectionViewModel : ViewModelBase
         set
         {
             _connectionInfo = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -113,6 +121,7 @@ public class ConnectionViewModel : ViewModelBase
         {
             _powerStatus = value;
             ChangingPowerStatus = false;
+
             UpdatePowerInfo();
             NotifyPropertyChanged();
         }
@@ -124,6 +133,7 @@ public class ConnectionViewModel : ViewModelBase
         set
         {
             _changingPowerStatus = value;
+
             UpdatePowerInfo();
             NotifyPropertyChanged();
         }
@@ -135,6 +145,7 @@ public class ConnectionViewModel : ViewModelBase
         set
         {
             _powerInfo = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -145,6 +156,7 @@ public class ConnectionViewModel : ViewModelBase
         private set
         {
             _activeCameraName = value;
+
             NotifyPropertyChanged();
         }
     }
@@ -163,6 +175,7 @@ public class ConnectionViewModel : ViewModelBase
     private void RefreshFromActiveCamera()
     {
         var camera = _settings.ActiveCameraProfile;
+
         Ip = camera?.Ip ?? string.Empty;
         Port = camera?.Port.ToString() ?? string.Empty;
         ActiveCameraName = camera?.Name ?? string.Empty;
@@ -177,30 +190,6 @@ public class ConnectionViewModel : ViewModelBase
             ConnectionStatus.Ok => Strings.ConnectionStatus_Ok,
             _ => string.Empty
         };
-    }
-
-    private async void OnConnectionStatusChanged(object? sender, ConnectionStatus status)
-    {
-        await _uiDispatcher.InvokeAsync(() => ConnectionStatus = status);
-
-        if (status == ConnectionStatus.Ok)
-        {
-            await TryCameraOperation(_powerService.RefreshPowerStatusAsync());
-        }
-        else
-        {
-            await _uiDispatcher.InvokeAsync(() => PowerStatus = PowerStatus.Unknown);
-        }
-    }
-
-    private void OnPowerStatusChanged(object? sender, PowerStatus status)
-    {
-        _uiDispatcher.Post(() => PowerStatus = status);
-    }
-
-    private void OnSwitchingPower(object? sender, EventArgs e)
-    {
-        _uiDispatcher.Post(() => ChangingPowerStatus = true);
     }
 
     private void UpdatePowerInfo()
@@ -229,6 +218,30 @@ public class ConnectionViewModel : ViewModelBase
         }
     }
 
+    private async void OnConnectionStatusChanged(object? sender, ConnectionStatus status)
+    {
+        await _uiDispatcher.InvokeAsync(() => ConnectionStatus = status);
+
+        if (status == ConnectionStatus.Ok)
+        {
+            await TryCameraOperation(_powerService.RefreshPowerStatusAsync());
+        }
+        else
+        {
+            await _uiDispatcher.InvokeAsync(() => PowerStatus = PowerStatus.Unknown);
+        }
+    }
+
+    private void OnPowerStatusChanged(object? sender, PowerStatus status)
+    {
+        _uiDispatcher.Post(() => PowerStatus = status);
+    }
+
+    private void OnSwitchingPower(object? sender, EventArgs eventArgs)
+    {
+        _uiDispatcher.Post(() => ChangingPowerStatus = true);
+    }
+
     private async void ExecuteReconnect()
     {
         await _connectionService.ReconnectAsync();
@@ -244,22 +257,32 @@ public class ConnectionViewModel : ViewModelBase
     private async void ExecutePrevCamera()
     {
         var target = GetAdjacentCamera(-1);
-        if (target is null) return;
+
+        if (target is null)
+        {
+            return;
+        }
+
         await SwitchToCameraAsync(target);
     }
 
     private async void ExecuteNextCamera()
     {
         var target = GetAdjacentCamera(+1);
-        if (target is null) return;
+
+        if (target is null)
+        {
+            return;
+        }
+
         await SwitchToCameraAsync(target);
     }
 
     private async Task SwitchToCameraAsync(CameraProfile target)
     {
         // Update the UI immediately so the profile label changes while the user is cycling.
-        // The actual connection is debounced and performed on a background thread by the
-        // connection service; a newer request cancels any pending attempt.
+        // The actual connection is debounced and performed on a background thread by the connection service.
+        // A newer request cancels any pending attempt.
         Ip = target.Ip;
         Port = target.Port.ToString();
         ActiveCameraName = target.Name;
@@ -279,12 +302,21 @@ public class ConnectionViewModel : ViewModelBase
     private CameraProfile? GetAdjacentCamera(int direction)
     {
         var cameras = _settings.CameraProfiles;
-        if (cameras.Count <= 1) return null;
 
-        var currentIndex = cameras.ToList().FindIndex(c => c.Id == _settings.ActiveCameraProfileId);
-        if (currentIndex < 0) return cameras[0];
+        if (cameras.Count <= 1)
+        {
+            return null;
+        }
+
+        var currentIndex = cameras.ToList().FindIndex(camera => camera.Id == _settings.ActiveCameraProfileId);
+
+        if (currentIndex < 0)
+        {
+            return cameras[0];
+        }
 
         var nextIndex = (currentIndex + direction + cameras.Count) % cameras.Count;
+
         return cameras[nextIndex];
     }
 
@@ -310,6 +342,7 @@ public class ConnectionViewModel : ViewModelBase
     {
         _dialogService.ShowCameraProfilesDialog();
         RefreshFromActiveCamera();
+
         ((Command)PrevCameraCommand).Invalidate();
         ((Command)NextCameraCommand).Invalidate();
     }
