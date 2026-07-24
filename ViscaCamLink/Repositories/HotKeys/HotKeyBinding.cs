@@ -2,7 +2,7 @@ namespace ViscaCamLink.Repositories.HotKeys;
 
 using System.Windows.Input;
 
-public sealed class HotKeyBinding
+public class HotKeyBinding
 {
     public HotKeyAction Action { get; set; }
 

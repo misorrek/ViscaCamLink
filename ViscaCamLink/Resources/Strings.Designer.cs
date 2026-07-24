@@ -365,7 +365,16 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("HotKey_NotSet", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Press a key… ähnelt.
+        /// </summary>
+        public static string HotKey_PressKey {
+            get {
+                return ResourceManager.GetString("HotKey_PressKey", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Next Camera Profile ähnelt.
         /// </summary>
@@ -701,6 +710,24 @@ namespace ViscaCamLink.Resources {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Default ähnelt.
+        /// </summary>
+        public static string PresetGroup_DefaultName {
+            get {
+                return ResourceManager.GetString("PresetGroup_DefaultName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Group {0} ähnelt.
+        /// </summary>
+        public static string PresetGroup_NewName {
+            get {
+                return ResourceManager.GetString("PresetGroup_NewName", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Choose a slot ähnelt.
         /// </summary>

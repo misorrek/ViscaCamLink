@@ -1,7 +1,10 @@
 namespace ViscaCamLink.Repositories.HotKeys;
 
+using System.Collections.Generic;
 using System.Windows.Input;
+
 using ViscaCamLink.Infrastructure.Localization;
+using ViscaCamLink.Resources;
 
 public static class HotKeyDefinitions
 {
@@ -71,21 +74,21 @@ public static class HotKeyDefinitions
     {
         if (TryGetPresetPosition(action, out var presetPosition))
         {
-            return string.Format(TranslationSource.Instance["HotKeyAction_Preset"], presetPosition);
+            return string.Format(TranslationSource.Instance[nameof(Strings.HotKeyAction_Preset)], presetPosition);
         }
 
         return action switch
         {
-            HotKeyAction.MoveUp => TranslationSource.Instance["HotKeyAction_MoveUp"],
-            HotKeyAction.MoveDown => TranslationSource.Instance["HotKeyAction_MoveDown"],
-            HotKeyAction.MoveLeft => TranslationSource.Instance["HotKeyAction_MoveLeft"],
-            HotKeyAction.MoveRight => TranslationSource.Instance["HotKeyAction_MoveRight"],
-            HotKeyAction.ZoomIn => TranslationSource.Instance["HotKeyAction_ZoomIn"],
-            HotKeyAction.ZoomOut => TranslationSource.Instance["HotKeyAction_ZoomOut"],
-            HotKeyAction.CameraProfilePrevious => TranslationSource.Instance["HotKeyAction_CameraProfilePrevious"],
-            HotKeyAction.CameraProfileNext => TranslationSource.Instance["HotKeyAction_CameraProfileNext"],
-            HotKeyAction.PresetGroupPrevious => TranslationSource.Instance["HotKeyAction_PresetGroupPrevious"],
-            HotKeyAction.PresetGroupNext => TranslationSource.Instance["HotKeyAction_PresetGroupNext"],
+            HotKeyAction.MoveUp => TranslationSource.Instance[nameof(Strings.HotKeyAction_MoveUp)],
+            HotKeyAction.MoveDown => TranslationSource.Instance[nameof(Strings.HotKeyAction_MoveDown)],
+            HotKeyAction.MoveLeft => TranslationSource.Instance[nameof(Strings.HotKeyAction_MoveLeft)],
+            HotKeyAction.MoveRight => TranslationSource.Instance[nameof(Strings.HotKeyAction_MoveRight)],
+            HotKeyAction.ZoomIn => TranslationSource.Instance[nameof(Strings.HotKeyAction_ZoomIn)],
+            HotKeyAction.ZoomOut => TranslationSource.Instance[nameof(Strings.HotKeyAction_ZoomOut)],
+            HotKeyAction.CameraProfilePrevious => TranslationSource.Instance[nameof(Strings.HotKeyAction_CameraProfilePrevious)],
+            HotKeyAction.CameraProfileNext => TranslationSource.Instance[nameof(Strings.HotKeyAction_CameraProfileNext)],
+            HotKeyAction.PresetGroupPrevious => TranslationSource.Instance[nameof(Strings.HotKeyAction_PresetGroupPrevious)],
+            HotKeyAction.PresetGroupNext => TranslationSource.Instance[nameof(Strings.HotKeyAction_PresetGroupNext)],
             _ => action.ToString(),
         };
     }

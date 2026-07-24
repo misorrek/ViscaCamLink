@@ -1,11 +1,14 @@
 namespace ViscaCamLink.Repositories.AppSettings;
 
+using System;
+using System.Collections.Generic;
+
 using Microsoft.Extensions.Logging;
 
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Infrastructure.Theming;
 
-public sealed class AppSettings
+public class AppSettings
 {
     public WindowPlacementData? WindowPlacement { get; set; }
 
@@ -39,5 +42,5 @@ public sealed class AppSettings
 
     public bool UseGlobalHotKeys { get; set; } = true;
 
-    public bool WixUninstallPrompted { get; set; } = false;
+    public bool WixUninstallPrompted { get; set; }
 }

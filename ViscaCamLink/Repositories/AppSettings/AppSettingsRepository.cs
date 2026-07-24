@@ -1,5 +1,7 @@
 namespace ViscaCamLink.Repositories.AppSettings;
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -7,42 +9,37 @@ using System.Reflection;
 using System.Text.Json;
 using System.Xml.Linq;
 
-public sealed class AppSettingsRepository
+public class AppSettingsRepository(string settingsFilePath, string legacySearchRoot)
 {
-    private readonly string _settingsFilePath;
-    private readonly string _legacySearchRoot;
-
-    public AppSettingsRepository(string settingsFilePath, string legacySearchRoot)
-    {
-        _settingsFilePath = settingsFilePath;
-        _legacySearchRoot = legacySearchRoot;
-    }
-
     public AppSettings Load()
     {
-        if (File.Exists(_settingsFilePath))
+        if (File.Exists(settingsFilePath))
         {
-            return ReadSettings(_settingsFilePath);
+            return ReadSettings(settingsFilePath);
         }
 
         var migratedSettings = TryLoadLegacySettings();
+
         if (migratedSettings is not null)
         {
             Save(migratedSettings);
             DeleteLegacyUserDataPath();
+
             return migratedSettings;
         }
 
         var defaultSettings = new AppSettings();
+
         Save(defaultSettings);
+
         return defaultSettings;
     }
 
     public void Save(AppSettings settings)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_settingsFilePath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(settingsFilePath)!);
 
-        using var stream = File.Create(_settingsFilePath);
+        using var stream = File.Create(settingsFilePath);
         JsonSerializer.Serialize(stream, settings, AppSettingsJsonContext.Default.AppSettings);
     }
 
@@ -52,26 +49,28 @@ public sealed class AppSettingsRepository
         {
             using var stream = File.OpenRead(filePath);
             var settings = JsonSerializer.Deserialize(stream, AppSettingsJsonContext.Default.AppSettings);
+
             return settings ?? new AppSettings();
         }
-        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
             var defaultSettings = new AppSettings();
+
             Save(defaultSettings);
+
             return defaultSettings;
         }
     }
 
     private AppSettings? TryLoadLegacySettings()
     {
-        var legacyRoot = _legacySearchRoot;
-        if (!Directory.Exists(legacyRoot))
+        if (!Directory.Exists(legacySearchRoot))
         {
             return null;
         }
 
         var legacyFile = Directory
-            .EnumerateFiles(legacyRoot, "user.config", SearchOption.AllDirectories)
+            .EnumerateFiles(legacySearchRoot, "user.config", SearchOption.AllDirectories)
             .Select(path => new FileInfo(path))
             .OrderByDescending(fileInfo => fileInfo.LastWriteTimeUtc)
             .FirstOrDefault();
@@ -109,7 +108,23 @@ public sealed class AppSettingsRepository
         }
         catch
         {
+            // Unreadable legacy settings are not worth failing startup for; fresh defaults are used instead.
             return null;
+        }
+    }
+
+    private void DeleteLegacyUserDataPath()
+    {
+        try
+        {
+            if (Directory.Exists(legacySearchRoot))
+            {
+                Directory.Delete(legacySearchRoot, recursive: true);
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // The legacy directory is only cleaned up as a courtesy; leaving it behind is harmless.
         }
     }
 
@@ -123,9 +138,9 @@ public sealed class AppSettingsRepository
         }
 
         if (values.TryGetValue("Port", out var legacyPort)
-            && int.TryParse(legacyPort, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var legacyPortInt))
+            && int.TryParse(legacyPort, NumberStyles.Integer, CultureInfo.InvariantCulture, out var legacyPortNumber))
         {
-            profile.Port = legacyPortInt;
+            profile.Port = legacyPortNumber;
         }
 
         settings.CameraProfiles.Add(profile);
@@ -140,6 +155,7 @@ public sealed class AppSettingsRepository
         }
 
         var property = typeof(AppSettings).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+
         if (property is null || !property.CanWrite)
         {
             return;
@@ -168,19 +184,5 @@ public sealed class AppSettingsRepository
         }
 
         return Enum.TryParse(enumType, rawValue, ignoreCase: true, out var parsedValue) ? parsedValue : null;
-    }
-
-    private void DeleteLegacyUserDataPath()
-    {
-        try
-        {
-            if (Directory.Exists(_legacySearchRoot))
-            {
-                Directory.Delete(_legacySearchRoot, recursive: true);
-            }
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-        }
     }
 }

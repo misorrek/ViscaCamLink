@@ -1,5 +1,6 @@
 namespace ViscaCamLink.Repositories.AppSettings;
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 [JsonSourceGenerationOptions(WriteIndented = true, UseStringEnumConverter = true)]
@@ -7,6 +8,6 @@ using System.Text.Json.Serialization;
 [JsonSerializable(typeof(CameraProfile))]
 [JsonSerializable(typeof(List<CameraProfile>))]
 [JsonSerializable(typeof(WindowPlacementData))]
-internal sealed partial class AppSettingsJsonContext : JsonSerializerContext
+internal partial class AppSettingsJsonContext : JsonSerializerContext
 {
 }

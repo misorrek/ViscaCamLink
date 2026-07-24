@@ -1,8 +1,9 @@
 namespace ViscaCamLink.Repositories.AppSettings;
 
-public sealed class WindowPlacementData
+public class WindowPlacementData
 {
-    public uint ShowCmd { get; set; } = 1; // SW_SHOWNORMAL
+    // 1 = SW_SHOWNORMAL (Win32 show command).
+    public uint ShowCmd { get; set; } = 1;
 
     public int NormalLeft { get; set; }
 

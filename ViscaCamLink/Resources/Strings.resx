@@ -207,6 +207,15 @@
   <data name="HotKey_NotSet" xml:space="preserve">
     <value>Not set</value>
   </data>
+  <data name="HotKey_PressKey" xml:space="preserve">
+    <value>Press a key…</value>
+  </data>
+  <data name="PresetGroup_DefaultName" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="PresetGroup_NewName" xml:space="preserve">
+    <value>Group {0}</value>
+  </data>
   <data name="HotKeyAction_Preset" xml:space="preserve">
     <value>Preset {0}</value>
   </data>

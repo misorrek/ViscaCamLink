@@ -1,11 +1,12 @@
 namespace ViscaCamLink.Repositories.Presets;
 
+using System;
 using System.Text.Json.Serialization;
 
-public sealed class PresetMetadata
+public class PresetMetadata
 {
     [JsonPropertyName("groupId")]
-    public string GroupId { get; set; } = string.Empty;
+    public Guid GroupId { get; set; }
 
     [JsonPropertyName("slotIndex")]
     public int SlotIndex { get; set; }

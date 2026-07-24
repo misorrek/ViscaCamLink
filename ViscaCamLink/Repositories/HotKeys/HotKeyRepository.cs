@@ -1,12 +1,18 @@
 namespace ViscaCamLink.Repositories.HotKeys;
 
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
-using ViscaCamLink.Infrastructure;
 
-public sealed class HotKeyRepository(string filePath) : IHotKeyRepository
+using ViscaCamLink.Infrastructure;
+using ViscaCamLink.Repositories;
+
+public class HotKeyRepository(string filePath) : IHotKeyRepository
 {
-    public HotKeyRepository() : this(GetDefaultFilePath()) { }
+    public HotKeyRepository() : this(AppPaths.HotKeysFile)
+    {
+    }
 
     public IReadOnlyList<HotKeyBinding> Load()
     {
@@ -42,8 +48,6 @@ public sealed class HotKeyRepository(string filePath) : IHotKeyRepository
         using var stream = File.Create(filePath);
         JsonSerializer.Serialize(stream, bindingsList, RepositoryJsonContext.Default.ListHotKeyBinding);
     }
-
-    private static string GetDefaultFilePath() => AppPaths.HotKeys;
 
     private static List<HotKeyBinding> MergeWithDefaults(IReadOnlyList<HotKeyBinding> loadedBindings)
     {

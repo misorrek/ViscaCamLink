@@ -1,29 +1,23 @@
 namespace ViscaCamLink.Repositories.Presets;
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+
 using ViscaCamLink.Infrastructure;
+using ViscaCamLink.Repositories;
+using ViscaCamLink.Resources;
 
-public sealed class PresetRepository : IPresetRepository
+public class PresetRepository(string directory) : IPresetRepository
 {
-    private const int MaxCameraSlots = 256;
-
-    private readonly Func<Guid, string> _pathForCamera;
-
-    public PresetRepository() : this(AppPaths.PresetsForCamera) { }
-
-    // TODO : PathProvider to not duplicate path logic
-    public PresetRepository(string directory)
-        : this(id => Path.Combine(directory, $"presets-{id:N}.json")) { }
-
-    private PresetRepository(Func<Guid, string> pathForCamera)
+    public PresetRepository() : this(AppPaths.PresetsDirectory)
     {
-        _pathForCamera = pathForCamera;
     }
 
-    public PresetData LoadForCameraProfile(Guid cameraId)
+    public PresetData LoadForCameraProfile(Guid profileId)
     {
-        var filePath = _pathForCamera(cameraId);
+        var filePath = GetPresetFilePath(profileId);
 
         if (!File.Exists(filePath))
         {
@@ -40,7 +34,7 @@ public sealed class PresetRepository : IPresetRepository
                 return data!;
             }
         }
-        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
             // Invalid user-local state should not prevent the app from starting.
         }
@@ -50,32 +44,29 @@ public sealed class PresetRepository : IPresetRepository
         return CreateDefault();
     }
 
-    public void SaveForCameraProfile(Guid cameraId, PresetData presetData)
+    public void SaveForCameraProfile(Guid profileId, PresetData presetData)
     {
-        var filePath = _pathForCamera(cameraId);
-        var directory = Path.GetDirectoryName(filePath);
+        var filePath = GetPresetFilePath(profileId);
+        var temporaryPath = $"{filePath}.{Guid.NewGuid():N}.tmp";
 
-        if (!string.IsNullOrEmpty(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        var tempPath = Path.Combine(directory ?? string.Empty, $"{Path.GetFileName(filePath)}.{Guid.NewGuid():N}.tmp");
+        Directory.CreateDirectory(directory);
 
         try
         {
-            using (var stream = File.Create(tempPath))
+            using (var stream = File.Create(temporaryPath))
             {
                 JsonSerializer.Serialize(stream, presetData, RepositoryJsonContext.Default.PresetData);
             }
 
-            File.Move(tempPath, filePath, overwrite: true);
+            File.Move(temporaryPath, filePath, overwrite: true);
         }
         finally
         {
-            TryDelete(tempPath);
+            TryDelete(temporaryPath);
         }
     }
+
+    private string GetPresetFilePath(Guid profileId) => Path.Combine(directory, $"presets-{profileId:N}.json");
 
     private static bool IsValid(PresetData? data)
     {
@@ -84,12 +75,12 @@ public sealed class PresetRepository : IPresetRepository
             return false;
         }
 
-        var groupIds = new HashSet<string>(StringComparer.Ordinal);
+        var groupIds = new HashSet<Guid>();
         var usedSlots = new HashSet<int>();
 
         foreach (var group in data.Groups)
         {
-            if (group is null || string.IsNullOrWhiteSpace(group.Id) || group.Presets is null)
+            if (group is null || group.Id == Guid.Empty || group.Presets is null)
             {
                 return false;
             }
@@ -104,7 +95,7 @@ public sealed class PresetRepository : IPresetRepository
                 if (preset is null ||
                     preset.GroupId != group.Id ||
                     preset.SlotIndex < 0 ||
-                    preset.SlotIndex >= MaxCameraSlots ||
+                    preset.SlotIndex >= PresetLayout.MaxCameraSlots ||
                     !usedSlots.Add(preset.SlotIndex))
                 {
                     return false;
@@ -129,23 +120,28 @@ public sealed class PresetRepository : IPresetRepository
 
     private static void TryDelete(string path)
     {
-        try { File.Delete(path); } catch { /* best effort */ }
+        try
+        {
+            File.Delete(path);
+        }
+        catch
+        {
+            // Best effort only; a leftover temp file is harmless.
+        }
     }
 
     private static PresetData CreateDefault()
     {
-        const string defaultGroupId = "default";
-        const int presetsPerGroup = 10;
+        var groupId = Guid.NewGuid();
+        var presets = new List<PresetMetadata>(PresetLayout.PresetsPerGroup);
 
-        var presets = new List<PresetMetadata>(presetsPerGroup);
-
-        for (var i = 0; i < presetsPerGroup; i++)
+        for (var slotIndex = 0; slotIndex < PresetLayout.PresetsPerGroup; slotIndex++)
         {
             presets.Add(new PresetMetadata
             {
-                GroupId = defaultGroupId,
-                SlotIndex = i,
-                Name = i.ToString(),
+                GroupId = groupId,
+                SlotIndex = slotIndex,
+                Name = slotIndex.ToString(),
             });
         }
 
@@ -155,8 +151,8 @@ public sealed class PresetRepository : IPresetRepository
             [
                 new PresetGroup
                 {
-                    Id = defaultGroupId,
-                    Name = "Default",
+                    Id = groupId,
+                    Name = Strings.PresetGroup_DefaultName,
                     Presets = presets,
                 },
             ],
