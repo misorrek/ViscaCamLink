@@ -1,4 +1,4 @@
-﻿namespace ViscaCamLink.Views;
+namespace ViscaCamLink.Views;
 
 using System.Windows;
 

@@ -1,4 +1,4 @@
-﻿namespace ViscaCamLink.Converters;
+namespace ViscaCamLink.Converters;
 
 using System;
 using System.Globalization;

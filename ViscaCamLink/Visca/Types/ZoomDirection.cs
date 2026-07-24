@@ -1,4 +1,4 @@
-﻿namespace ViscaCamLink.Visca.Types;
+namespace ViscaCamLink.Visca.Types;
 
 public enum ZoomDirection
 {
