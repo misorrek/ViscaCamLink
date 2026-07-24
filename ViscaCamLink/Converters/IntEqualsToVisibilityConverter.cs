@@ -1,5 +1,6 @@
-namespace ViscaCamLink.Converters;
+﻿namespace ViscaCamLink.Converters;
 
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -7,24 +8,17 @@ using System.Windows.Data;
 [ValueConversion(typeof(int), typeof(Visibility))]
 public class IntEqualsToVisibilityConverter : IMultiValueConverter
 {
-    public IntEqualsToVisibilityConverter()
-    {
-        TrueValue = Visibility.Collapsed;
-        FalseValue = Visibility.Visible;
-        FallbackValue = Visibility.Visible;
-    }
+    public Visibility TrueValue { get; set; } = Visibility.Collapsed;
 
-    public Visibility TrueValue { get; set; }
+    public Visibility FalseValue { get; set; } = Visibility.Visible;
 
-    public Visibility FalseValue { get; set; }
-
-    public Visibility FallbackValue { get; set; }
+    public Visibility FallbackValue { get; set; } = Visibility.Visible;
 
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
-        if (values.Length == 2 && values[0] is int a && values[1] is int b)
+        if (values.Length == 2 && values[0] is int first && values[1] is int second)
         {
-            return a == b ? TrueValue : FalseValue;
+            return first == second ? TrueValue : FalseValue;
         }
 
         return FallbackValue;

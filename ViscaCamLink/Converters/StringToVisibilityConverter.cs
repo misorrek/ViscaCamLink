@@ -8,27 +8,20 @@ using System.Windows.Data;
 [ValueConversion(typeof(string), typeof(Visibility))]
 public class StringToVisibilityConverter : IValueConverter
 {
-    public StringToVisibilityConverter()
-    {
-        TrueValue = Visibility.Visible;
-        FalseValue = Visibility.Hidden;
-        FallbackValue = Visibility.Visible;
-    }
+    public Visibility TrueValue { get; set; } = Visibility.Visible;
 
-    public Visibility TrueValue { get; set; }
+    public Visibility FalseValue { get; set; } = Visibility.Hidden;
 
-    public Visibility FalseValue { get; set; }
-
-    public Visibility FallbackValue { get; set; }
+    public Visibility FallbackValue { get; set; } = Visibility.Visible;
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is not string)
+        if (value is not string stringValue)
         {
             return FallbackValue;
         }
 
-        return string.IsNullOrEmpty((string)value) ? FalseValue : TrueValue;
+        return string.IsNullOrEmpty(stringValue) ? FalseValue : TrueValue;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -2,33 +2,26 @@
 
 using System;
 using System.Globalization;
-using System.Windows.Data;
 using System.Windows;
+using System.Windows.Data;
 
 [ValueConversion(typeof(bool), typeof(Visibility))]
 public class BoolToVisibilityConverter : IValueConverter
 {
-    public BoolToVisibilityConverter()
-    {
-        TrueValue = Visibility.Visible;
-        FalseValue = Visibility.Hidden;
-        FallbackValue = Visibility.Visible;
-    }
+    public Visibility TrueValue { get; set; } = Visibility.Visible;
 
-    public Visibility TrueValue { get; set; }
+    public Visibility FalseValue { get; set; } = Visibility.Hidden;
 
-    public Visibility FalseValue { get; set; }
+    public Visibility FallbackValue { get; set; } = Visibility.Visible;
 
-    public Visibility FallbackValue { get; set; }
-   
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is not bool)
+        if (value is not bool boolValue)
         {
             return FallbackValue;
-        }      
+        }
 
-        return (bool)value ? TrueValue : FalseValue;
+        return boolValue ? TrueValue : FalseValue;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -37,12 +30,12 @@ public class BoolToVisibilityConverter : IValueConverter
         {
             return true;
         }
-            
+
         if (Equals(value, FalseValue))
         {
             return false;
-        }    
-                    
+        }
+
         return FallbackValue;
     }
 }
