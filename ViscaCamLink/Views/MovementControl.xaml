@@ -36,11 +36,6 @@
                     <Trigger Property="Grid.Column" Value="0">
                         <Setter Property="Margin" Value="0,4,0,0" />
                     </Trigger>
-                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection, 
-                                                   RelativeSource={RelativeSource AncestorType=Window}}"
-                                 Value="True">
-                        <Setter Property="IsEnabled" Value="False" />
-                    </DataTrigger>
                     <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
                                                    RelativeSource={RelativeSource AncestorType=Window}}"
                                  Value="True">
@@ -57,11 +52,6 @@
                    BasedOn="{StaticResource LargeButton}">
                 <Setter Property="Margin" Value="4,4,0,0" />
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection, 
-                                                   RelativeSource={RelativeSource AncestorType=Window}}"
-                                 Value="True">
-                        <Setter Property="IsEnabled" Value="False" />
-                    </DataTrigger>
                     <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
                                                    RelativeSource={RelativeSource AncestorType=Window}}"
                                  Value="True">
@@ -78,11 +68,6 @@
                    TargetType="{x:Type Button}"
                    BasedOn="{StaticResource BorderlessButton}">
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection, 
-                                                   RelativeSource={RelativeSource AncestorType=Window}}"
-                                 Value="True">
-                        <Setter Property="IsEnabled" Value="False" />
-                    </DataTrigger>
                     <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
                                                    RelativeSource={RelativeSource AncestorType=Window}}"
                                  Value="True">
@@ -106,11 +91,6 @@
                    TargetType="{x:Type Button}"
                    BasedOn="{StaticResource BorderlessButton}">
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection,
-                                                   RelativeSource={RelativeSource AncestorType=Window}}"
-                                 Value="True">
-                        <Setter Property="IsEnabled" Value="False" />
-                    </DataTrigger>
                     <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
                                                    RelativeSource={RelativeSource AncestorType=Window}}"
                                  Value="True">
@@ -123,11 +103,6 @@
                    TargetType="{x:Type Slider}"
                    BasedOn="{StaticResource HorizontalSlider}">
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding DataContext.Connection.IsEditingConnection,
-                                                   RelativeSource={RelativeSource AncestorType=Window}}"
-                                 Value="True">
-                        <Setter Property="IsEnabled" Value="False" />
-                    </DataTrigger>
                     <DataTrigger Binding="{Binding DataContext.Presets.IsSettingMemory,
                                                    RelativeSource={RelativeSource AncestorType=Window}}"
                                  Value="True">

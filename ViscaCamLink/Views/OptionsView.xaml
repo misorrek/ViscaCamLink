@@ -10,10 +10,10 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewmodels:OptionsViewModel}"
         Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"
-        Height="460"
-        MinHeight="360"
-        Width="560"
-        MinWidth="350"
+        Height="450"
+        MinHeight="500"
+        Width="550"
+        MinWidth="500"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
@@ -50,13 +50,13 @@
 
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="32" />
+                        <RowDefinition Height="32" />
+                        <RowDefinition Height="32" />
+                        <RowDefinition Height="32" />
+                        <RowDefinition Height="32" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="32" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
@@ -64,6 +64,7 @@
                     <TextBlock Grid.Column="0"
                                Grid.ColumnSpan="2"
                                Grid.Row="0"
+                               Margin="0,0,0,8"
                                Text="{Binding [Options_General], Source={x:Static localization:TranslationSource.Instance}}"
                                Style="{StaticResource HeaderTextBlock}" />  
 
@@ -118,8 +119,6 @@
                     <CheckBox Grid.Column="1"
                               Grid.Row="3"
                               Margin="0,8,0,0"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
                               IsChecked="{Binding UseCompactView}"
                               Style="{StaticResource BaseCheckBox}" />
 
@@ -135,8 +134,6 @@
                     <CheckBox Grid.Column="1"
                               Grid.Row="4"
                               Margin="0,8,0,0"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
                               IsChecked="{Binding UsePresetGroups}"
                               Style="{StaticResource BaseCheckBox}" />
 
@@ -152,8 +149,6 @@
                     <CheckBox Grid.Column="1"
                               Grid.Row="5"
                               Margin="0,8,0,0"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
                               IsChecked="{Binding UseNumpadLayout}"
                               Style="{StaticResource BaseCheckBox}" />
 
@@ -162,6 +157,7 @@
                     <TextBlock Grid.Column="0"
                                Grid.ColumnSpan="2"
                                Grid.Row="6"
+                               Margin="0,8,0,8"
                                Text="{Binding [Options_Hotkeys], Source={x:Static localization:TranslationSource.Instance}}"
                                Style="{StaticResource HeaderTextBlock}" />
 
@@ -174,8 +170,6 @@
 
                     <CheckBox Grid.Column="1"
                               Grid.Row="7"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
                               IsChecked="{Binding UseGlobalHotKeys}"
                               Style="{StaticResource BaseCheckBox}" />
 
@@ -199,25 +193,27 @@
 
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="{x:Type viewmodels:HotKeyBindingItemViewModel}">
-                                <Grid Margin="0,2">
+                                <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="160" />
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Grid.Column="0"
+                                               HorizontalAlignment="Left"
                                                VerticalAlignment="Center"
                                                Text="{Binding ActionDisplayName}"
                                                Style="{StaticResource BaseTextBlock}" />
 
                                     <Button Grid.Column="1"
                                             Height="28"
+                                            HorizontalAlignment="Right"
                                             Command="{Binding DataContext.HotKeyCaptureCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                             CommandParameter="{Binding}"
                                             Content="{Binding ButtonText}">
                                         <Button.Style>
                                             <Style TargetType="{x:Type Button}"
-                                                    BasedOn="{StaticResource DialogButton}">
+                                                   BasedOn="{StaticResource DialogButton}">
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding HasConflict}" Value="True">
                                                         <Setter Property="BorderBrush" Value="Tomato" />
@@ -226,6 +222,7 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Button.Style>
+                                        
                                         <behaviors:Interaction.Triggers>
                                             <behaviors:EventTrigger EventName="PreviewKeyDown">
                                                 <behaviors:InvokeCommandAction Command="{Binding DataContext.HotKeyPreviewKeyDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"

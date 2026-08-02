@@ -11,8 +11,8 @@
     <!--#region Constants-->    
 
     <system:Double x:Key="DefaultFontSize">12</system:Double>
-    <system:Double x:Key="PrimaryHeaderFontSize">18</system:Double>
-    <system:Double x:Key="SecondaryHeaderFontSize">16</system:Double>
+    <system:Double x:Key="HeaderFontSize">18</system:Double>
+    <system:Double x:Key="ButtonFontSize">16</system:Double>
 
     <FontFamily x:Key="DefaultFontFamily">Segoe UI</FontFamily>
     <FontWeight x:Key="DefaultFontWeight">Normal</FontWeight>
@@ -265,7 +265,7 @@
         <Setter Property="Foreground"
                 Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="FontSize"
-                Value="{StaticResource PrimaryHeaderFontSize}" />
+                Value="{StaticResource HeaderFontSize}" />
         <Setter Property="FontWeight"
                 Value="{StaticResource HeaderFontWeight}" />
     </Style>
@@ -278,7 +278,7 @@
         <Setter Property="BorderThickness"
                 Value="0,0,0,2" />
         <Setter Property="FontSize"
-                Value="{StaticResource PrimaryHeaderFontSize}" />
+                Value="{StaticResource HeaderFontSize}" />
         <Setter Property="FontWeight"
                 Value="{StaticResource HeaderFontWeight}" />
         <Style.Triggers>
@@ -302,7 +302,7 @@
         <Setter Property="Foreground"
                 Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="FontSize"
-                Value="{StaticResource SecondaryHeaderFontSize}" />
+                Value="{StaticResource ButtonFontSize}" />
     </Style>
     
     <Style x:Key="LargeButton"
@@ -311,7 +311,7 @@
         <Setter Property="Foreground"
                 Value="{DynamicResource PrimaryForegroundBrush}" />
         <Setter Property="FontSize"
-                Value="{StaticResource PrimaryHeaderFontSize}" />
+                Value="{StaticResource HeaderFontSize}" />
     </Style>
 
     <!--#endregion-->
@@ -668,23 +668,28 @@
            TargetType="{x:Type CheckBox}"
            BasedOn="{StaticResource {x:Type CheckBox}}">
 
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CheckBox">
                     <Border x:Name="Box"
-                                Width="18"
-                                Height="18"
-                                BorderThickness="{StaticResource DefaultBorderThickness}"
-                                BorderBrush="{DynamicResource DefaultBorderBrush}"
-                                CornerRadius="{StaticResource DefaultCornerRadius}">
+                            Width="18"
+                            Height="18"
+                            BorderThickness="{StaticResource DefaultBorderThickness}"
+                            BorderBrush="{DynamicResource DefaultBorderBrush}"
+                            CornerRadius="{StaticResource DefaultCornerRadius}">
 
                         <Viewbox Width="12"
-                                     Height="12"
-                                     Stretch="Uniform">
+                                 Height="12"
+                                 Stretch="Uniform">
                             <Path x:Name="CheckMark"
-                                      Visibility="Collapsed"
-                                      Data="{StaticResource CheckMark}"
-                                      Style="{StaticResource Icon12Path}"/>
+                                  Visibility="Collapsed"
+                                  Data="{StaticResource CheckMark}"
+                                  Style="{StaticResource Icon12Path}" />
                         </Viewbox>
                     </Border>
 
@@ -700,7 +705,7 @@
                                  Value="True">
                             <Setter TargetName="CheckMark"
                                     Property="Visibility"
-                                    Value="Visible"/>
+                                    Value="Visible" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

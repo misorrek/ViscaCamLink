@@ -57,7 +57,7 @@
                        Style="{StaticResource HeaderTextBlock}" />
 
             <TextBlock Text="{Binding VersionText}" 
-                       FontSize="{StaticResource SecondaryHeaderFontSize}"
+                       FontSize="{StaticResource ButtonFontSize}"
                        Style="{StaticResource BaseTextBlock}" />
         </StackPanel>
 
@@ -65,7 +65,7 @@
                    Grid.Row="1"
                    Margin="0,0,4,0"
                    Text="{Binding [Updater_Changelog], Source={x:Static localization:TranslationSource.Instance}}"
-                   FontSize="{StaticResource SecondaryHeaderFontSize}"
+                   FontSize="{StaticResource ButtonFontSize}"
                    Style="{StaticResource BaseTextBlock}" />
 
         <Border Grid.Column="1"
