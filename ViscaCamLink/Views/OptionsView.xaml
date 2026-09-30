@@ -79,7 +79,6 @@
                     <ComboBox Grid.Column="1"
                               Grid.Row="1"
                               Height="28"
-                              HorizontalAlignment="Right"
                               ItemsSource="{Binding LanguageItems}"
                               SelectedValue="{Binding SelectedLanguage}"
                               SelectedValuePath="LanguageValue"
@@ -99,7 +98,6 @@
                     <ComboBox Grid.Column="1"
                               Grid.Row="2"
                               Height="28"
-                              HorizontalAlignment="Right"
                               ItemsSource="{Binding ThemeItems}"
                               SelectedValue="{Binding SelectedTheme}"
                               SelectedValuePath="ThemeValue"
@@ -119,6 +117,8 @@
                     <CheckBox Grid.Column="1"
                               Grid.Row="3"
                               Margin="0,8,0,0"
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Center"
                               IsChecked="{Binding UseCompactView}"
                               Style="{StaticResource BaseCheckBox}" />
 
@@ -134,6 +134,8 @@
                     <CheckBox Grid.Column="1"
                               Grid.Row="4"
                               Margin="0,8,0,0"
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Center"
                               IsChecked="{Binding UsePresetGroups}"
                               Style="{StaticResource BaseCheckBox}" />
 
@@ -149,6 +151,8 @@
                     <CheckBox Grid.Column="1"
                               Grid.Row="5"
                               Margin="0,8,0,0"
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Center"
                               IsChecked="{Binding UseNumpadLayout}"
                               Style="{StaticResource BaseCheckBox}" />
 
@@ -170,6 +174,8 @@
 
                     <CheckBox Grid.Column="1"
                               Grid.Row="7"
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Center"
                               IsChecked="{Binding UseGlobalHotKeys}"
                               Style="{StaticResource BaseCheckBox}" />
 
