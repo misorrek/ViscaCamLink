@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using Shouldly;
@@ -34,7 +36,7 @@ public sealed class PresetServiceTests
             .Callback<Guid, PresetData>((_, data) => _lastSavedPresetData = data);
         _repository.Setup(r => r.LoadForCameraProfile(_cameraId)).Returns(CreateDefaultPresetData());
 
-        _presetService = new PresetService(_viscaController.Object, _repository.Object, _settingsService.Object);
+        _presetService = new PresetService(_viscaController.Object, _repository.Object, _settingsService.Object, NullLogger<PresetService>.Instance);
     }
 
     [Fact]
@@ -178,7 +180,7 @@ public sealed class PresetServiceTests
         data.ActiveGroupId = secondGroupId;
         _repository.Setup(r => r.LoadForCameraProfile(_cameraId)).Returns(data);
 
-        var service = new PresetService(_viscaController.Object, _repository.Object, _settingsService.Object);
+        var service = new PresetService(_viscaController.Object, _repository.Object, _settingsService.Object, NullLogger<PresetService>.Instance);
 
         service.ActiveGroupId.ShouldBe(secondGroupId);
     }

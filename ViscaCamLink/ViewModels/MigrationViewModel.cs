@@ -1,24 +1,33 @@
 namespace ViscaCamLink.ViewModels;
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows.Input;
+
+using Microsoft.Extensions.Logging;
 
 using ViscaCamLink.Infrastructure.Interface;
 
-public class MigrationViewModel(string uninstallString, Action closeAction) : ViewModelBase
+public partial class MigrationViewModel(
+    string uninstallString,
+    Action closeAction,
+    ILogger<MigrationViewModel> logger) : ViewModelBase
 {
     public ICommand UninstallCommand { get; } = new Command(() =>
         {
-            LaunchUninstaller(uninstallString);
+            LaunchUninstaller(uninstallString, logger);
             closeAction();
         });
 
     public ICommand CloseCommand { get; } = new Command(closeAction);
 
-    private static void LaunchUninstaller(string uninstallString)
+    private static void LaunchUninstaller(string uninstallString, ILogger logger)
     {
         var (executable, arguments) = ParseUninstallString(uninstallString);
+
+        LogLaunchingUninstaller(logger, executable);
 
         try
         {
@@ -29,9 +38,10 @@ public class MigrationViewModel(string uninstallString, Action closeAction) : Vi
                 UseShellExecute = true,
             });
         }
-        catch
+        catch (Exception exception) when (exception is Win32Exception or InvalidOperationException or IOException)
         {
             // Best-effort: if launch fails the user can still remove the old version manually.
+            LogLaunchUninstallerFailed(logger, executable, exception);
         }
     }
 
@@ -58,4 +68,10 @@ public class MigrationViewModel(string uninstallString, Action closeAction) : Vi
             ? (uninstallString[..spaceIndex], uninstallString[(spaceIndex + 1)..])
             : (uninstallString, string.Empty);
     }
+
+    [LoggerMessage(EventId = 5201, Level = LogLevel.Information, Message = "Launching legacy 0.3.0 uninstaller '{Executable}'")]
+    private static partial void LogLaunchingUninstaller(ILogger logger, string executable);
+
+    [LoggerMessage(EventId = 5202, Level = LogLevel.Warning, Message = "Legacy 0.3.0 uninstaller '{Executable}' could not be started")]
+    private static partial void LogLaunchUninstallerFailed(ILogger logger, string executable, Exception exception);
 }

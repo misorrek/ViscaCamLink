@@ -1,16 +1,19 @@
 namespace ViscaCamLink.Repositories.HotKeys;
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure;
 using ViscaCamLink.Repositories;
 
-public class HotKeyRepository(string filePath) : IHotKeyRepository
+public partial class HotKeyRepository(string filePath, ILogger<HotKeyRepository> logger) : IHotKeyRepository
 {
-    public HotKeyRepository() : this(AppPaths.HotKeysFile)
+    public HotKeyRepository(ILogger<HotKeyRepository> logger) : this(AppPaths.HotKeysFile, logger)
     {
     }
 
@@ -28,8 +31,10 @@ public class HotKeyRepository(string filePath) : IHotKeyRepository
 
             return MergeWithDefaults(loadedBindings ?? []);
         }
-        catch (JsonException)
+        catch (JsonException exception)
         {
+            LogLoadFailed(logger, filePath, exception);
+
             return HotKeyDefinitions.CreateDefaultBindings();
         }
     }
@@ -37,16 +42,24 @@ public class HotKeyRepository(string filePath) : IHotKeyRepository
     public void Save(IReadOnlyList<HotKeyBinding> bindings)
     {
         var directory = Path.GetDirectoryName(filePath);
-
-        if (!string.IsNullOrEmpty(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
         var bindingsList = bindings is List<HotKeyBinding> list ? list : [.. bindings];
 
-        using var stream = File.Create(filePath);
-        JsonSerializer.Serialize(stream, bindingsList, RepositoryJsonContext.Default.ListHotKeyBinding);
+        try
+        {
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            using var stream = File.Create(filePath);
+            JsonSerializer.Serialize(stream, bindingsList, RepositoryJsonContext.Default.ListHotKeyBinding);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            LogSaveFailed(logger, filePath, exception);
+
+            throw;
+        }
     }
 
     private static List<HotKeyBinding> MergeWithDefaults(IReadOnlyList<HotKeyBinding> loadedBindings)
@@ -60,4 +73,10 @@ public class HotKeyRepository(string filePath) : IHotKeyRepository
                 ? loadedBinding.Copy()
                 : defaultBinding.Copy())];
     }
+
+    [LoggerMessage(EventId = 3101, Level = LogLevel.Warning, Message = "Hotkey file '{FilePath}' could not be read; falling back to default bindings")]
+    private static partial void LogLoadFailed(ILogger logger, string filePath, Exception exception);
+
+    [LoggerMessage(EventId = 3102, Level = LogLevel.Error, Message = "Hotkey file '{FilePath}' could not be saved")]
+    private static partial void LogSaveFailed(ILogger logger, string filePath, Exception exception);
 }

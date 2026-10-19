@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Moq;
 
 using Shouldly;
@@ -16,6 +18,12 @@ using Xunit;
 public sealed class StartupUpdateCheckServiceTests
 {
     private readonly Mock<IUpdateService> _updateService = new();
+    private readonly Mock<ILogger<StartupUpdateCheckService>> _logger = new();
+
+    public StartupUpdateCheckServiceTests()
+    {
+        _logger.Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+    }
 
     [Fact]
     public async Task RunAsync_Success()
@@ -47,31 +55,35 @@ public sealed class StartupUpdateCheckServiceTests
     }
 
     [Fact]
-    public async Task RunAsync_WhenUpdateServiceThrows_ReportsExceptionWithoutThrowing()
+    public async Task RunAsync_WhenUpdateServiceThrows_LogsWarningWithoutThrowing()
     {
         var thrown = new InvalidOperationException("update failure");
-        Exception? reported = null;
 
         _updateService
             .Setup(s => s.CheckForUpdateAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(thrown);
 
-        var service = CreateSut(reportException: exception => reported = exception);
+        var service = CreateSut();
         Task act() => service.RunAsync();
 
         await Should.NotThrowAsync(act);
 
-        reported.ShouldBeSameAs(thrown);
+        _logger.Verify(
+            logger => logger.Log(
+                LogLevel.Warning,
+                It.Is<EventId>(eventId => eventId.Id == 4001),
+                It.IsAny<It.IsAnyType>(),
+                thrown,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
-    private StartupUpdateCheckService CreateSut(
-        Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
-        Action<Exception>? reportException = null)
+    private StartupUpdateCheckService CreateSut(Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
     {
         return new StartupUpdateCheckService(
             _updateService.Object,
+            _logger.Object,
             TimeSpan.FromMilliseconds(10),
-            delayAsync ?? ((_, _) => Task.CompletedTask),
-            reportException);
+            delayAsync ?? ((_, _) => Task.CompletedTask));
     }
 }

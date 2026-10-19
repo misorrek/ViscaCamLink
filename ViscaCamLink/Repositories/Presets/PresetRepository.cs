@@ -5,13 +5,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure;
 using ViscaCamLink.Repositories;
 using ViscaCamLink.Resources;
 
-public class PresetRepository(string directory) : IPresetRepository
+public partial class PresetRepository(string directory, ILogger<PresetRepository> logger) : IPresetRepository
 {
-    public PresetRepository() : this(AppPaths.PresetsDirectory)
+    public PresetRepository(ILogger<PresetRepository> logger) : this(AppPaths.PresetsDirectory, logger)
     {
     }
 
@@ -33,10 +35,13 @@ public class PresetRepository(string directory) : IPresetRepository
             {
                 return data!;
             }
+
+            LogInvalidPresetData(logger, filePath);
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
             // Invalid user-local state should not prevent the app from starting.
+            LogLoadFailed(logger, filePath, exception);
         }
 
         BackupRejectedFile(filePath);
@@ -49,16 +54,22 @@ public class PresetRepository(string directory) : IPresetRepository
         var filePath = GetPresetFilePath(profileId);
         var temporaryPath = $"{filePath}.{Guid.NewGuid():N}.tmp";
 
-        Directory.CreateDirectory(directory);
-
         try
         {
+            Directory.CreateDirectory(directory);
+
             using (var stream = File.Create(temporaryPath))
             {
                 JsonSerializer.Serialize(stream, presetData, RepositoryJsonContext.Default.PresetData);
             }
 
             File.Move(temporaryPath, filePath, overwrite: true);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            LogSaveFailed(logger, filePath, exception);
+
+            throw;
         }
         finally
         {
@@ -67,6 +78,32 @@ public class PresetRepository(string directory) : IPresetRepository
     }
 
     private string GetPresetFilePath(Guid profileId) => Path.Combine(directory, $"presets-{profileId:N}.json");
+
+    private void BackupRejectedFile(string filePath)
+    {
+        try
+        {
+            File.Copy(filePath, $"{filePath}.bak", overwrite: true);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // Best effort only; startup recovery should not depend on backup success.
+            LogBackupFailed(logger, filePath, exception);
+        }
+    }
+
+    private void TryDelete(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // Best effort only; a leftover temp file is harmless.
+            LogTemporaryFileDeleteFailed(logger, path, exception);
+        }
+    }
 
     private static bool IsValid(PresetData? data)
     {
@@ -106,30 +143,6 @@ public class PresetRepository(string directory) : IPresetRepository
         return true;
     }
 
-    private static void BackupRejectedFile(string filePath)
-    {
-        try
-        {
-            File.Copy(filePath, $"{filePath}.bak", overwrite: true);
-        }
-        catch
-        {
-            // Best effort only; startup recovery should not depend on backup success.
-        }
-    }
-
-    private static void TryDelete(string path)
-    {
-        try
-        {
-            File.Delete(path);
-        }
-        catch
-        {
-            // Best effort only; a leftover temp file is harmless.
-        }
-    }
-
     private static PresetData CreateDefault()
     {
         var groupId = Guid.NewGuid();
@@ -158,4 +171,19 @@ public class PresetRepository(string directory) : IPresetRepository
             ],
         };
     }
+
+    [LoggerMessage(EventId = 3201, Level = LogLevel.Warning, Message = "Preset file '{FilePath}' could not be read; falling back to defaults")]
+    private static partial void LogLoadFailed(ILogger logger, string filePath, Exception exception);
+
+    [LoggerMessage(EventId = 3202, Level = LogLevel.Warning, Message = "Preset file '{FilePath}' contains invalid data; falling back to defaults")]
+    private static partial void LogInvalidPresetData(ILogger logger, string filePath);
+
+    [LoggerMessage(EventId = 3203, Level = LogLevel.Error, Message = "Preset file '{FilePath}' could not be saved")]
+    private static partial void LogSaveFailed(ILogger logger, string filePath, Exception exception);
+
+    [LoggerMessage(EventId = 3204, Level = LogLevel.Warning, Message = "Rejected preset file '{FilePath}' could not be backed up")]
+    private static partial void LogBackupFailed(ILogger logger, string filePath, Exception exception);
+
+    [LoggerMessage(EventId = 3205, Level = LogLevel.Debug, Message = "Temporary preset file '{FilePath}' could not be deleted")]
+    private static partial void LogTemporaryFileDeleteFailed(ILogger logger, string filePath, Exception exception);
 }

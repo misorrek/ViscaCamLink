@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using Shouldly;
@@ -222,6 +224,6 @@ public sealed class CameraConnectionServiceTests
 
     private CameraConnectionService CreateSut(TimeSpan? healthCheckInterval = null)
     {
-        return new CameraConnectionService(_viscaController.Object, _settings.Object, _presetService.Object, healthCheckInterval);
+        return new CameraConnectionService(_viscaController.Object, _settings.Object, _presetService.Object, NullLogger<CameraConnectionService>.Instance, healthCheckInterval);
     }
 }

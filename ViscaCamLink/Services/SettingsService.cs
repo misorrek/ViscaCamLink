@@ -10,11 +10,13 @@ using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Infrastructure.Theming;
 using ViscaCamLink.Repositories.AppSettings;
 
-public class SettingsService(
+public partial class SettingsService(
     AppSettings settings,
     AppSettingsRepository settingsRepository,
     Action<Language> applyLocalization,
-    Action<Theme> applyTheme)
+    Action<Theme> applyTheme,
+    Action<LogLevel> applyLogLevel,
+    ILogger<SettingsService> logger)
     : ISettingsService
 {
     public WindowPlacementData? WindowPlacement
@@ -124,6 +126,7 @@ public class SettingsService(
         }
 
         Save();
+        LogCameraProfileAdded(logger, profile.Name, profile.Ip, profile.Port);
     }
 
     public void RemoveCameraProfile(Guid id)
@@ -143,6 +146,7 @@ public class SettingsService(
         }
 
         Save();
+        LogCameraProfileRemoved(logger, profileToDelete.Name);
     }
 
     public void UpdateCameraProfile(CameraProfile profile)
@@ -218,5 +222,32 @@ public class SettingsService(
 
             Save();
         }
+
+        if (LogLevel != selection.LogLevel)
+        {
+            LogLevel = selection.LogLevel;
+
+            Save();
+            applyLogLevel(selection.LogLevel);
+        }
+
+        LogOptionsApplied(logger, Language, Theme, UseCompactView, UsePresetGroups, UseNumpadLayout, UseGlobalHotKeys, LogLevel);
     }
+
+    [LoggerMessage(EventId = 2401, Level = LogLevel.Information, Message = "Options applied: language {Language}, theme {Theme}, compact view {UseCompactView}, preset groups {UsePresetGroups}, numpad layout {UseNumpadLayout}, global hotkeys {UseGlobalHotKeys}, log level {LogLevel}")]
+    private static partial void LogOptionsApplied(
+        ILogger logger,
+        Language language,
+        Theme theme,
+        bool useCompactView,
+        bool usePresetGroups,
+        bool useNumpadLayout,
+        bool useGlobalHotKeys,
+        LogLevel logLevel);
+
+    [LoggerMessage(EventId = 2402, Level = LogLevel.Information, Message = "Camera profile '{Name}' ({Ip}:{Port}) added")]
+    private static partial void LogCameraProfileAdded(ILogger logger, string name, string ip, int port);
+
+    [LoggerMessage(EventId = 2403, Level = LogLevel.Information, Message = "Camera profile '{Name}' removed")]
+    private static partial void LogCameraProfileRemoved(ILogger logger, string name);
 }

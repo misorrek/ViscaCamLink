@@ -4,6 +4,8 @@ using System;
 using System.IO;
 using System.Linq;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Shouldly;
 
 using ViscaCamLink.Repositories.Presets;
@@ -20,7 +22,7 @@ public sealed class PresetRepositoryTests : IDisposable
     {
         Directory.CreateDirectory(_tempDirectory);
 
-        _repository = new PresetRepository(_tempDirectory);
+        _repository = new PresetRepository(_tempDirectory, NullLogger<PresetRepository>.Instance);
     }
 
     public void Dispose()
@@ -149,7 +151,7 @@ public sealed class PresetRepositoryTests : IDisposable
     public void SaveForCameraProfile_WhenDirectoryDoesNotExist_CreatesDirectory()
     {
         var nestedDirectory = Path.Combine(_tempDirectory, "nested", "sub");
-        var repository = new PresetRepository(nestedDirectory);
+        var repository = new PresetRepository(nestedDirectory, NullLogger<PresetRepository>.Instance);
         var data = repository.LoadForCameraProfile(_cameraId);
 
         repository.SaveForCameraProfile(_cameraId, data);

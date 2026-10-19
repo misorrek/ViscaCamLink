@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Shouldly;
 
 using ViscaCamLink.Infrastructure.Localization;
@@ -26,9 +29,9 @@ public sealed class SettingsServiceTests : IDisposable
     {
         _settingsFilePath = Path.Combine(_rootDirectory, "settings.json");
 
-        var repository = new AppSettingsRepository(_settingsFilePath, Path.Combine(_rootDirectory, "legacy"));
+        var repository = new AppSettingsRepository(_settingsFilePath, Path.Combine(_rootDirectory, "legacy"), NullLogger<AppSettingsRepository>.Instance);
 
-        _settingsService = new SettingsService(_settings, repository, _appliedLanguages.Add, _appliedThemes.Add);
+        _settingsService = new SettingsService(_settings, repository, _appliedLanguages.Add, _appliedThemes.Add, _appliedLogLevels.Add, NullLogger<SettingsService>.Instance);
     }
 
     public void Dispose()

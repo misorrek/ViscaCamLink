@@ -5,13 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure.HotKeys;
 using ViscaCamLink.Repositories.HotKeys;
 
-public sealed class HotKeyService(
+public sealed partial class HotKeyService(
     IHotKeyManager hotKeyManager,
     IHotKeyRepository repository,
-    ISettingsService settings) : IHotKeyService, IDisposable
+    ISettingsService settings,
+    ILogger<HotKeyService> logger) : IHotKeyService, IDisposable
 {
     private readonly Dictionary<HotKeyAction, Action> _actions = [];
     private readonly Dictionary<HotKeyAction, Action> _releaseActions = [];
@@ -43,8 +46,17 @@ public sealed class HotKeyService(
         RegisterConfiguredBindings();
     }
 
-    public bool RegisterHotKey(ModifierKeys modifier, Key key, Action action) =>
-        hotKeyManager.RegisterHotKey(modifier, key, action);
+    public bool RegisterHotKey(ModifierKeys modifier, Key key, Action action)
+    {
+        var registered = hotKeyManager.RegisterHotKey(modifier, key, action);
+
+        if (!registered)
+        {
+            LogHotKeyRegistrationFailed(logger, FormatGesture(modifier, key), null);
+        }
+
+        return registered;
+    }
 
     public HotKeyBindingValidationResult ValidateBindings(IEnumerable<HotKeyBinding> bindings)
     {
@@ -100,8 +112,12 @@ public sealed class HotKeyService(
 
         if (!validation.IsValid)
         {
+            LogInvalidBindingsReset(logger, validation.Message);
+
             _bindings = [.. HotKeyDefinitions.CreateDefaultBindings().Select(binding => binding.Copy())];
         }
+
+        var registeredCount = 0;
 
         foreach (var binding in _bindings)
         {
@@ -115,15 +131,21 @@ public sealed class HotKeyService(
                 continue;
             }
 
-            if (_releaseActions.TryGetValue(binding.Action, out var releaseAction))
+            var registered = _releaseActions.TryGetValue(binding.Action, out var releaseAction)
+                ? hotKeyManager.RegisterHoldHotKey(binding.Modifier, binding.Key, action, releaseAction)
+                : hotKeyManager.RegisterHotKey(binding.Modifier, binding.Key, action);
+
+            if (registered)
             {
-                hotKeyManager.RegisterHoldHotKey(binding.Modifier, binding.Key, action, releaseAction);
+                registeredCount++;
             }
             else
             {
-                hotKeyManager.RegisterHotKey(binding.Modifier, binding.Key, action);
+                LogHotKeyRegistrationFailed(logger, FormatGesture(binding.Modifier, binding.Key), binding.Action);
             }
         }
+
+        LogHotKeysRegistered(logger, registeredCount, settings.UseGlobalHotKeys);
     }
 
     private static string FormatGesture(ModifierKeys modifier, Key key)
@@ -132,4 +154,13 @@ public sealed class HotKeyService(
             ? key.ToString()
             : $"{modifier}+{key}";
     }
+
+    [LoggerMessage(EventId = 2301, Level = LogLevel.Warning, Message = "Hotkey {Gesture} for action {Action} could not be registered; it may already be in use by another application")]
+    private static partial void LogHotKeyRegistrationFailed(ILogger logger, string gesture, HotKeyAction? action);
+
+    [LoggerMessage(EventId = 2302, Level = LogLevel.Warning, Message = "Configured hotkey bindings are invalid ({Reason}); falling back to default bindings")]
+    private static partial void LogInvalidBindingsReset(ILogger logger, string? reason);
+
+    [LoggerMessage(EventId = 2303, Level = LogLevel.Information, Message = "Registered {Count} hotkeys (global: {UseGlobalHotKeys})")]
+    private static partial void LogHotKeysRegistered(ILogger logger, int count, bool useGlobalHotKeys);
 }

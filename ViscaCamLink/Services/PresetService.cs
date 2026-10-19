@@ -5,23 +5,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Repositories.Presets;
 using ViscaCamLink.Visca;
 
-public class PresetService : IPresetService
+public partial class PresetService : IPresetService
 {
     private readonly IViscaController _viscaController;
     private readonly IPresetRepository _repository;
     private readonly ISettingsService _settingsService;
+    private readonly ILogger<PresetService> _logger;
 
     private PresetData _presetData;
     private Guid _activeGroupId;
 
-    public PresetService(IViscaController viscaController, IPresetRepository repository, ISettingsService settingsService)
+    public PresetService(
+        IViscaController viscaController,
+        IPresetRepository repository,
+        ISettingsService settingsService,
+        ILogger<PresetService> logger)
     {
         _viscaController = viscaController;
         _repository = repository;
         _settingsService = settingsService;
+        _logger = logger;
         _presetData = _repository.LoadForCameraProfile(_settingsService.ActiveCameraProfileId);
         _activeGroupId = ResolveActiveGroupId(_presetData);
         _presetData.ActiveGroupId = _activeGroupId;
@@ -39,9 +47,39 @@ public class PresetService : IPresetService
 
     private PresetGroup ActiveGroup => _presetData.Groups.First(group => group.Id == _activeGroupId);
 
-    public Task SetMemoryAsync(byte slot) => _viscaController.MemorySetAsync(slot);
+    public async Task SetMemoryAsync(byte slot)
+    {
+        LogSavingPreset(_logger, slot);
 
-    public Task RecallMemoryAsync(byte slot) => _viscaController.MemoryRecallAsync(slot);
+        try
+        {
+            await _viscaController.MemorySetAsync(slot).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            // Logged here with context and rethrown; callers (TryCameraOperation) swallow without logging.
+            LogSavePresetFailed(_logger, slot, exception);
+
+            throw;
+        }
+    }
+
+    public async Task RecallMemoryAsync(byte slot)
+    {
+        LogRecallingPreset(_logger, slot);
+
+        try
+        {
+            await _viscaController.MemoryRecallAsync(slot).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            // Logged here with context and rethrown; callers (TryCameraOperation) swallow without logging.
+            LogRecallPresetFailed(_logger, slot, exception);
+
+            throw;
+        }
+    }
 
     public string GetPresetName(int slotIndex)
     {
@@ -216,4 +254,19 @@ public class PresetService : IPresetService
 
         return null;
     }
+
+    [LoggerMessage(EventId = 2201, Level = LogLevel.Information, Message = "Saving current position to preset slot {Slot}")]
+    private static partial void LogSavingPreset(ILogger logger, byte slot);
+
+    [LoggerMessage(EventId = 2202, Level = LogLevel.Error, Message = "Saving preset slot {Slot} failed")]
+    private static partial void LogSavePresetFailed(ILogger logger, byte slot, Exception exception);
+
+    [LoggerMessage(EventId = 2203, Level = LogLevel.Information, Message = "Recalling preset slot {Slot}")]
+    private static partial void LogRecallingPreset(ILogger logger, byte slot);
+
+    [LoggerMessage(EventId = 2204, Level = LogLevel.Error, Message = "Recalling preset slot {Slot} failed")]
+    private static partial void LogRecallPresetFailed(ILogger logger, byte slot, Exception exception);
+
+    [LoggerMessage(EventId = 2205, Level = LogLevel.Warning, Message = "Preset group '{Name}' was not added because all camera slots are in use")]
+    private static partial void LogGroupLimitReached(ILogger logger, string name);
 }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 
+using Microsoft.Extensions.Logging;
+
 using Moq;
 
 using Shouldly;
@@ -20,6 +22,7 @@ public sealed class HotKeyServiceTests
     private readonly Mock<IHotKeyManager> _hotKeyManager = new();
     private readonly Mock<IHotKeyRepository> _repository = new();
     private readonly Mock<ISettingsService> _settings = new();
+    private readonly Mock<ILogger<HotKeyService>> _logger = new();
     private readonly HotKeyService _hotKeyService;
 
     public HotKeyServiceTests()
@@ -27,8 +30,9 @@ public sealed class HotKeyServiceTests
         _repository.Setup(r => r.Load()).Returns(HotKeyDefinitions.CreateDefaultBindings());
         _settings.Setup(s => s.UseGlobalHotKeys).Returns(true);
         _hotKeyManager.SetupProperty(m => m.UseGlobalHotKeys, true);
+        _logger.Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
 
-        _hotKeyService = new HotKeyService(_hotKeyManager.Object, _repository.Object, _settings.Object);
+        _hotKeyService = new HotKeyService(_hotKeyManager.Object, _repository.Object, _settings.Object, _logger.Object);
     }
 
     [Fact]
@@ -68,6 +72,27 @@ public sealed class HotKeyServiceTests
 
         _hotKeyManager.Verify(m => m.UnregisterAll(), Times.Once);
         _hotKeyManager.Verify(m => m.RegisterHotKey(ModifierKeys.None, Key.NumPad1, callback), Times.Once);
+    }
+
+    [Fact]
+    public void RegisterActions_WhenKeyIsTakenByAnotherApplication_LogsWarning()
+    {
+        Action callback = () => { };
+
+        _hotKeyManager
+            .Setup(m => m.RegisterHotKey(ModifierKeys.None, Key.NumPad1, callback))
+            .Returns(false);
+
+        _hotKeyService.RegisterActions([new HotKeyActionRegistration(HotKeyAction.Preset1, callback)]);
+
+        _logger.Verify(
+            logger => logger.Log(
+                LogLevel.Warning,
+                It.Is<EventId>(eventId => eventId.Id == 2301),
+                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains(nameof(Key.NumPad1))),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]

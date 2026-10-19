@@ -3,6 +3,8 @@ namespace ViscaCamLink.Tests.Services;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using Shouldly;
@@ -20,7 +22,7 @@ public sealed class PowerServiceTests
 
     public PowerServiceTests()
     {
-        _powerService = new PowerService(_viscaController.Object);
+        _powerService = new PowerService(_viscaController.Object, NullLogger<PowerService>.Instance);
     }
 
     [Fact]

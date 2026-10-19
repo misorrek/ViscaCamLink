@@ -2,6 +2,9 @@ namespace ViscaCamLink.Services;
 
 using System.Reflection;
 
+using Microsoft.Extensions.Logging;
+
+using ViscaCamLink.Infrastructure;
 using ViscaCamLink.ViewModels;
 using ViscaCamLink.Views;
 
@@ -9,6 +12,8 @@ public class DialogService(
     ISettingsService settingsService,
     IHotKeyService hotKeyService,
     IUpdateService updateService) : IDialogService
+    ILogger<MigrationViewModel> migrationLogger,
+    ILogger<UpdateDownloadViewModel> updateDownloadLogger) : IDialogService
 {
     public void ShowOptionsDialog()
     {
@@ -50,7 +55,7 @@ public class DialogService(
     public void ShowMigrationDialog(string uninstallString)
     {
         var view = new MigrationView();
-        var viewModel = new MigrationViewModel(uninstallString, view.Close);
+        var viewModel = new MigrationViewModel(uninstallString, view.Close, migrationLogger);
 
         view.DataContext = viewModel;
         view.ShowDialog();

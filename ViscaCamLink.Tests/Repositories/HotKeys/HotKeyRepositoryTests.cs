@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Shouldly;
 
 using ViscaCamLink.Repositories.HotKeys;
@@ -18,7 +20,7 @@ public sealed class HotKeyRepositoryTests : IDisposable
 
     public HotKeyRepositoryTests()
     {
-        _repository = new HotKeyRepository(_filePath);
+        _repository = new HotKeyRepository(_filePath, NullLogger<HotKeyRepository>.Instance);
     }
 
     public void Dispose()

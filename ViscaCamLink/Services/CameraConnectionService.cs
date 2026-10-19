@@ -4,14 +4,17 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Visca;
 using ViscaCamLink.Visca.Types;
 
-public class CameraConnectionService(
+public partial class CameraConnectionService(
     IViscaController viscaController,
     ISettingsService settingsService,
     IPresetService presetService,
+    ILogger<CameraConnectionService> logger,
     TimeSpan? healthCheckInterval = null) : ICameraConnectionService, IDisposable
 {
     private static readonly TimeSpan DefaultHealthCheckInterval = TimeSpan.FromSeconds(10);
@@ -67,6 +70,7 @@ public class CameraConnectionService(
         try
         {
             StopHealthCheck();
+            LogSwitchingCameraProfile(logger, camera.Name, camera.Ip, camera.Port);
 
             settingsService.SetActiveCameraProfile(camera.Id);
             presetService.SwitchCameraProfile(camera.Id);
@@ -123,21 +127,22 @@ public class CameraConnectionService(
 
     private async Task ConnectAsync(CancellationToken cancellationToken)
     {
+        var camera = settingsService.ActiveCameraProfile;
+        var ip = camera?.Ip ?? CameraProfile.DefaultIp;
+        var port = camera?.Port ?? CameraProfile.DefaultPort;
+
         try
         {
-            var camera = settingsService.ActiveCameraProfile;
-            var ip = camera?.Ip ?? CameraProfile.DefaultIp;
-            var port = camera?.Port ?? CameraProfile.DefaultPort;
-
             await viscaController.ReconnectAsync(ip, port, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
         }
-        catch
+        catch (Exception exception)
         {
-            // Connection failures are reflected via the Connected property below.
+            // Connection failures are reflected via the Connected property below; the transport already logged the error.
+            LogConnectFailed(logger, ip, port, exception);
         }
 
         var connected = viscaController.Connected.GetValueOrDefault();
@@ -193,6 +198,7 @@ public class CameraConnectionService(
 
             if (Status == ConnectionStatus.Failed)
             {
+                LogHealthCheckRecovered(logger);
                 OnConnectionStatusChanged(ConnectionStatus.Ok);
             }
         }
@@ -200,19 +206,48 @@ public class CameraConnectionService(
         {
             throw;
         }
-        catch
+        catch (Exception exception)
         {
-            // Any failed health check means the connection is gone.
+            // Any failed health check means the connection is gone. Only the transition is logged
+            // above Debug so a camera that stays offline does not flood the log.
             if (Status != ConnectionStatus.Failed)
             {
+                LogHealthCheckFailed(logger, exception);
                 OnConnectionStatusChanged(ConnectionStatus.Failed);
+            }
+            else
+            {
+                LogHealthCheckStillFailing(logger, exception.Message);
             }
         }
     }
 
     private void OnConnectionStatusChanged(ConnectionStatus status)
     {
+        if (Status != status)
+        {
+            LogConnectionStatusChanged(logger, Status, status);
+        }
+
         Status = status;
         ConnectionStatusChanged?.Invoke(this, status);
     }
+
+    [LoggerMessage(EventId = 2001, Level = LogLevel.Information, Message = "Connection status changed from {OldStatus} to {NewStatus}")]
+    private static partial void LogConnectionStatusChanged(ILogger logger, ConnectionStatus oldStatus, ConnectionStatus newStatus);
+
+    [LoggerMessage(EventId = 2002, Level = LogLevel.Information, Message = "Switching to camera profile '{Name}' ({Ip}:{Port})")]
+    private static partial void LogSwitchingCameraProfile(ILogger logger, string name, string ip, int port);
+
+    [LoggerMessage(EventId = 2003, Level = LogLevel.Debug, Message = "Connecting to {Ip}:{Port} failed")]
+    private static partial void LogConnectFailed(ILogger logger, string ip, int port, Exception exception);
+
+    [LoggerMessage(EventId = 2004, Level = LogLevel.Warning, Message = "Connection health check failed; camera is unreachable")]
+    private static partial void LogHealthCheckFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 2005, Level = LogLevel.Debug, Message = "Connection health check still failing: {Reason}")]
+    private static partial void LogHealthCheckStillFailing(ILogger logger, string reason);
+
+    [LoggerMessage(EventId = 2006, Level = LogLevel.Information, Message = "Connection health check succeeded again; connection recovered")]
+    private static partial void LogHealthCheckRecovered(ILogger logger);
 }

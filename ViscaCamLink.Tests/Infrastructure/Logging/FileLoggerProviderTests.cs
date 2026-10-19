@@ -64,6 +64,26 @@ public sealed class FileLoggerProviderTests : IDisposable
         File.Exists(Path.Combine(_logDirectory, "viscacamlink-2026-01-03.log")).ShouldBeTrue();
     }
 
+    [Fact]
+    public void CreateLogger_WhenOldLogFilesExist_DeletesFilesOutsideRetention()
+    {
+        var expiredLogPath = Path.Combine(_logDirectory, "viscacamlink-2025-12-19.log");
+        var retainedLogPath = Path.Combine(_logDirectory, "viscacamlink-2025-12-20.log");
+        var unrelatedFilePath = Path.Combine(_logDirectory, "viscacamlink-notes.log");
+
+        File.WriteAllText(expiredLogPath, "expired");
+        File.WriteAllText(retainedLogPath, "retained");
+        File.WriteAllText(unrelatedFilePath, "unrelated");
+
+        var logger = _provider.CreateLogger("TestCategory");
+
+        logger.Log(LogLevel.Information, new EventId(1), "Hello", null, (state, _) => state);
+
+        File.Exists(expiredLogPath).ShouldBeFalse();
+        File.Exists(retainedLogPath).ShouldBeTrue();
+        File.Exists(unrelatedFilePath).ShouldBeTrue();
+    }
+
     private sealed class MutableTimeProvider(DateTimeOffset now) : TimeProvider
     {
         public DateTimeOffset Now { get; set; } = now;

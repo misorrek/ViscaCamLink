@@ -6,6 +6,7 @@ using System.Windows;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Win32;
 
 using ViscaCamLink.Infrastructure;
@@ -24,19 +25,42 @@ using ViscaCamLink.Visca;
 
 public partial class App : Application
 {
+    // Used until settings are loaded; afterwards FileLoggerProvider.MinimumLevel is the only filter and follows the Options dialog live.
+    private const LogLevel BootstrapLogLevel = LogLevel.Information;
+
+    private FileLoggerProvider? _fileLoggerProvider;
+    private ILoggerFactory? _bootstrapLoggerFactory;
+    private ILogger _logger = NullLogger.Instance;
     private IServiceProvider? _serviceProvider;
     private CancellationTokenSource? _updateCheckCancellation;
 
     private void Application_Startup(object sender, StartupEventArgs startupEventArgs)
     {
-        var settingsRepository = new AppSettingsRepository(AppPaths.SettingsFile, AppPaths.LegacyUserDataRoot);
+        _fileLoggerProvider = new FileLoggerProvider(AppPaths.LogsDirectory, TimeProvider.System) { MinimumLevel = BootstrapLogLevel };
+        _bootstrapLoggerFactory = LoggerFactory.Create(builder => builder
+            .SetMinimumLevel(LogLevel.Trace)
+            .AddProvider(_fileLoggerProvider));
+        _logger = _bootstrapLoggerFactory.CreateLogger<App>();
+
+        RegisterUnhandledExceptionHandlers();
+
+        var settingsRepository = new AppSettingsRepository(
+            AppPaths.SettingsFile,
+            AppPaths.LegacyUserDataRoot,
+            _bootstrapLoggerFactory.CreateLogger<AppSettingsRepository>());
         var appSettings = settingsRepository.Load();
+        var themeLogger = _bootstrapLoggerFactory.CreateLogger(typeof(ThemeHelper));
+
+        _fileLoggerProvider.MinimumLevel = appSettings.LogLevel;
 
         EnsureCameraProfileExists(appSettings, settingsRepository);
         LocalizationHelper.ApplyLocalization(appSettings.Language);
-        ThemeHelper.ApplyTheme(appSettings.Theme);
+        ThemeHelper.ApplyTheme(appSettings.Theme, themeLogger);
 
-        _serviceProvider = ConfigureServices(appSettings, settingsRepository);
+        _serviceProvider = ConfigureServices(appSettings, settingsRepository, _fileLoggerProvider, themeLogger);
+        _logger = _serviceProvider.GetRequiredService<ILogger<App>>();
+
+        LogStartup(appSettings.LogLevel);
 
         var viscaCamLinkViewModel = _serviceProvider.GetRequiredService<ViscaCamLinkViewModel>();
         var viscaCamLinkView = _serviceProvider.GetRequiredService<ViscaCamLinkView>();
@@ -62,13 +86,17 @@ public partial class App : Application
             _serviceProvider.GetRequiredService<IDialogService>());
     }
 
-    private static ServiceProvider ConfigureServices(AppSettings appSettings, AppSettingsRepository settingsRepository)
+    private static ServiceProvider ConfigureServices(
+        AppSettings appSettings,
+        AppSettingsRepository settingsRepository,
+        FileLoggerProvider fileLoggerProvider,
+        ILogger themeLogger)
     {
         var services = new ServiceCollection();
 
         services.AddLogging(builder => builder
-            .SetMinimumLevel(appSettings.LogLevel)
-            .AddProvider(new FileLoggerProvider(AppPaths.LogsDirectory, TimeProvider.System)));
+            .SetMinimumLevel(LogLevel.Trace)
+            .AddProvider(fileLoggerProvider));
 
         services.AddSingleton(settingsRepository);
         services.AddSingleton(appSettings);
@@ -77,7 +105,9 @@ public partial class App : Application
             provider.GetRequiredService<AppSettings>(),
             provider.GetRequiredService<AppSettingsRepository>(),
             LocalizationHelper.ApplyLocalization,
-            ThemeHelper.ApplyTheme));
+            theme => ThemeHelper.ApplyTheme(theme, themeLogger),
+            logLevel => fileLoggerProvider.MinimumLevel = logLevel,
+            provider.GetRequiredService<ILogger<SettingsService>>()));
 
         services.AddSingleton<IViscaClient>(provider =>
         {
@@ -131,8 +161,43 @@ public partial class App : Application
         settingsRepository.Save(appSettings);
     }
 
+    private void RegisterUnhandledExceptionHandlers()
+    {
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnAppDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+    }
+
+    private void UnregisterUnhandledExceptionHandlers()
+    {
+        DispatcherUnhandledException -= OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException -= OnAppDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs eventArgs) =>
+        LogDispatcherUnhandledException(_logger, eventArgs.Exception);
+
+    private void OnAppDomainUnhandledException(object sender, UnhandledExceptionEventArgs eventArgs) =>
+        LogAppDomainUnhandledException(_logger, eventArgs.IsTerminating, eventArgs.ExceptionObject as Exception);
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs eventArgs) =>
+        LogUnobservedTaskException(_logger, eventArgs.Exception);
+
+    private void LogStartup(LogLevel configuredLogLevel)
+    {
+        var version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? UnknownVersion;
+        var isVelopackInstalled = VelopackLocator.IsCurrentSet && VelopackLocator.Current.CurrentlyInstalledVersion is not null;
+
+        LogApplicationStarting(_logger, version, isVelopackInstalled, configuredLogLevel);
+        LogDataPaths(_logger, AppPaths.SettingsFile, AppPaths.PresetsDirectory, AppPaths.HotKeysFile, AppPaths.LogsDirectory);
+    }
+
     private void OnClosed(object? sender, EventArgs eventArgs)
     {
+        LogApplicationShuttingDown(_logger);
+        ThemeHelper.StopFollowingSystemTheme();
+
         _updateCheckCancellation?.Cancel();
         _updateCheckCancellation?.Dispose();
 
@@ -140,6 +205,13 @@ public partial class App : Application
         {
             disposable.Dispose();
         }
+
+        UnregisterUnhandledExceptionHandlers();
+
+        // Neither logger factory disposes a provider instance passed via AddProvider, so the App owns it.
+        _logger = NullLogger.Instance;
+        _bootstrapLoggerFactory?.Dispose();
+        _fileLoggerProvider?.Dispose();
 
         Current.Shutdown();
     }
@@ -199,4 +271,22 @@ public partial class App : Application
 
         return null;
     }
+
+    [LoggerMessage(EventId = 5001, Level = LogLevel.Information, Message = "ViscaCamLink {Version} starting (Velopack installed: {IsVelopackInstalled}, log level: {LogLevel})")]
+    private static partial void LogApplicationStarting(ILogger logger, string version, bool isVelopackInstalled, LogLevel logLevel);
+
+    [LoggerMessage(EventId = 5002, Level = LogLevel.Information, Message = "Data paths: settings '{SettingsFile}', presets '{PresetsDirectory}', hotkeys '{HotKeysFile}', logs '{LogsDirectory}'")]
+    private static partial void LogDataPaths(ILogger logger, string settingsFile, string presetsDirectory, string hotKeysFile, string logsDirectory);
+
+    [LoggerMessage(EventId = 5003, Level = LogLevel.Information, Message = "ViscaCamLink shutting down")]
+    private static partial void LogApplicationShuttingDown(ILogger logger);
+
+    [LoggerMessage(EventId = 5004, Level = LogLevel.Critical, Message = "Unhandled exception on the UI thread")]
+    private static partial void LogDispatcherUnhandledException(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 5005, Level = LogLevel.Critical, Message = "Unhandled exception in the application domain (terminating: {IsTerminating})")]
+    private static partial void LogAppDomainUnhandledException(ILogger logger, bool isTerminating, Exception? exception);
+
+    [LoggerMessage(EventId = 5006, Level = LogLevel.Error, Message = "Unobserved task exception")]
+    private static partial void LogUnobservedTaskException(ILogger logger, Exception exception);
 }

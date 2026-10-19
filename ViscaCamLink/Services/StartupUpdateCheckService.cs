@@ -1,21 +1,21 @@
 namespace ViscaCamLink.Services;
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-public class StartupUpdateCheckService(
+using Microsoft.Extensions.Logging;
+
+public partial class StartupUpdateCheckService(
     IUpdateService updateService,
+    ILogger<StartupUpdateCheckService> logger,
     TimeSpan? startupDelay = null,
-    Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
-    Action<Exception>? reportException = null) : IStartupUpdateCheckService
+    Func<TimeSpan, CancellationToken, Task>? delayAsync = null) : IStartupUpdateCheckService
 {
     private static readonly TimeSpan DefaultStartupDelay = TimeSpan.FromSeconds(5);
 
     private readonly TimeSpan _startupDelay = startupDelay ?? DefaultStartupDelay;
     private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync = delayAsync ?? Task.Delay;
-    private readonly Action<Exception> _reportException = reportException ?? (exception => Debug.WriteLine($"Startup update check failed: {exception}"));
 
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
@@ -30,7 +30,11 @@ public class StartupUpdateCheckService(
         }
         catch (Exception exception)
         {
-            _reportException(exception);
+            // A failed startup update check must never disturb the running app; the next start checks again.
+            LogStartupUpdateCheckFailed(logger, exception);
         }
     }
+
+    [LoggerMessage(EventId = 4001, Level = LogLevel.Warning, Message = "Startup update check failed")]
+    private static partial void LogStartupUpdateCheckFailed(ILogger logger, Exception exception);
 }

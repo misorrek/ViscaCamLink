@@ -4,6 +4,7 @@ using System;
 using System.IO;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using Shouldly;
 
@@ -27,7 +28,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
 
         Directory.CreateDirectory(_legacyRoot);
 
-        _repository = new AppSettingsRepository(_settingsFilePath, _legacyRoot);
+        _repository = new AppSettingsRepository(_settingsFilePath, _legacyRoot, NullLogger<AppSettingsRepository>.Instance);
     }
 
     public void Dispose()

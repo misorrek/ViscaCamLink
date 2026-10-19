@@ -168,7 +168,19 @@ public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaCont
         LogSendingCommand(logger, commandName);
 
         var ticksBefore = _performanceTimer.ElapsedTicks;
-        var response = await viscaClient.SendAsync(packet, linkedCancellation.Token).ConfigureAwait(false);
+        ViscaPacket response;
+
+        try
+        {
+            response = await viscaClient.SendAsync(packet, linkedCancellation.Token).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            LogCommandFailed(logger, commandName, exception);
+
+            throw;
+        }
+
         var ticksAfter = _performanceTimer.ElapsedTicks;
         var elapsedMilliseconds = (ticksAfter - ticksBefore) * 1000 / Stopwatch.Frequency;
 
@@ -223,4 +235,7 @@ public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaCont
 
     [LoggerMessage(EventId = 1102, Level = LogLevel.Debug, Message = "VISCA command '{Command}' completed in {Millis}ms")]
     private static partial void LogCompletedCommand(ILogger logger, string? command, long millis);
+
+    [LoggerMessage(EventId = 1103, Level = LogLevel.Debug, Message = "VISCA command '{Command}' failed")]
+    private static partial void LogCommandFailed(ILogger logger, string? command, Exception exception);
 }

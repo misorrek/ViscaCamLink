@@ -7,9 +7,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Xml;
 using System.Xml.Linq;
 
-public class AppSettingsRepository(string settingsFilePath, string legacySearchRoot)
+using Microsoft.Extensions.Logging;
+
+public partial class AppSettingsRepository(
+    string settingsFilePath,
+    string legacySearchRoot,
+    ILogger<AppSettingsRepository> logger)
 {
     public AppSettings Load()
     {
@@ -37,10 +43,19 @@ public class AppSettingsRepository(string settingsFilePath, string legacySearchR
 
     public void Save(AppSettings settings)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(settingsFilePath)!);
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(settingsFilePath)!);
 
-        using var stream = File.Create(settingsFilePath);
-        JsonSerializer.Serialize(stream, settings, AppSettingsJsonContext.Default.AppSettings);
+            using var stream = File.Create(settingsFilePath);
+            JsonSerializer.Serialize(stream, settings, AppSettingsJsonContext.Default.AppSettings);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            LogSaveFailed(logger, settingsFilePath, exception);
+
+            throw;
+        }
     }
 
     private AppSettings ReadSettings(string filePath)
@@ -54,6 +69,8 @@ public class AppSettingsRepository(string settingsFilePath, string legacySearchR
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            LogLoadFailed(logger, filePath, exception);
+
             var defaultSettings = new AppSettings();
 
             Save(defaultSettings);
@@ -66,6 +83,8 @@ public class AppSettingsRepository(string settingsFilePath, string legacySearchR
     {
         if (!Directory.Exists(legacySearchRoot))
         {
+            LogNoLegacySettings(logger, legacySearchRoot);
+
             return null;
         }
 
@@ -77,6 +96,8 @@ public class AppSettingsRepository(string settingsFilePath, string legacySearchR
 
         if (legacyFile is null)
         {
+            LogNoLegacySettings(logger, legacySearchRoot);
+
             return null;
         }
 
@@ -104,11 +125,15 @@ public class AppSettingsRepository(string settingsFilePath, string legacySearchR
             ApplyLegacyValue(settings, values, nameof(AppSettings.ZoomSpeed));
             ApplyLegacyValue(settings, values, nameof(AppSettings.Language));
 
+            LogLegacySettingsMigrated(logger, legacyFile.FullName, values.Count);
+
             return settings;
         }
-        catch
+        catch (Exception exception) when (exception is XmlException or IOException or UnauthorizedAccessException or ArgumentException)
         {
             // Unreadable legacy settings are not worth failing startup for; fresh defaults are used instead.
+            LogLegacyMigrationFailed(logger, legacyFile.FullName, exception);
+
             return null;
         }
     }
@@ -125,6 +150,7 @@ public class AppSettingsRepository(string settingsFilePath, string legacySearchR
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             // The legacy directory is only cleaned up as a courtesy; leaving it behind is harmless.
+            LogLegacyCleanupFailed(logger, legacySearchRoot, exception);
         }
     }
 
@@ -185,4 +211,22 @@ public class AppSettingsRepository(string settingsFilePath, string legacySearchR
 
         return Enum.TryParse(enumType, rawValue, ignoreCase: true, out var parsedValue) ? parsedValue : null;
     }
+
+    [LoggerMessage(EventId = 3001, Level = LogLevel.Warning, Message = "Settings file '{FilePath}' could not be read; falling back to defaults")]
+    private static partial void LogLoadFailed(ILogger logger, string filePath, Exception exception);
+
+    [LoggerMessage(EventId = 3002, Level = LogLevel.Error, Message = "Settings file '{FilePath}' could not be saved")]
+    private static partial void LogSaveFailed(ILogger logger, string filePath, Exception exception);
+
+    [LoggerMessage(EventId = 3003, Level = LogLevel.Debug, Message = "No legacy user.config found under '{SearchRoot}'")]
+    private static partial void LogNoLegacySettings(ILogger logger, string searchRoot);
+
+    [LoggerMessage(EventId = 3004, Level = LogLevel.Information, Message = "Migrated legacy settings from '{FilePath}' ({ValueCount} values found)")]
+    private static partial void LogLegacySettingsMigrated(ILogger logger, string filePath, int valueCount);
+
+    [LoggerMessage(EventId = 3005, Level = LogLevel.Warning, Message = "Legacy settings '{FilePath}' could not be migrated; using defaults")]
+    private static partial void LogLegacyMigrationFailed(ILogger logger, string filePath, Exception exception);
+
+    [LoggerMessage(EventId = 3006, Level = LogLevel.Warning, Message = "Legacy user data directory '{DirectoryPath}' could not be deleted")]
+    private static partial void LogLegacyCleanupFailed(ILogger logger, string directoryPath, Exception exception);
 }
