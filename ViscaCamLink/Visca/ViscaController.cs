@@ -28,6 +28,10 @@ public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaCont
         ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryPanTilt,
         ViscaProtocol.CmdHome, ViscaProtocol.Terminator);
 
+    private static readonly ViscaPacket OnePushFocusPacket = ViscaPacket.FromBytesWithPreformatting(
+        ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
+        ViscaProtocol.CmdFocusOnePush, ViscaProtocol.FocusOnePushTrigger, ViscaProtocol.Terminator);
+
     private readonly Stopwatch _performanceTimer = Stopwatch.StartNew();
 
     public bool? Connected => viscaClient.IsConnected();
@@ -37,6 +41,8 @@ public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaCont
     public byte MaxTiltSpeed => ViscaProtocol.MaxTiltSpeed;
 
     public byte MaxZoomSpeed => ViscaProtocol.MaxZoomSpeed;
+
+    public byte MaxFocusSpeed => ViscaProtocol.MaxFocusSpeed;
 
     public void Dispose() => viscaClient.Dispose();
 
@@ -153,6 +159,102 @@ public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaCont
         await SendCommandAsync(packet, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task ContinuousFocusAsync(FocusDirection focusDirection, byte focusSpeed, CancellationToken cancellationToken = default)
+    {
+        var speed = Math.Clamp(focusSpeed, ViscaProtocol.MinFocusSpeed, ViscaProtocol.MaxFocusSpeed);
+
+        var focusParameter = focusDirection switch
+        {
+            FocusDirection.None => ViscaProtocol.FocusStop,
+            FocusDirection.Far => (byte)(ViscaProtocol.FocusFarMask | speed),
+            FocusDirection.Near => (byte)(ViscaProtocol.FocusNearMask | speed),
+            _ => throw new ArgumentOutOfRangeException(nameof(focusDirection), focusDirection, null)
+        };
+
+        await SendCameraCommandAsync(ViscaProtocol.CmdFocus, focusParameter, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SetFocusModeAsync(FocusMode focusMode, CancellationToken cancellationToken = default)
+    {
+        var modeParameter = focusMode switch
+        {
+            FocusMode.Auto => ViscaProtocol.FocusModeAuto,
+            FocusMode.Manual => ViscaProtocol.FocusModeManual,
+            FocusMode.Toggle => ViscaProtocol.FocusModeToggle,
+            _ => throw new ArgumentOutOfRangeException(nameof(focusMode), focusMode, null)
+        };
+
+        await SendCameraCommandAsync(ViscaProtocol.CmdFocusMode, modeParameter, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task TriggerOnePushFocusAsync(CancellationToken cancellationToken = default) =>
+        await SendCommandAsync(OnePushFocusPacket, cancellationToken).ConfigureAwait(false);
+
+    public async Task SetFocusPositionAsync(ushort focusPosition, CancellationToken cancellationToken = default)
+    {
+        byte[] packet =
+        [
+            ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
+            ViscaProtocol.CmdFocusDirect,
+            GetNibble(focusPosition, 12), GetNibble(focusPosition, 8), GetNibble(focusPosition, 4), GetNibble(focusPosition, 0),
+            ViscaProtocol.Terminator
+        ];
+
+        await SendCommandAsync(packet, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task AdjustIrisAsync(IrisDirection irisDirection, CancellationToken cancellationToken = default)
+    {
+        var irisParameter = irisDirection switch
+        {
+            IrisDirection.Reset => ViscaProtocol.IrisReset,
+            IrisDirection.Up => ViscaProtocol.IrisUp,
+            IrisDirection.Down => ViscaProtocol.IrisDown,
+            _ => throw new ArgumentOutOfRangeException(nameof(irisDirection), irisDirection, null)
+        };
+
+        await SendCameraCommandAsync(ViscaProtocol.CmdIris, irisParameter, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SetIrisPositionAsync(byte irisPosition, CancellationToken cancellationToken = default)
+    {
+        byte[] packet =
+        [
+            ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
+            ViscaProtocol.CmdIrisDirect, ViscaProtocol.DirectPadding, ViscaProtocol.DirectPadding,
+            GetNibble(irisPosition, 4), GetNibble(irisPosition, 0),
+            ViscaProtocol.Terminator
+        ];
+
+        await SendCommandAsync(packet, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SetExposureModeAsync(ExposureMode exposureMode, CancellationToken cancellationToken = default)
+    {
+        var modeParameter = exposureMode switch
+        {
+            ExposureMode.FullAuto => ViscaProtocol.ExposureModeFullAuto,
+            ExposureMode.Manual => ViscaProtocol.ExposureModeManual,
+            ExposureMode.ShutterPriority => ViscaProtocol.ExposureModeShutterPriority,
+            ExposureMode.IrisPriority => ViscaProtocol.ExposureModeIrisPriority,
+            ExposureMode.Bright => ViscaProtocol.ExposureModeBright,
+            _ => throw new ArgumentOutOfRangeException(nameof(exposureMode), exposureMode, null)
+        };
+
+        await SendCameraCommandAsync(ViscaProtocol.CmdExposureMode, modeParameter, cancellationToken).ConfigureAwait(false);
+    }
+
+    private Task<ViscaPacket> SendCameraCommandAsync(byte command, byte parameter, CancellationToken cancellationToken, [CallerMemberName] string? commandName = null)
+    {
+        byte[] packet =
+        [
+            ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
+            command, parameter, ViscaProtocol.Terminator
+        ];
+
+        return SendCommandAsync(packet, cancellationToken, commandName);
+    }
+
     private Task<ViscaPacket> SendCommandAsync(byte[] packetBytes, CancellationToken cancellationToken, [CallerMemberName] string? commandName = null)
     {
         var packet = ViscaPacket.FromBytes(packetBytes, 0, packetBytes.Length);
@@ -229,6 +331,8 @@ public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaCont
             _ => ViscaProtocol.ZoomStop
         };
     }
+
+    private static byte GetNibble(int value, int shift) => (byte)((value >> shift) & ViscaProtocol.NibbleMask);
 
     [LoggerMessage(EventId = 1101, Level = LogLevel.Debug, Message = "Sending VISCA command '{Command}'")]
     private static partial void LogSendingCommand(ILogger logger, string? command);

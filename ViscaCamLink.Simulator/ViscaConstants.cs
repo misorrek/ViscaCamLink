@@ -22,6 +22,25 @@ public static class ViscaConstants
     public const byte CmdZoomVariable = 0x07;
     public const byte CmdZoomDirect = 0x47;
     public const byte CmdMemoryReset = 0x3F;
+    public const byte CmdFocus = 0x08;
+    public const byte CmdFocusDirect = 0x48;
+    public const byte CmdFocusMode = 0x38;
+    public const byte CmdFocusOnePush = 0x18;
+    public const byte CmdIris = 0x0B;
+    public const byte CmdIrisDirect = 0x4B;
+    public const byte CmdExposureMode = 0x39;
+
+    // Focus / iris / exposure arguments
+    public const byte FocusModeAuto = 0x02;
+    public const byte FocusModeManual = 0x03;
+    public const byte FocusModeToggle = 0x10;
+    public const byte IrisReset = 0x00;
+    public const byte IrisUp = 0x02;
+    public const byte IrisDown = 0x03;
+    public const byte ExposureModeManual = 0x03;
+    public const byte ExposureModeIrisPriority = 0x0B;
+    public const byte MaxIris = 0x11;
+    public const byte DefaultIris = 0x0A;
 
     // Memory sub-commands
     public const byte MemorySubSet = 0x01;

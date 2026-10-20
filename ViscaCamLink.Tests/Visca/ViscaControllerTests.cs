@@ -230,6 +230,156 @@ public sealed class ViscaControllerTests
     }
 
     [Fact]
+    public void MaxFocusSpeed_Success()
+    {
+        ((IViscaController)_controller).MaxFocusSpeed.ShouldBe(ViscaProtocol.MaxFocusSpeed);
+    }
+
+    [Theory]
+    [InlineData(FocusDirection.Far, 0x05, 0x25)]
+    [InlineData(FocusDirection.Near, 0x03, 0x33)]
+    [InlineData(FocusDirection.Far, 0x00, 0x20)]
+    [InlineData(FocusDirection.None, 0x04, 0x00)]
+    public async Task ContinuousFocusAsync_Success(FocusDirection direction, byte focusSpeed, byte expectedFocusByte)
+    {
+        var sent = CapturePacket();
+
+        await _controller.ContinuousFocusAsync(direction, focusSpeed);
+
+        sent.Value.ShouldNotBeNull();
+        AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x08, expectedFocusByte, 0xff]);
+    }
+
+    [Theory]
+    [InlineData(FocusDirection.Far, 0x27)]
+    [InlineData(FocusDirection.Near, 0x37)]
+    public async Task ContinuousFocusAsync_WhenSpeedExceedsMaximum_ClampsToMaxFocusSpeed(FocusDirection direction, byte expectedFocusByte)
+    {
+        var sent = CapturePacket();
+
+        await _controller.ContinuousFocusAsync(direction, 0xff);
+
+        sent.Value.ShouldNotBeNull();
+        AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x08, expectedFocusByte, 0xff]);
+    }
+
+    [Fact]
+    public async Task ContinuousFocusAsync_WhenDirectionIsUndefined_ThrowsArgumentOutOfRangeException()
+    {
+        Task act() => _controller.ContinuousFocusAsync((FocusDirection)99, 1);
+
+        await Should.ThrowAsync<ArgumentOutOfRangeException>(act);
+        _viscaClient.Verify(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(FocusMode.Auto, 0x02)]
+    [InlineData(FocusMode.Manual, 0x03)]
+    [InlineData(FocusMode.Toggle, 0x10)]
+    public async Task SetFocusModeAsync_Success(FocusMode focusMode, byte expectedModeByte)
+    {
+        var sent = CapturePacket();
+
+        await _controller.SetFocusModeAsync(focusMode);
+
+        sent.Value.ShouldNotBeNull();
+        AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x38, expectedModeByte, 0xff]);
+    }
+
+    [Fact]
+    public async Task SetFocusModeAsync_WhenModeIsUndefined_ThrowsArgumentOutOfRangeException()
+    {
+        Task act() => _controller.SetFocusModeAsync((FocusMode)99);
+
+        await Should.ThrowAsync<ArgumentOutOfRangeException>(act);
+    }
+
+    [Fact]
+    public async Task TriggerOnePushFocusAsync_Success()
+    {
+        var sent = CapturePacket();
+
+        await _controller.TriggerOnePushFocusAsync();
+
+        sent.Value.ShouldNotBeNull();
+        AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x18, 0x01, 0xff]);
+    }
+
+    [Theory]
+    [InlineData(0x0000, 0x00, 0x00, 0x00, 0x00)]
+    [InlineData(0x1234, 0x01, 0x02, 0x03, 0x04)]
+    [InlineData(0xffff, 0x0f, 0x0f, 0x0f, 0x0f)]
+    public async Task SetFocusPositionAsync_Success(int focusPosition, byte p, byte q, byte r, byte s)
+    {
+        var sent = CapturePacket();
+
+        await _controller.SetFocusPositionAsync((ushort)focusPosition);
+
+        sent.Value.ShouldNotBeNull();
+        AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x48, p, q, r, s, 0xff]);
+    }
+
+    [Theory]
+    [InlineData(IrisDirection.Reset, 0x00)]
+    [InlineData(IrisDirection.Up, 0x02)]
+    [InlineData(IrisDirection.Down, 0x03)]
+    public async Task AdjustIrisAsync_Success(IrisDirection irisDirection, byte expectedIrisByte)
+    {
+        var sent = CapturePacket();
+
+        await _controller.AdjustIrisAsync(irisDirection);
+
+        sent.Value.ShouldNotBeNull();
+        AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x0b, expectedIrisByte, 0xff]);
+    }
+
+    [Fact]
+    public async Task AdjustIrisAsync_WhenDirectionIsUndefined_ThrowsArgumentOutOfRangeException()
+    {
+        Task act() => _controller.AdjustIrisAsync((IrisDirection)99);
+
+        await Should.ThrowAsync<ArgumentOutOfRangeException>(act);
+    }
+
+    [Theory]
+    [InlineData(0x00, 0x00, 0x00)]
+    [InlineData(0x11, 0x01, 0x01)]
+    [InlineData(0xa5, 0x0a, 0x05)]
+    public async Task SetIrisPositionAsync_Success(byte irisPosition, byte p, byte q)
+    {
+        var sent = CapturePacket();
+
+        await _controller.SetIrisPositionAsync(irisPosition);
+
+        sent.Value.ShouldNotBeNull();
+        AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x4b, 0x00, 0x00, p, q, 0xff]);
+    }
+
+    [Theory]
+    [InlineData(ExposureMode.FullAuto, 0x00)]
+    [InlineData(ExposureMode.Manual, 0x03)]
+    [InlineData(ExposureMode.ShutterPriority, 0x0a)]
+    [InlineData(ExposureMode.IrisPriority, 0x0b)]
+    [InlineData(ExposureMode.Bright, 0x0d)]
+    public async Task SetExposureModeAsync_Success(ExposureMode exposureMode, byte expectedModeByte)
+    {
+        var sent = CapturePacket();
+
+        await _controller.SetExposureModeAsync(exposureMode);
+
+        sent.Value.ShouldNotBeNull();
+        AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x39, expectedModeByte, 0xff]);
+    }
+
+    [Fact]
+    public async Task SetExposureModeAsync_WhenModeIsUndefined_ThrowsArgumentOutOfRangeException()
+    {
+        Task act() => _controller.SetExposureModeAsync((ExposureMode)99);
+
+        await Should.ThrowAsync<ArgumentOutOfRangeException>(act);
+    }
+
+    [Fact]
     public void Dispose_Success()
     {
         _controller.Dispose();

@@ -20,6 +20,13 @@ public static class ViscaProtocol
     public const byte CmdZoomVariable = 0x07;
     public const byte CmdZoomDirect = 0x47;
     public const byte CmdMemoryReset = 0x3f;
+    public const byte CmdFocus = 0x08;
+    public const byte CmdFocusDirect = 0x48;
+    public const byte CmdFocusMode = 0x38;
+    public const byte CmdFocusOnePush = 0x18;
+    public const byte CmdIris = 0x0b;
+    public const byte CmdIrisDirect = 0x4b;
+    public const byte CmdExposureMode = 0x39;
 
     public const byte MemorySubSet = 0x01;
     public const byte MemorySubRecall = 0x02;
@@ -41,10 +48,34 @@ public static class ViscaProtocol
     public const byte ZoomOutMask = 0x30;
     public const byte ZoomStop = 0x00;
 
+    public const byte FocusStop = 0x00;
+    public const byte FocusFarMask = 0x20;
+    public const byte FocusNearMask = 0x30;
+
+    public const byte FocusModeAuto = 0x02;
+    public const byte FocusModeManual = 0x03;
+    public const byte FocusModeToggle = 0x10;
+    public const byte FocusOnePushTrigger = 0x01;
+
+    public const byte IrisReset = 0x00;
+    public const byte IrisUp = 0x02;
+    public const byte IrisDown = 0x03;
+
+    public const byte ExposureModeFullAuto = 0x00;
+    public const byte ExposureModeManual = 0x03;
+    public const byte ExposureModeShutterPriority = 0x0a;
+    public const byte ExposureModeIrisPriority = 0x0b;
+    public const byte ExposureModeBright = 0x0d;
+
+    public const byte NibbleMask = 0x0f;
+    public const byte DirectPadding = 0x00;
+
     public const byte MinSpeed = 0x01;
     public const byte MaxPanSpeed = 0x18;
     public const byte MaxTiltSpeed = 0x14;
     public const byte MaxZoomSpeed = 0x07;
+    public const byte MinFocusSpeed = 0x00;
+    public const byte MaxFocusSpeed = 0x07;
 
     public const int PowerStatusPollAttempts = 20;
 

@@ -12,6 +12,11 @@ public class CameraState
     public sbyte PanVelocity { get; set; }
     public sbyte TiltVelocity { get; set; }
     public sbyte ZoomVelocity { get; set; }
+    public bool IsAutoFocus { get; set; } = true;
+    public ushort Focus { get; set; }
+    public sbyte FocusVelocity { get; set; }
+    public byte Iris { get; set; } = ViscaConstants.DefaultIris;
+    public byte ExposureMode { get; set; }
     public int LastRecalledPreset { get; set; } = -1;
     public int LastSavedPreset { get; set; } = -1;
 

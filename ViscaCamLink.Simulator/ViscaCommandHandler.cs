@@ -140,6 +140,100 @@ public class ViscaCommandHandler
                 _onStateChanged();
                 return Done();
 
+            // Focus variable (continuous)
+            case ViscaConstants.CmdFocus:
+                if (len < 5) return SyntaxError();
+                byte focusArg = packet[4];
+                if (focusArg == 0x00)
+                {
+                    _state.FocusVelocity = 0;
+                    _log("CMD: Focus STOP");
+                }
+                else if (focusArg == 0x02 || (focusArg >= 0x20 && focusArg < 0x30))
+                {
+                    _state.FocusVelocity = (sbyte)(focusArg == 0x02 ? 1 : (focusArg & 0x0F) + 1);
+                    _log($"CMD: Focus FAR arg=0x{focusArg:X2}");
+                }
+                else if (focusArg == 0x03 || (focusArg >= 0x30 && focusArg < 0x40))
+                {
+                    _state.FocusVelocity = (sbyte)-(focusArg == 0x03 ? 1 : (focusArg & 0x0F) + 1);
+                    _log($"CMD: Focus NEAR arg=0x{focusArg:X2}");
+                }
+                else
+                {
+                    return SyntaxError();
+                }
+                _onStateChanged();
+                return Done();
+
+            // Focus direct (absolute)
+            case ViscaConstants.CmdFocusDirect:
+                if (len < 8) return SyntaxError();
+                _state.Focus = (ushort)DecodeInt16(packet, 4);
+                _state.FocusVelocity = 0;
+                _log($"CMD: Focus Direct pos={_state.Focus}");
+                _onStateChanged();
+                return Done();
+
+            // Focus mode
+            case ViscaConstants.CmdFocusMode:
+                if (len < 5) return SyntaxError();
+                switch (packet[4])
+                {
+                    case ViscaConstants.FocusModeAuto: _state.IsAutoFocus = true; break;
+                    case ViscaConstants.FocusModeManual: _state.IsAutoFocus = false; break;
+                    case ViscaConstants.FocusModeToggle: _state.IsAutoFocus = !_state.IsAutoFocus; break;
+                    default: return SyntaxError();
+                }
+                _log($"CMD: Focus mode {(_state.IsAutoFocus ? "AUTO" : "MANUAL")}");
+                _onStateChanged();
+                return Done();
+
+            // One-push AF
+            case ViscaConstants.CmdFocusOnePush:
+                _log("CMD: One-push AF trigger");
+                return Done();
+
+            // Iris up/down/reset (only in manual or iris priority AE mode)
+            case ViscaConstants.CmdIris:
+                if (len < 5) return SyntaxError();
+                if (!IsIrisControllable())
+                {
+                    _log("CMD: Iris rejected (AE mode is not manual/iris priority)");
+                    return CommandNotExecutable();
+                }
+                switch (packet[4])
+                {
+                    case ViscaConstants.IrisReset: _state.Iris = ViscaConstants.DefaultIris; break;
+                    case ViscaConstants.IrisUp: _state.Iris = (byte)Math.Min(_state.Iris + 1, ViscaConstants.MaxIris); break;
+                    case ViscaConstants.IrisDown: _state.Iris = (byte)Math.Max(_state.Iris - 1, 0); break;
+                    default: return SyntaxError();
+                }
+                _log($"CMD: Iris 0x{packet[4]:X2} → {_state.Iris}");
+                _onStateChanged();
+                return Done();
+
+            // Iris direct
+            case ViscaConstants.CmdIrisDirect:
+                if (len < 8) return SyntaxError();
+                if (!IsIrisControllable())
+                {
+                    _log("CMD: Iris direct rejected (AE mode is not manual/iris priority)");
+                    return CommandNotExecutable();
+                }
+                _state.Iris = (byte)Math.Min((packet[6] << 4) | packet[7], ViscaConstants.MaxIris);
+                _log($"CMD: Iris Direct pos={_state.Iris}");
+                _onStateChanged();
+                return Done();
+
+            // AE mode
+            case ViscaConstants.CmdExposureMode:
+                if (len < 5) return SyntaxError();
+                _state.ExposureMode = packet[4];
+                _log($"CMD: AE mode 0x{packet[4]:X2}");
+                _onStateChanged();
+                return Done();
+
             default:
                 _log($"CMD: Unknown camera cmd 0x{packet[3]:X2}");
                 return CommandNotExecutable();
@@ -247,6 +341,9 @@ public class ViscaCommandHandler
             _ => CommandNotExecutable()
         };
     }
+
+    private bool IsIrisControllable() =>
+        _state.ExposureMode is ViscaConstants.ExposureModeManual or ViscaConstants.ExposureModeIrisPriority;
 
     // --- Response helpers ---
 
