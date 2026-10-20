@@ -882,6 +882,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The update could not be downloaded. Check your internet connection and try again. ähnelt.
+        /// </summary>
+        public static string Updater_DownloadErrorDetail {
+            get {
+                return ResourceManager.GetString("Updater_DownloadErrorDetail", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Downloading... ähnelt.
         /// </summary>
         public static string Updater_Downloading {

@@ -4,10 +4,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using Shouldly;
 
+using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;
 
@@ -18,18 +21,20 @@ public sealed class UpdateDownloadViewModelTests
     private static readonly UpdateInfo TestUpdateInfo = new(
         Version: new Version(2, 0, 0),
         ReleaseNotes: string.Empty,
-        InstallerAssetUrl: string.Empty,
-        PortableAssetUrl: null,
         HtmlUrl: "https://example.test/releases/v2.0.0");
 
     private readonly Mock<IUpdateService> _updateService = new();
     private readonly UpdateDownloadViewModel _viewModel;
 
-    private bool _closed;
+    private int _closeCount;
 
     public UpdateDownloadViewModelTests()
     {
-        _viewModel = new UpdateDownloadViewModel(TestUpdateInfo, _updateService.Object, () => _closed = true);
+        _viewModel = new UpdateDownloadViewModel(
+            TestUpdateInfo,
+            _updateService.Object,
+            () => _closeCount++,
+            NullLogger<UpdateDownloadViewModel>.Instance);
     }
 
     [Fact]
@@ -59,20 +64,43 @@ public sealed class UpdateDownloadViewModelTests
 
         capturedProgress.ShouldNotBeNull();
         _viewModel.HasError.ShouldBeFalse();
+        _closeCount.ShouldBe(1);
         _updateService.Verify(u => u.DownloadAndApplyAsync(It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task StartDownloadAsync_WhenDownloadIsCancelled_InvokesCloseHandler()
+    public async Task StartDownloadAsync_WhenCancelledByUser_ClosesOnceWithoutError()
     {
+        var capturedToken = CancellationToken.None;
+
         _updateService
             .Setup(u => u.DownloadAndApplyAsync(It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new OperationCanceledException());
+            .Returns<IProgress<int>?, CancellationToken>(async (_, cancellationToken) =>
+            {
+                capturedToken = cancellationToken;
+                _viewModel.CancelCommand.Execute(null);
+                await Task.Yield();
+                cancellationToken.ThrowIfCancellationRequested();
+            });
 
         await _viewModel.StartDownloadAsync();
 
-        _closed.ShouldBeTrue();
+        capturedToken.IsCancellationRequested.ShouldBeTrue();
+        _closeCount.ShouldBe(1);
         _viewModel.HasError.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task StartDownloadAsync_WhenCancelledWithoutUser_SetsErrorState()
+    {
+        _updateService
+            .Setup(u => u.DownloadAndApplyAsync(It.IsAny<IProgress<int>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TaskCanceledException());
+
+        await _viewModel.StartDownloadAsync();
+
+        _viewModel.HasError.ShouldBeTrue();
+        _closeCount.ShouldBe(0);
     }
 
     [Fact]
@@ -85,10 +113,10 @@ public sealed class UpdateDownloadViewModelTests
         await _viewModel.StartDownloadAsync();
 
         _viewModel.HasError.ShouldBeTrue();
-        _viewModel.ErrorMessage.ShouldBe("network broke");
+        _viewModel.ErrorMessage.ShouldBe(Strings.Updater_DownloadErrorDetail);
         _viewModel.IsDownloading.ShouldBeFalse();
         _viewModel.IsIndeterminate.ShouldBeFalse();
-        _closed.ShouldBeFalse();
+        _closeCount.ShouldBe(0);
     }
 
     [Fact]
@@ -96,7 +124,7 @@ public sealed class UpdateDownloadViewModelTests
     {
         _viewModel.CancelCommand.Execute(null);
 
-        _closed.ShouldBeTrue();
+        _closeCount.ShouldBe(1);
     }
 
     [Fact]

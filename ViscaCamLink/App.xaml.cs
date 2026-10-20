@@ -133,7 +133,11 @@ public partial class App : Application
         services.AddSingleton<IPresetService, PresetService>();
         services.AddSingleton<IStartupUpdateCheckService, StartupUpdateCheckService>();
         services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
-        services.AddSingleton<IUpdateService, VelopackUpdateService>();
+        services.AddSingleton<IUpdateService>(provider => new VelopackUpdateService(
+            provider.GetRequiredService<IVelopackUpdateManager>(),
+            () => RequestShutdownForUpdate(provider),
+            provider.GetRequiredService<ILogger<VelopackUpdateService>>()));
+        services.AddSingleton<IVelopackUpdateManager, VelopackUpdateManager>();
         services.AddSingleton<IWindowModeCoordinator, WindowModeCoordinator>();
 
         services.AddSingleton<ViscaCamLinkViewModel>();
@@ -146,6 +150,11 @@ public partial class App : Application
 
         return services.BuildServiceProvider();
     }
+
+    // Called from the update service after the Velopack updater was launched (any thread). Closing the main window
+    // runs the normal shutdown path (window placement and settings saved in Closing, App.OnClosed disposal).
+    private static void RequestShutdownForUpdate(IServiceProvider provider) =>
+        Current.Dispatcher.BeginInvoke(() => provider.GetRequiredService<ViscaCamLinkView>().Close());
 
     private static void EnsureCameraProfileExists(AppSettings appSettings, AppSettingsRepository settingsRepository)
     {

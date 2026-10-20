@@ -15,8 +15,6 @@ public sealed class UpdateViewModelTests
     private readonly UpdateInfo _updateInfo = new(
         new Version(2, 0, 0),
         "release notes",
-        "https://example.test/installer.exe",
-        null,
         "https://example.test/release");
 
     private readonly UpdateViewModel _viewModel;

@@ -35,9 +35,8 @@ public class DialogService(
 
     public void ShowUpdateDialog(UpdateInfo updateInfo)
     {
-        var installedVersion = Assembly.GetEntryAssembly()?.GetName().Version;
         var view = new UpdateView();
-        var viewModel = new UpdateViewModel(updateInfo, installedVersion, view.Close, ShowUpdateDownloadDialog);
+        var viewModel = new UpdateViewModel(updateInfo, updateService.InstalledVersion, view.Close, ShowUpdateDownloadDialog);
 
         view.DataContext = viewModel;
         view.ShowDialog();
@@ -46,7 +45,7 @@ public class DialogService(
     public void ShowUpdateDownloadDialog(UpdateInfo updateInfo)
     {
         var view = new UpdateDownloadView();
-        var viewModel = new UpdateDownloadViewModel(updateInfo, updateService, view.Close);
+        var viewModel = new UpdateDownloadViewModel(updateInfo, updateService, view.Close, updateDownloadLogger);
 
         view.DataContext = viewModel;
         view.ShowDialog();

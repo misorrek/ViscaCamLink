@@ -1,7 +1,6 @@
 namespace ViscaCamLink;
 
 using System;
-using System.Diagnostics;
 
 using Velopack;
 
@@ -10,15 +9,10 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // A downloaded but not yet applied update is applied here before the 
+        // app starts (auto-apply is Velopack's default, set explicitly for clarity).
         VelopackApp.Build()
-            .OnAfterInstallFastCallback(_ =>
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = Environment.ProcessPath!,
-                    UseShellExecute = true,
-                });
-            })
+            .SetAutoApplyOnStartup(true)
             .Run();
 
         var application = new App();

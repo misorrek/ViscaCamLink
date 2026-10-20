@@ -306,6 +306,9 @@
   <data name="Updater_DownloadError" xml:space="preserve">
     <value>Download failed:</value>
   </data>
+  <data name="Updater_DownloadErrorDetail" xml:space="preserve">
+    <value>The update could not be downloaded. Check your internet connection and try again.</value>
+  </data>
   <data name="Updater_Downloading" xml:space="preserve">
     <value>Downloading...</value>
   </data>

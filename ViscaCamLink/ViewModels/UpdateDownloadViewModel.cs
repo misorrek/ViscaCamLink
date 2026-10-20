@@ -5,13 +5,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
-public class UpdateDownloadViewModel : ViewModelBase
+
+public partial class UpdateDownloadViewModel : ViewModelBase
 {
     private readonly UpdateInfo _updateInfo;
     private readonly IUpdateService _updateService;
     private readonly Action _closeHandler;
+    private readonly ILogger<UpdateDownloadViewModel> _logger;
 
     private CancellationTokenSource _downloadCancellation = new();
     private int _progress;
@@ -19,11 +24,16 @@ public class UpdateDownloadViewModel : ViewModelBase
     private bool _hasError;
     private string _errorMessage = string.Empty;
 
-    public UpdateDownloadViewModel(UpdateInfo updateInfo, IUpdateService updateService, Action closeHandler)
+    public UpdateDownloadViewModel(
+        UpdateInfo updateInfo,
+        IUpdateService updateService,
+        Action closeHandler,
+        ILogger<UpdateDownloadViewModel> logger)
     {
         _updateInfo = updateInfo;
         _updateService = updateService;
         _closeHandler = closeHandler;
+        _logger = logger;
 
         CancelCommand = new Command(ExecuteCancel);
         RetryCommand = new Command(ExecuteRetry);
@@ -100,19 +110,22 @@ public class UpdateDownloadViewModel : ViewModelBase
         {
             var progress = new Progress<int>(percent => Progress = percent);
 
-            // On success the update service applies the update and restarts the application.
-            // No code after this call is reached.
+            // On success the updater waits for the process to exit and the app is shutting down normally.
             await _updateService.DownloadAndApplyAsync(progress, _downloadCancellation.Token);
-        }
-        catch (OperationCanceledException)
-        {
+
             _closeHandler.Invoke();
+        }
+        catch (OperationCanceledException) when (_downloadCancellation.IsCancellationRequested)
+        {
+            // Cancelled by the user; ExecuteCancel has already closed the dialog.
         }
         catch (Exception exception)
         {
+            LogDownloadFailed(_logger, _updateInfo.Version, exception);
+
             IsDownloading = false;
             HasError = true;
-            ErrorMessage = exception.Message;
+            ErrorMessage = Strings.Updater_DownloadErrorDetail;
         }
     }
 
@@ -129,4 +142,7 @@ public class UpdateDownloadViewModel : ViewModelBase
 
         _ = StartDownloadAsync();
     }
+
+    [LoggerMessage(EventId = 4022, Level = LogLevel.Error, Message = "Download of update {Version} failed")]
+    private static partial void LogDownloadFailed(ILogger logger, Version version, Exception exception);
 }

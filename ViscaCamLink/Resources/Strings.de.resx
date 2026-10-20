@@ -306,6 +306,9 @@
   <data name="Updater_DownloadError" xml:space="preserve">
     <value>Download fehlgeschlagen:</value>
   </data>
+  <data name="Updater_DownloadErrorDetail" xml:space="preserve">
+    <value>Das Update konnte nicht heruntergeladen werden. Bitte die Internetverbindung prüfen und erneut versuchen.</value>
+  </data>
   <data name="Updater_Downloading" xml:space="preserve">
     <value>Herunterladen...</value>
   </data>
