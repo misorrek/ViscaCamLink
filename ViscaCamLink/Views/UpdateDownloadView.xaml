@@ -13,7 +13,9 @@
         Height="160"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        ContentRendered="Window_ContentRendered">
+        ContentRendered="Window_ContentRendered"
+        Background="{DynamicResource SurfaceBrush}"
+        Foreground="{DynamicResource TextBrush}">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -44,7 +46,8 @@
                                  Margin="0,12,0,0"
                                  Value="{Binding Progress}"
                                  Maximum="100"
-                                 IsIndeterminate="{Binding IsIndeterminate}" />
+                                 IsIndeterminate="{Binding IsIndeterminate}"
+                                 Style="{StaticResource BaseProgressBar}" />
                 </StackPanel>
 
                 <!-- Error panel -->

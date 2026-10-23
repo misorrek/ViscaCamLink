@@ -1,4 +1,4 @@
-﻿<Window x:Class="ViscaCamLink.Views.CameraProfilesView"
+<Window x:Class="ViscaCamLink.Views.CameraProfilesView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,7 +13,9 @@
         Height="Auto"
         SizeToContent="Height"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBrush}"
+        Foreground="{DynamicResource TextBrush}">
 
     <Window.Resources>
         <ResourceDictionary>

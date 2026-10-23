@@ -12,7 +12,9 @@
         Height="Auto"
         SizeToContent="Height"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBrush}"
+        Foreground="{DynamicResource TextBrush}">
 
     <Window.Resources>
         <ResourceDictionary>

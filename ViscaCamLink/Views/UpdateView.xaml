@@ -13,7 +13,9 @@
         Title="{Binding [Common_AppTitle], Source={x:Static localization:TranslationSource.Instance}}"          
         Width="700"
         Height="500"
-        ContentRendered="Window_ContentRendered">
+        ContentRendered="Window_ContentRendered"
+        Background="{DynamicResource SurfaceBrush}"
+        Foreground="{DynamicResource TextBrush}">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -84,10 +86,8 @@
 
             <Button Width="140"
                     Content="{Binding [Updater_Update], Source={x:Static localization:TranslationSource.Instance}}"
-                    Background="{DynamicResource PrimaryForegroundBrush}"
-                    Foreground="{DynamicResource PrimaryBackgroundBrush}"
                     Command="{Binding UpdateCommand}"
-                    Style="{StaticResource DialogButton}" />
+                    Style="{StaticResource AccentButton}" />
 
             <Button Width="120"
                     Margin="4,0,0,0"

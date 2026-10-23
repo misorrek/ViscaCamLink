@@ -17,9 +17,26 @@
                 <ResourceDictionary Source="/ViscaCamLink;component/Resources/CommonStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <converters:ConnectionStatusToBrushConverter x:Key="ConnectionStatusToBrushConverter" />
+            <converters:ConnectionStatusToStatusLevelConverter x:Key="ConnectionStatusToStatusLevelConverter" />
             <converters:ConnectionStatusToBoolConverter x:Key="ConnectionStatusOkToBoolConverter" />
-            <converters:PowerStatusToBrushConverter x:Key="PowerStatusToBrushConverter" />
+            <converters:PowerStatusToStatusLevelConverter x:Key="PowerStatusToStatusLevelConverter" />
+
+            <Style x:Key="StatusDot"
+                   TargetType="{x:Type Ellipse}">
+                <Setter Property="Fill" Value="{DynamicResource StatusUnknownBrush}" />
+                <Style.Triggers>
+                    <Trigger Property="Tag" Value="{x:Static converters:StatusLevel.Ok}">
+                        <Setter Property="Fill" Value="{DynamicResource StatusOkBrush}" />
+                    </Trigger>
+                    <Trigger Property="Tag" Value="{x:Static converters:StatusLevel.Warning}">
+                        <Setter Property="Fill" Value="{DynamicResource StatusWarningBrush}" />
+                    </Trigger>
+                    <Trigger Property="Tag" Value="{x:Static converters:StatusLevel.Error}">
+                        <Setter Property="Fill" Value="{DynamicResource StatusErrorBrush}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
             <converters:BoolAndConverter x:Key="BoolAndConverter" />
             <converters:ValueConverterGroup x:Key="ConnectionStatusFailedToVisibilityVisibleConverter">
                 <converters:ConnectionStatusToBoolConverter CompareValue="Failed" />
@@ -90,10 +107,11 @@
                        LastChildFill="False">
                 <Ellipse Height="12" 
                          Width="12"
-                         Fill="{Binding Path=ConnectionStatus,
-                                        Converter={StaticResource ConnectionStatusToBrushConverter}, Mode=Default}">
+                         Tag="{Binding Path=ConnectionStatus,
+                                       Converter={StaticResource ConnectionStatusToStatusLevelConverter}}">
                     <Ellipse.Style>
-                        <Style TargetType="{x:Type Ellipse}">
+                        <Style TargetType="{x:Type Ellipse}"
+                               BasedOn="{StaticResource StatusDot}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ConnectionStatus}"
                                              Value="{x:Static visca:ConnectionStatus.Working}">
@@ -155,10 +173,11 @@
                        LastChildFill="False">
                 <Ellipse Height="12" 
                          Width="12"
-                         Fill="{Binding Path=PowerStatus,
-                                        Converter={StaticResource PowerStatusToBrushConverter}, Mode=Default}">
+                         Tag="{Binding Path=PowerStatus,
+                                       Converter={StaticResource PowerStatusToStatusLevelConverter}}">
                     <Ellipse.Style>
-                        <Style TargetType="{x:Type Ellipse}">
+                        <Style TargetType="{x:Type Ellipse}"
+                               BasedOn="{StaticResource StatusDot}">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ChangingPowerStatus}"
                                              Value="True">

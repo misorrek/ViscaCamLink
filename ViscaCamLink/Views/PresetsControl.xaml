@@ -88,7 +88,7 @@
                         <DropShadowEffect ShadowDepth="2" BlurRadius="6" Opacity="0.2" />
                     </Border.Effect>
                     <TextBlock Text="{Binding MemoryInfo}"
-                               Foreground="{DynamicResource DefaultFontBrush}"
+                               Foreground="{DynamicResource TextBrush}"
                                FontSize="{StaticResource DefaultFontSize}"
                                FontFamily="{StaticResource DefaultFontFamily}"
                                FontWeight="{StaticResource DefaultFontWeight}" />
@@ -152,7 +152,7 @@
                     <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
                              Margin="4,0" BorderThickness="0" Background="Transparent"
-                             Foreground="{DynamicResource PrimaryForegroundBrush}" MaxLength="20"
+                             Foreground="{DynamicResource AccentBrush}" MaxLength="20"
                              IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                 </Border>
             </Grid>
@@ -229,7 +229,7 @@
                                                         UpdateSourceTrigger=PropertyChanged}"
                                          VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
                                          Margin="4,0" BorderThickness="0" Background="Transparent"
-                                         Foreground="{DynamicResource PrimaryForegroundBrush}" MaxLength="20"
+                                         Foreground="{DynamicResource AccentBrush}" MaxLength="20"
                                          IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                             </Border>
                         </Grid>
@@ -292,7 +292,7 @@
                     <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
                              Margin="4,0" BorderThickness="0" Background="Transparent"
-                             Foreground="{DynamicResource PrimaryForegroundBrush}" MaxLength="20"
+                             Foreground="{DynamicResource AccentBrush}" MaxLength="20"
                              IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                 </Border>
             </Grid>
@@ -359,7 +359,7 @@
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsActive}" Value="True">
                                                     <Setter Property="Background"
-                                                            Value="{DynamicResource PrimaryHighlightBrush}" />
+                                                            Value="{DynamicResource SelectionBrush}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -383,7 +383,7 @@
                                                             UpdateSourceTrigger=PropertyChanged}"
                                              VerticalContentAlignment="Center"
                                              Margin="4,0" BorderThickness="0" Background="Transparent"
-                                             Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                             Foreground="{DynamicResource AccentBrush}"
                                              FontSize="11" MaxLength="20" MinWidth="40"
                                              IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                                 </Border>

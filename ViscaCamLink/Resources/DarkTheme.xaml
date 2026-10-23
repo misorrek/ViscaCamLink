@@ -1,38 +1,31 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Color x:Key="PrimaryBackgroundColor">#1E1B2E</Color>
-    <Color x:Key="SecondaryBackgroundColor">#2D2456</Color>
-    <Color x:Key="PrimaryForegroundColor">#9B7FE8</Color>
-    <Color x:Key="SecondaryForegroundColor">#FFFFFF</Color>
-    <Color x:Key="PrimaryHighlightColor">#6B52C8</Color>
-    <Color x:Key="SecondaryHighlightColor">#3D3567</Color>
-    <Color x:Key="PrimaryPressedColor">#5040A8</Color>
-    <Color x:Key="SecondaryPressedColor">#4D4490</Color>
-    <Color x:Key="PrimaryDisabledColor">#3D3567</Color>
-    <Color x:Key="SecondaryDisabledColor">#2D2456</Color>
-    <Color x:Key="DefaultBorderColor">#4A4466</Color>
-    <Color x:Key="DefaultFontColor">#E8E8F0</Color>
+    <!-- Palette and contrast ratios: Docs/THEMING.md. Keys must match the other theme file. -->
 
-    <SolidColorBrush x:Key="PrimaryBackgroundBrush"     
-                     Color="{StaticResource PrimaryBackgroundColor}" />
-    <SolidColorBrush x:Key="SecondaryBackgroundBrush"   
-                     Color="{StaticResource SecondaryBackgroundColor}" />
-    <SolidColorBrush x:Key="PrimaryForegroundBrush"     
-                     Color="{StaticResource PrimaryForegroundColor}" />
-    <SolidColorBrush x:Key="SecondaryForegroundBrush"
-                     Color="{StaticResource SecondaryForegroundColor}" />
-    <SolidColorBrush x:Key="PrimaryHighlightBrush"      
-                     Color="{StaticResource PrimaryHighlightColor}" />
-    <SolidColorBrush x:Key="SecondaryHighlightBrush"
-                     Color="{StaticResource SecondaryHighlightColor}" />
-    <SolidColorBrush x:Key="PrimaryPressedBrush"
-                     Color="{StaticResource PrimaryPressedColor}" />
-    <SolidColorBrush x:Key="SecondaryPressedBrush"      
-                     Color="{StaticResource SecondaryPressedColor}" />
-    <SolidColorBrush x:Key="DefaultBorderBrush"         
-                     Color="{StaticResource DefaultBorderColor}" />
-    <SolidColorBrush x:Key="DefaultFontBrush"           
-                     Color="{StaticResource DefaultFontColor}" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#1E1B2E" />
+    <SolidColorBrush x:Key="SurfaceRaisedBrush" Color="#2A2640" />
+    <SolidColorBrush x:Key="SidebarBrush" Color="#2D2456" />
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#45397A" />
+    <SolidColorBrush x:Key="OnSidebarBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="TextBrush" Color="#E8E8F0" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#A9A4BC" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#B39DF0" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#C7B6F5" />
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="#9B7FE8" />
+    <SolidColorBrush x:Key="OnAccentBrush" Color="#1E1B2E" />
+    <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#3D3567" />
+    <SolidColorBrush x:Key="PressedBackgroundBrush" Color="#5040A8" />
+    <SolidColorBrush x:Key="SelectionBrush" Color="#5040A8" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#4A4466" />
+    <SolidColorBrush x:Key="ControlBorderBrush" Color="#7D7799" />
+    <SolidColorBrush x:Key="HoverBorderBrush" Color="#6B52C8" />
+    <SolidColorBrush x:Key="FocusBorderBrush" Color="#B39DF0" />
+    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#2A2640" />
+    <SolidColorBrush x:Key="DisabledTextBrush" Color="#6E6986" />
+    <SolidColorBrush x:Key="StatusOkBrush" Color="#4CC764" />
+    <SolidColorBrush x:Key="StatusWarningBrush" Color="#F2C94C" />
+    <SolidColorBrush x:Key="StatusErrorBrush" Color="#FF6B6B" />
+    <SolidColorBrush x:Key="StatusUnknownBrush" Color="#8E89A6" />
 
 </ResourceDictionary>
