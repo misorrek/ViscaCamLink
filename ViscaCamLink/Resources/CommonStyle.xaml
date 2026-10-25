@@ -58,10 +58,6 @@
     
     <!--#region Converter-->
 
-    <converters:BoolToVisibilityConverter x:Key="FalseToHiddenConverter"
-                                    TrueValue="Visible"
-                                    FalseValue="Hidden" />
-
     <converters:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter"
                                     TrueValue="Visible"
                                     FalseValue="Collapsed" />
@@ -336,7 +332,7 @@
         <Setter Property="Background"
                 Value="{DynamicResource AccentBrush}" />
         <Setter Property="Foreground"
-                Value="{DynamicResource OnAccentBrush}" />
+                Value="{DynamicResource AccentContentBrush}" />
         <Setter Property="BorderBrush"
                 Value="{DynamicResource AccentBrush}" />
         <Style.Triggers>
@@ -400,7 +396,7 @@
         <Setter Property="Width"
                 Value="20" />
         <Setter Property="Fill"
-                Value="{DynamicResource OnSidebarBrush}" />
+                Value="{DynamicResource SidebarContentBrush}" />
     </Style>
 
     <!--#endregion-->

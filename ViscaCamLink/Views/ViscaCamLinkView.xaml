@@ -38,24 +38,30 @@
                 <Setter Property="Width" Value="40"/>
                 <Setter Property="Height" Value="40"/>
                 <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type interface:SidebarButton}">
-                            <Border Background="{TemplateBinding Background}">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Margin="2,4,5,4"
-                                            Width="3"
-                                            CornerRadius="1"
-                                            BorderThickness="0"
-                                            Background="{DynamicResource AccentBrush}"
-                                            Visibility="{Binding IsActive,
-                                                                 RelativeSource={RelativeSource TemplatedParent},
-                                                                 Converter={StaticResource FalseToHiddenConverter}}"/>
-                                    <Path Data="{Binding Icon,
+                            <Grid>
+                                <Border Background="{TemplateBinding Background}">
+                                    <Path x:Name="SidebarIcon"
+                                          Data="{Binding Icon,
                                                          RelativeSource={RelativeSource TemplatedParent}}"
                                           Style="{StaticResource IconSidebarPath}" />
-                                </StackPanel>
-                            </Border>
+                                </Border>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsActive" Value="False">
+                                    <Setter TargetName="SidebarIcon"
+                                            Property="Fill"
+                                            Value="{DynamicResource SidebarInactiveIconBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsActive" Value="True">
+                                    <Setter TargetName="SidebarIcon"
+                                            Property="Fill"
+                                            Value="{DynamicResource OnSidebarBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -150,7 +156,7 @@
                 <interface:SidebarButton DockPanel.Dock="Bottom"
                                          Command="{Binding OptionsCommand}"
                                          Icon="{StaticResource Options}"
-                                         IsActive="False"
+                                         IsActive="True"
                                          ToolTip="{Binding [Sidebar_Options], Source={x:Static localization:TranslationSource.Instance}}"
                                          Style="{StaticResource SidebarButton}" />
 

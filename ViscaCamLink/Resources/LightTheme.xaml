@@ -7,13 +7,14 @@
     <SolidColorBrush x:Key="SurfaceRaisedBrush" Color="#F7F6FC" />
     <SolidColorBrush x:Key="SidebarBrush" Color="#33214E" />
     <SolidColorBrush x:Key="SidebarHoverBrush" Color="#51367B" />
-    <SolidColorBrush x:Key="OnSidebarBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SidebarContentBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SidebarInactiveIconBrush" Color="#B8B4C4" />
     <SolidColorBrush x:Key="TextBrush" Color="#000000" />
     <SolidColorBrush x:Key="TextMutedBrush" Color="#5F5B6B" />
     <SolidColorBrush x:Key="AccentBrush" Color="#51367B" />
     <SolidColorBrush x:Key="AccentHoverBrush" Color="#654499" />
     <SolidColorBrush x:Key="AccentPressedBrush" Color="#3F2A61" />
-    <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="AccentContentBrush" Color="#FFFFFF" />
     <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#D3CCF9" />
     <SolidColorBrush x:Key="PressedBackgroundBrush" Color="#BAADF4" />
     <SolidColorBrush x:Key="SelectionBrush" Color="#BAADF4" />

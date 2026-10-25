@@ -43,7 +43,7 @@
             <Style x:Key="TitleBarIconPath"
                    TargetType="{x:Type Path}"
                    BasedOn="{StaticResource Icon12Path}">
-                <Setter Property="Fill" Value="{DynamicResource OnSidebarBrush}" />
+                <Setter Property="Fill" Value="{DynamicResource SidebarContentBrush}" />
             </Style>
 
             <!-- Movement triggers (x:Shared="False" → each button gets its own instance) -->
@@ -162,7 +162,7 @@
                             Style="{StaticResource TitleBarButton}">
                         <Border Width="10"
                                 Height="10"
-                                BorderBrush="{DynamicResource OnSidebarBrush}"
+                                BorderBrush="{DynamicResource SidebarContentBrush}"
                                 BorderThickness="1.5" />
                     </Button>
 
@@ -173,7 +173,7 @@
                             Style="{StaticResource TitleBarButton}">
                         <Rectangle Width="10"
                                    Height="2"
-                                   Fill="{DynamicResource OnSidebarBrush}" />
+                                   Fill="{DynamicResource SidebarContentBrush}" />
                     </Button>
                 </DockPanel>
             </Border>
