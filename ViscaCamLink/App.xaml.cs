@@ -128,6 +128,7 @@ public partial class App : Application
         services.AddSingleton<ICameraConnectionService, CameraConnectionService>();
         services.AddSingleton<ICameraMovementService, CameraMovementService>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IHintService, HintService>();
         services.AddSingleton<IHotKeyService, HotKeyService>();
         services.AddSingleton<IPowerService, PowerService>();
         services.AddSingleton<IPresetService, PresetService>();
@@ -141,6 +142,7 @@ public partial class App : Application
         services.AddSingleton<IWindowModeCoordinator, WindowModeCoordinator>();
 
         services.AddSingleton<ViscaCamLinkViewModel>();
+        services.AddSingleton<HintHostViewModel>();
         services.AddSingleton<ConnectionViewModel>();
         services.AddSingleton<PresetsViewModel>();
         services.AddSingleton<MovementViewModel>();

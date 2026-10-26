@@ -111,6 +111,8 @@ public partial class SettingsService(
         set => settings.UseNumpadLayout = value;
     }
 
+    public IReadOnlyList<string> DismissedHints => settings.DismissedHints;
+
     public void AddCameraProfile(CameraProfile profile)
     {
         if (settings.CameraProfiles.Any(existing => existing.Id == profile.Id))
@@ -171,6 +173,30 @@ public partial class SettingsService(
         }
 
         settings.ActiveCameraProfileId = id;
+
+        Save();
+    }
+
+    public void DismissHint(string hintId)
+    {
+        if (settings.DismissedHints.Contains(hintId))
+        {
+            return;
+        }
+
+        settings.DismissedHints.Add(hintId);
+
+        Save();
+    }
+
+    public void ResetDismissedHints()
+    {
+        if (settings.DismissedHints.Count == 0)
+        {
+            return;
+        }
+
+        settings.DismissedHints.Clear();
 
         Save();
     }

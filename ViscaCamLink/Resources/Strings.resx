@@ -416,4 +416,10 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="Sidebar_ConnectionPanel" xml:space="preserve">
     <value>Connection panel</value>
   </data>
+  <data name="Hint_Dismiss" xml:space="preserve">
+    <value>Dismiss tip</value>
+  </data>
+  <data name="Hint_PresetRename" xml:space="preserve">
+    <value>Tip: double-click a preset or group name to rename it.</value>
+  </data>
 </root>

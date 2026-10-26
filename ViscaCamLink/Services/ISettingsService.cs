@@ -45,6 +45,8 @@ public interface ISettingsService
 
     bool UseGlobalHotKeys { get; set; }
 
+    IReadOnlyList<string> DismissedHints { get; }
+
     void AddCameraProfile(CameraProfile profile);
 
     void RemoveCameraProfile(Guid id);
@@ -52,6 +54,10 @@ public interface ISettingsService
     void UpdateCameraProfile(CameraProfile profile);
 
     void SetActiveCameraProfile(Guid id);
+
+    void DismissHint(string hintId);
+
+    void ResetDismissedHints();
 
     void Save();
 

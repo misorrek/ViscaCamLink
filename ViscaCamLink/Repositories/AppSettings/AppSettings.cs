@@ -43,4 +43,6 @@ public class AppSettings
     public bool UseGlobalHotKeys { get; set; } = true;
 
     public bool WixUninstallPrompted { get; set; }
+
+    public List<string> DismissedHints { get; set; } = [];
 }

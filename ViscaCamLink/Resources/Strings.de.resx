@@ -416,4 +416,10 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="Sidebar_ConnectionPanel" xml:space="preserve">
     <value>Kameraverbindung</value>
   </data>
+  <data name="Hint_Dismiss" xml:space="preserve">
+    <value>Tipp ausblenden</value>
+  </data>
+  <data name="Hint_PresetRename" xml:space="preserve">
+    <value>Tipp: Doppelklick auf eine Voreinstellung oder einen Gruppennamen, um sie umzubenennen.</value>
+  </data>
 </root>

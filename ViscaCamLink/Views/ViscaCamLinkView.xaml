@@ -59,7 +59,7 @@
                                 <Trigger Property="IsActive" Value="True">
                                     <Setter TargetName="SidebarIcon"
                                             Property="Fill"
-                                            Value="{DynamicResource OnSidebarBrush}" />
+                                            Value="{DynamicResource SidebarContentBrush}" />
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -212,5 +212,14 @@
                                                     RelativeSource={RelativeSource AncestorType=Window},
                                                     Converter={StaticResource FalseToCollapsedConverter}}" />
         </StackPanel>
+
+        <!-- Hint overlay: floats above the content and is not affected by whats underneath -->
+        <views:HintBanner Grid.Column="1"
+                          VerticalAlignment="Top"
+                          Panel.ZIndex="10"
+                          Visibility="{Binding DataContext.Hints.HasHint,
+                                               RelativeSource={RelativeSource AncestorType=Window},
+                                               Converter={StaticResource FalseToCollapsedConverter}}"
+                          DataContext="{Binding Hints.CurrentHint}" />
     </Grid>
 </Window>

@@ -367,6 +367,24 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dismiss tip ähnelt.
+        /// </summary>
+        public static string Hint_Dismiss {
+            get {
+                return ResourceManager.GetString("Hint_Dismiss", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tip: double-click a preset or group name to rename it. ähnelt.
+        /// </summary>
+        public static string Hint_PresetRename {
+            get {
+                return ResourceManager.GetString("Hint_PresetRename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Not set ähnelt.
         /// </summary>
         public static string HotKey_NotSet {

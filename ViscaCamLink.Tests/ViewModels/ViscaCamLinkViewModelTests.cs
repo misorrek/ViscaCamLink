@@ -26,6 +26,7 @@ public sealed class ViscaCamLinkViewModelTests
     private readonly Mock<IPowerService> _powerService = new();
     private readonly Mock<IUiDispatcher> _uiDispatcher = new();
     private readonly Mock<IDialogService> _dialogService = new();
+    private readonly Mock<IHintService> _hintService = new();
     private readonly Mock<IHotKeyService> _hotKeyService = new();
     private readonly Mock<IPresetService> _presetService = new();
     private readonly Mock<ICameraMovementService> _movementService = new();
@@ -35,6 +36,7 @@ public sealed class ViscaCamLinkViewModelTests
     private readonly PresetsViewModel _presets;
     private readonly MovementViewModel _movement;
     private readonly ZoomViewModel _zoom;
+    private readonly HintHostViewModel _hints;
     private readonly ViscaCamLinkViewModel _viewModel;
 
     public ViscaCamLinkViewModelTests()
@@ -71,9 +73,10 @@ public sealed class ViscaCamLinkViewModelTests
             _uiDispatcher.Object,
             _dialogService.Object,
             _hotKeyService.Object);
-        _presets = new PresetsViewModel(_presetService.Object, _settings.Object, _hotKeyService.Object, _connection);
+        _presets = new PresetsViewModel(_presetService.Object, _settings.Object, _hotKeyService.Object, _dialogService.Object, _connection);
         _movement = new MovementViewModel(_movementService.Object, _settings.Object, _hotKeyService.Object);
         _zoom = new ZoomViewModel(_movementService.Object, _settings.Object, _hotKeyService.Object);
+        _hints = new HintHostViewModel(_hintService.Object, _uiDispatcher.Object);
 
         _viewModel = new ViscaCamLinkViewModel(
             _settings.Object,
@@ -81,6 +84,7 @@ public sealed class ViscaCamLinkViewModelTests
             _presets,
             _movement,
             _zoom,
+            _hints,
             _updateService.Object,
             _dialogService.Object,
             _uiDispatcher.Object);
@@ -93,6 +97,7 @@ public sealed class ViscaCamLinkViewModelTests
         _viewModel.Presets.ShouldBeSameAs(_presets);
         _viewModel.Movement.ShouldBeSameAs(_movement);
         _viewModel.Zoom.ShouldBeSameAs(_zoom);
+        _viewModel.Hints.ShouldBeSameAs(_hints);
     }
 
     [Fact]

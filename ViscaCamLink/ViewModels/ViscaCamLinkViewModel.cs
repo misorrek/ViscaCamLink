@@ -22,6 +22,7 @@ public class ViscaCamLinkViewModel : ViewModelBase
         PresetsViewModel presets,
         MovementViewModel movement,
         ZoomViewModel zoom,
+        HintHostViewModel hints,
         IUpdateService updateService,
         IDialogService dialogService,
         IUiDispatcher uiDispatcher)
@@ -35,7 +36,7 @@ public class ViscaCamLinkViewModel : ViewModelBase
         Presets = presets;
         Movement = movement;
         Zoom = zoom;
-
+        Hints = hints;
         _updateService.UpdateAvailable += OnUpdateAvailable;
         TranslationSource.Instance.LanguageChanged += OnLanguageChanged;
 
@@ -59,6 +60,8 @@ public class ViscaCamLinkViewModel : ViewModelBase
     public MovementViewModel Movement { get; }
 
     public ZoomViewModel Zoom { get; }
+
+    public HintHostViewModel Hints { get; }
 
     public ICommand SidebarCommand { get; }
 

@@ -222,6 +222,36 @@ public sealed class SettingsServiceTests : IDisposable
         File.Exists(_settingsFilePath).ShouldBeFalse();
     }
 
+    [Fact]
+    public void DismissHint_Success()
+    {
+        _settingsService.DismissHint("PresetRename");
+
+        _settingsService.DismissedHints.ShouldBe(["PresetRename"]);
+        File.ReadAllText(_settingsFilePath).ShouldContain("PresetRename");
+    }
+
+    [Fact]
+    public void DismissHint_WhenAlreadyDismissed_DoesNotAddDuplicate()
+    {
+        _settingsService.DismissHint("PresetRename");
+        _settingsService.DismissHint("PresetRename");
+
+        _settingsService.DismissedHints.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void ResetDismissedHints_Success()
+    {
+        _settingsService.DismissHint("PresetRename");
+        _settingsService.DismissHint("UnknownOldHint");
+
+        _settingsService.ResetDismissedHints();
+
+        _settingsService.DismissedHints.ShouldBeEmpty();
+        File.ReadAllText(_settingsFilePath).ShouldNotContain("PresetRename");
+    }
+
     private static CameraProfile CreateProfile(string name)
     {
         return new CameraProfile { Name = name, Ip = "10.0.0.1", Port = 1 };
