@@ -23,6 +23,7 @@ public sealed class SettingsServiceTests : IDisposable
     private readonly AppSettings _settings = new();
     private readonly List<Language> _appliedLanguages = [];
     private readonly List<Theme> _appliedThemes = [];
+    private readonly List<LogLevel> _appliedLogLevels = [];
     private readonly SettingsService _settingsService;
 
     public SettingsServiceTests()
@@ -193,7 +194,8 @@ public sealed class SettingsServiceTests : IDisposable
             UseCompactView: false,
             UsePresetGroups: false,
             UseNumpadLayout: false,
-            UseGlobalHotKeys: false));
+            UseGlobalHotKeys: false,
+            LogLevel: LogLevel.Debug));
 
         _settingsService.Language.ShouldBe(Language.German);
         _settingsService.UseNumpadLayout.ShouldBeFalse();
@@ -202,7 +204,9 @@ public sealed class SettingsServiceTests : IDisposable
         _settingsService.UseCompactView.ShouldBeFalse();
         _settingsService.Theme.ShouldBe(Theme.Dark);
         _appliedLanguages.ShouldBe([Language.German]);
+        _settingsService.LogLevel.ShouldBe(LogLevel.Debug);
         _appliedThemes.ShouldBe([Theme.Dark]);
+        _appliedLogLevels.ShouldBe([LogLevel.Debug]);
         File.Exists(_settingsFilePath).ShouldBeTrue();
     }
 
@@ -215,10 +219,12 @@ public sealed class SettingsServiceTests : IDisposable
             UseCompactView: true,
             UsePresetGroups: true,
             UseNumpadLayout: true,
-            UseGlobalHotKeys: true));
+            UseGlobalHotKeys: true,
+            LogLevel: LogLevel.Information));
 
         _appliedLanguages.ShouldBeEmpty();
         _appliedThemes.ShouldBeEmpty();
+        _appliedLogLevels.ShouldBeEmpty();
         File.Exists(_settingsFilePath).ShouldBeFalse();
     }
 

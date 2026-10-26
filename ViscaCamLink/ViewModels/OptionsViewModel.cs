@@ -6,6 +6,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Infrastructure.Theming;
@@ -15,30 +17,43 @@ public class OptionsViewModel : ViewModelBase
 {
     private readonly ISettingsService _settings;
     private readonly IHotKeyService _hotKeyService;
+    private readonly IHintService _hintService;
     private readonly Action _closeHandler;
     private readonly Command _okCommand;
 
     private Language _selectedLanguage;
     private Theme _selectedTheme;
+    private LogLevel _selectedLogLevel;
     private bool _useNumpadLayout;
     private bool _useGlobalHotKeys;
     private bool _usePresetGroups;
     private bool _useCompactView;
     private bool _hasHotKeyConflicts;
+    private bool _areHintsReset;
     private string _hotKeyValidationMessage = string.Empty;
     private HotKeyBindingItemViewModel? _capturingHotKey;
 
-    public OptionsViewModel(ISettingsService settings, IHotKeyService hotKeyService, Action closeHandler)
+    public OptionsViewModel(
+        ISettingsService settings,
+        IHotKeyService hotKeyService,
+        IHintService hintService,
+        string appVersion,
+        Action openLogsFolder,
+        Action closeHandler)
     {
         _settings = settings;
         _hotKeyService = hotKeyService;
+        _hintService = hintService;
         _closeHandler = closeHandler;
+        AppVersion = appVersion;
 
         _okCommand = new Command(ExecuteOk, () => !HasHotKeyConflicts);
         OkCommand = _okCommand;
         CancelCommand = new Command(ExecuteCancel);
         HotKeyCaptureCommand = new Command(ExecuteHotKeyCapture);
         HotKeyPreviewKeyDownCommand = new Command(ExecuteHotKeyPreviewKeyDown);
+        OpenLogsFolderCommand = new Command(openLogsFolder);
+        ResetHintsCommand = new Command(ExecuteResetHints);
         LanguageItems = CreateLanguageItems();
         ThemeItems = CreateThemeItems();
         HotKeyBindings = new ObservableCollection<HotKeyBindingItemViewModel>(
@@ -46,6 +61,7 @@ public class OptionsViewModel : ViewModelBase
 
         _selectedLanguage = _settings.Language;
         _selectedTheme = _settings.Theme;
+        _selectedLogLevel = _settings.LogLevel;
         _useNumpadLayout = _settings.UseNumpadLayout;
         _useGlobalHotKeys = _settings.UseGlobalHotKeys;
         _usePresetGroups = _settings.UsePresetGroups;
@@ -62,11 +78,30 @@ public class OptionsViewModel : ViewModelBase
 
     public ICommand HotKeyPreviewKeyDownCommand { get; }
 
+    public ICommand OpenLogsFolderCommand { get; }
+
+    public ICommand ResetHintsCommand { get; }
+
+    public string AppVersion { get; }
+
+    public IEnumerable<LogLevel> LogLevels { get; } = [LogLevel.Trace, LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
+
     public IEnumerable<LanguageItem> LanguageItems { get; }
 
     public IEnumerable<ThemeItem> ThemeItems { get; }
 
     public ObservableCollection<HotKeyBindingItemViewModel> HotKeyBindings { get; }
+
+    public bool AreHintsReset
+    {
+        get => _areHintsReset;
+        private set
+        {
+            _areHintsReset = value;
+
+            NotifyPropertyChanged();
+        }
+    }
 
     public bool HasHotKeyConflicts
     {
@@ -118,6 +153,17 @@ public class OptionsViewModel : ViewModelBase
         set
         {
             _selectedTheme = value;
+
+            NotifyPropertyChanged();
+        }
+    }
+
+    public LogLevel SelectedLogLevel
+    {
+        get => _selectedLogLevel;
+        set
+        {
+            _selectedLogLevel = value;
 
             NotifyPropertyChanged();
         }
@@ -182,12 +228,20 @@ public class OptionsViewModel : ViewModelBase
             UseCompactView: _useCompactView,
             UsePresetGroups: _usePresetGroups,
             UseNumpadLayout: _useNumpadLayout,
-            UseGlobalHotKeys: _useGlobalHotKeys);
+            UseGlobalHotKeys: _useGlobalHotKeys,
+            LogLevel: _selectedLogLevel);
 
         _settings.ApplyOptions(selection);
         _hotKeyService.ApplyBindings([.. HotKeyBindings.Select(binding => binding.ToBinding())]);
 
         _closeHandler.Invoke();
+    }
+
+    private void ExecuteResetHints()
+    {
+        _hintService.ResetAll();
+
+        AreHintsReset = true;
     }
 
     private void ExecuteCancel()

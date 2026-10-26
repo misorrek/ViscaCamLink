@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Moq;
 
 using Shouldly;
@@ -18,16 +20,21 @@ using Xunit;
 
 public sealed class OptionsViewModelTests
 {
+    private const string AppVersion = "1.0.0";
+
     private readonly Mock<ISettingsService> _settings = new();
     private readonly Mock<IHotKeyService> _hotKeyService = new();
+    private readonly Mock<IHintService> _hintService = new();
     private readonly OptionsViewModel _viewModel;
 
     private bool _closed;
+    private bool _logsFolderOpened;
 
     public OptionsViewModelTests()
     {
         _settings.Setup(s => s.Language).Returns(Language.English);
         _settings.Setup(s => s.Theme).Returns(Theme.Dark);
+        _settings.Setup(s => s.LogLevel).Returns(LogLevel.Information);
         _settings.Setup(s => s.UseNumpadLayout).Returns(true);
         _settings.Setup(s => s.UseGlobalHotKeys).Returns(false);
         _settings.Setup(s => s.UsePresetGroups).Returns(true);
@@ -45,6 +52,10 @@ public sealed class OptionsViewModelTests
     {
         _viewModel.SelectedLanguage.ShouldBe(Language.English);
         _viewModel.SelectedTheme.ShouldBe(Theme.Dark);
+        _viewModel.SelectedLogLevel.ShouldBe(LogLevel.Information);
+        _viewModel.LogLevels.ShouldNotContain(LogLevel.None);
+        _viewModel.AppVersion.ShouldBe(AppVersion);
+        _viewModel.AreHintsReset.ShouldBeFalse();
         _viewModel.UseNumpadLayout.ShouldBeTrue();
         _viewModel.UseGlobalHotKeys.ShouldBeFalse();
         _viewModel.UsePresetGroups.ShouldBeTrue();
@@ -79,6 +90,7 @@ public sealed class OptionsViewModelTests
         _viewModel.SelectedLanguage = Language.German;
         _viewModel.SelectedTheme = Theme.Light;
         _viewModel.UseNumpadLayout = false;
+        _viewModel.SelectedLogLevel = LogLevel.Debug;
 
         _viewModel.OkCommand.Execute(null);
 
@@ -88,7 +100,8 @@ public sealed class OptionsViewModelTests
             UseCompactView: false,
             UsePresetGroups: true,
             UseNumpadLayout: false,
-            UseGlobalHotKeys: false);
+            UseGlobalHotKeys: false,
+            LogLevel: LogLevel.Debug);
 
         _settings.Verify(s => s.ApplyOptions(expectedSelection), Times.Once);
         _hotKeyService.Verify(h => h.ApplyBindings(It.IsAny<IReadOnlyList<HotKeyBinding>>()), Times.Once);
@@ -139,8 +152,33 @@ public sealed class OptionsViewModelTests
         second.IsCapturing.ShouldBeTrue();
     }
 
+    [Fact]
+    public void OpenLogsFolderCommand_Success()
+    {
+        _viewModel.OpenLogsFolderCommand.Execute(null);
+
+        _logsFolderOpened.ShouldBeTrue();
+        _closed.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ResetHintsCommand_Success()
+    {
+        _viewModel.ResetHintsCommand.Execute(null);
+
+        _hintService.Verify(h => h.ResetAll(), Times.Once);
+        _viewModel.AreHintsReset.ShouldBeTrue();
+        _closed.ShouldBeFalse();
+    }
+
     private OptionsViewModel CreateSut()
     {
-        return new OptionsViewModel(_settings.Object, _hotKeyService.Object, () => _closed = true);
+        return new OptionsViewModel(
+            _settings.Object,
+            _hotKeyService.Object,
+            _hintService.Object,
+            AppVersion,
+            () => _logsFolderOpened = true,
+            () => _closed = true);
     }
 }

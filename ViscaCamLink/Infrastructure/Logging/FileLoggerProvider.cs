@@ -22,6 +22,7 @@ public sealed class FileLoggerProvider : ILoggerProvider
 
     private string _currentLogPath = string.Empty;
     private StreamWriter? _writer;
+    private volatile int _minimumLevel = (int)LogLevel.Information;
 
     public FileLoggerProvider(string logDirectory, TimeProvider? timeProvider = null)
     {
@@ -40,8 +41,17 @@ public sealed class FileLoggerProvider : ILoggerProvider
         }
     }
 
+    /// <summary>
+    /// Lowest level that is written. Loggers already handed out read it on every call, so a change applies immediately.
+    /// </summary>
+    public LogLevel MinimumLevel
+    {
+        get => (LogLevel)_minimumLevel;
+        set => _minimumLevel = (int)value;
+    }
+
     public ILogger CreateLogger(string categoryName) =>
-        new FileLogger(categoryName, WriteEntry, _timeProvider);
+        new FileLogger(categoryName, WriteEntry, _timeProvider, () => MinimumLevel);
 
     private void WriteEntry(string message)
     {

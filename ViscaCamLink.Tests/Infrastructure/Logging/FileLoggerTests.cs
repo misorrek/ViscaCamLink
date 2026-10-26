@@ -16,11 +16,13 @@ public sealed class FileLoggerTests
     private static readonly DateTimeOffset FixedTime = new(2026, 1, 2, 3, 4, 5, 678, TimeSpan.Zero);
 
     private readonly List<string> _entries = [];
+
+    private LogLevel _minimumLevel = LogLevel.Trace;
     private readonly FileLogger _logger;
 
     public FileLoggerTests()
     {
-        _logger = new FileLogger("TestCategory", _entries.Add, new FixedTimeProvider(FixedTime));
+        _logger = new FileLogger("TestCategory", _entries.Add, new FixedTimeProvider(FixedTime), () => _minimumLevel);
     }
 
     [Theory]
@@ -64,6 +66,17 @@ public sealed class FileLoggerTests
     [InlineData(LogLevel.None, false)]
     public void IsEnabled_Success(LogLevel logLevel, bool expected)
     {
+        _logger.IsEnabled(logLevel).ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData(LogLevel.Debug, false)]
+    [InlineData(LogLevel.Information, true)]
+    [InlineData(LogLevel.Error, true)]
+    public void IsEnabled_WhenMinimumLevelIsInformation_FiltersLowerLevels(LogLevel logLevel, bool expected)
+    {
+        _minimumLevel = LogLevel.Information;
+
         _logger.IsEnabled(logLevel).ShouldBe(expected);
     }
 

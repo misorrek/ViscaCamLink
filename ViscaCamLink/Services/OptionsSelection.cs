@@ -1,5 +1,7 @@
 namespace ViscaCamLink.Services;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Infrastructure.Theming;
 
@@ -9,4 +11,5 @@ public record OptionsSelection(
     bool UseCompactView,
     bool UsePresetGroups,
     bool UseNumpadLayout,
-    bool UseGlobalHotKeys);
+    bool UseGlobalHotKeys,
+    LogLevel LogLevel);

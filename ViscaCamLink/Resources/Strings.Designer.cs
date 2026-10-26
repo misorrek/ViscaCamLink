@@ -594,6 +594,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tips will be shown again. ähnelt.
+        /// </summary>
+        public static string Options_HintsReset {
+            get {
+                return ResourceManager.GetString("Options_HintsReset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Action ähnelt.
         /// </summary>
         public static string Options_HotKeyAction {
@@ -630,6 +639,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Log level (applies immediately) ähnelt.
+        /// </summary>
+        public static string Options_LogLevel {
+            get {
+                return ResourceManager.GetString("Options_LogLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Use compact view when minimizing ähnelt.
         /// </summary>
         public static string Options_MinimizeToCompactWindow {
@@ -648,11 +666,38 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Open logs folder ähnelt.
+        /// </summary>
+        public static string Options_OpenLogsFolder {
+            get {
+                return ResourceManager.GetString("Options_OpenLogsFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Show tips again ähnelt.
+        /// </summary>
+        public static string Options_ResetHints {
+            get {
+                return ResourceManager.GetString("Options_ResetHints", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Restart needed ähnelt.
         /// </summary>
         public static string Options_RestartNeeded {
             get {
                 return ResourceManager.GetString("Options_RestartNeeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Support ähnelt.
+        /// </summary>
+        public static string Options_Support {
+            get {
+                return ResourceManager.GetString("Options_Support", resourceCulture);
             }
         }
         
@@ -680,6 +725,15 @@ namespace ViscaCamLink.Resources {
         public static string Options_UsePresetGroups {
             get {
                 return ResourceManager.GetString("Options_UsePresetGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Version ähnelt.
+        /// </summary>
+        public static string Options_Version {
+            get {
+                return ResourceManager.GetString("Options_Version", resourceCulture);
             }
         }
         

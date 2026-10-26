@@ -4,11 +4,15 @@ using System;
 
 using Microsoft.Extensions.Logging;
 
-public class FileLogger(string categoryName, Action<string> writeEntry, TimeProvider timeProvider) : ILogger
+public class FileLogger(
+    string categoryName,
+    Action<string> writeEntry,
+    TimeProvider timeProvider,
+    Func<LogLevel> minimumLevel) : ILogger
 {
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 
-    public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None;
+    public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None && logLevel >= minimumLevel();
 
     public void Log<TState>(
         LogLevel logLevel,

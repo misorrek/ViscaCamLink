@@ -437,4 +437,22 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="Presets_CancelSave" xml:space="preserve">
     <value>Cancel saving a preset</value>
   </data>
+  <data name="Options_HintsReset" xml:space="preserve">
+    <value>Tips will be shown again.</value>
+  </data>
+  <data name="Options_LogLevel" xml:space="preserve">
+    <value>Log level (applies immediately)</value>
+  </data>
+  <data name="Options_OpenLogsFolder" xml:space="preserve">
+    <value>Open logs folder</value>
+  </data>
+  <data name="Options_ResetHints" xml:space="preserve">
+    <value>Show tips again</value>
+  </data>
+  <data name="Options_Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Options_Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
 </root>

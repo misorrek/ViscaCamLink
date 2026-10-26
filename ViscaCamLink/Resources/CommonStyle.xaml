@@ -564,7 +564,7 @@
                     Grid.ColumnSpan="2"
                     Background="{DynamicResource SurfaceBrush}"
                     BorderThickness="{StaticResource DefaultBorderThickness}"
-                    BorderBrush="{DynamicResource ControlBorderBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}"
                     CornerRadius="{StaticResource DefaultCornerRadius}" />
 
             <Path x:Name="Arrow"

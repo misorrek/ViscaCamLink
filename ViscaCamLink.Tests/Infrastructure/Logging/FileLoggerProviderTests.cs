@@ -48,6 +48,19 @@ public sealed class FileLoggerProviderTests : IDisposable
     }
 
     [Fact]
+    public void MinimumLevel_WhenChanged_AppliesToExistingLoggers()
+    {
+        var logger = _provider.CreateLogger("TestCategory");
+
+        _provider.MinimumLevel.ShouldBe(LogLevel.Information);
+        logger.IsEnabled(LogLevel.Debug).ShouldBeFalse();
+
+        _provider.MinimumLevel = LogLevel.Debug;
+
+        logger.IsEnabled(LogLevel.Debug).ShouldBeTrue();
+    }
+
+    [Fact]
     public void CreateLogger_WhenDateChanges_WritesToNewFile()
     {
         var logger = _provider.CreateLogger("TestCategory");

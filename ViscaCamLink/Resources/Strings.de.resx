@@ -437,4 +437,22 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="Presets_CancelSave" xml:space="preserve">
     <value>Speichern der Voreinstellung abbrechen</value>
   </data>
+  <data name="Options_HintsReset" xml:space="preserve">
+    <value>Tipps werden wieder angezeigt.</value>
+  </data>
+  <data name="Options_LogLevel" xml:space="preserve">
+    <value>Protokollstufe (gilt sofort)</value>
+  </data>
+  <data name="Options_OpenLogsFolder" xml:space="preserve">
+    <value>Protokollordner öffnen</value>
+  </data>
+  <data name="Options_ResetHints" xml:space="preserve">
+    <value>Tipps wieder anzeigen</value>
+  </data>
+  <data name="Options_Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Options_Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
 </root>
