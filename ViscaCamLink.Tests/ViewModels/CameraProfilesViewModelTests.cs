@@ -1,5 +1,7 @@
 namespace ViscaCamLink.Tests.ViewModels;
 
+using System;
+
 using Moq;
 
 using Shouldly;
@@ -14,6 +16,7 @@ using Xunit;
 public sealed class CameraProfilesViewModelTests
 {
     private readonly Mock<ISettingsService> _settings = new();
+    private readonly Mock<IDialogService> _dialogService = new();
     private readonly CameraProfile _firstProfile = new() { Name = "Cam A", Ip = "10.0.0.1", Port = 1 };
     private readonly CameraProfile _secondProfile = new() { Name = "Cam B", Ip = "10.0.0.2", Port = 2 };
     private readonly CameraProfilesViewModel _viewModel;
@@ -24,6 +27,7 @@ public sealed class CameraProfilesViewModelTests
     {
         _settings.Setup(s => s.CameraProfiles).Returns([_firstProfile, _secondProfile]);
         _settings.Setup(s => s.ActiveCameraProfileId).Returns(_secondProfile.Id);
+        _dialogService.Setup(d => d.ShowConfirmation(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
 
         _viewModel = CreateSut();
     }
@@ -36,6 +40,8 @@ public sealed class CameraProfilesViewModelTests
         _viewModel.Cameras[1].Name.ShouldBe("Cam B");
         _viewModel.SelectedCamera.ShouldNotBeNull();
         _viewModel.SelectedCamera!.Id.ShouldBe(_secondProfile.Id);
+        _viewModel.Cameras[0].IsActive.ShouldBeFalse();
+        _viewModel.Cameras[1].IsActive.ShouldBeTrue();
         _viewModel.IsEditing.ShouldBeFalse();
     }
 
@@ -77,6 +83,28 @@ public sealed class CameraProfilesViewModelTests
         _viewModel.EditName = name;
 
         _viewModel.IsEditNameValid.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void ValidationMessage_Success()
+    {
+        _viewModel.EditName = " ";
+        _viewModel.EditIp = "not an ip";
+        _viewModel.EditPort = "0";
+
+        _viewModel.ValidationMessage.ShouldBe(string.Join(
+            Environment.NewLine,
+            Strings.CameraProfile_Name_Invalid,
+            Strings.CameraProfile_Ip_Invalid,
+            Strings.CameraProfile_Port_Invalid));
+    }
+
+    [Fact]
+    public void ValidationMessage_WhenAllFieldsAreValid_IsEmpty()
+    {
+        _viewModel.EditCommand.Execute(null);
+
+        _viewModel.ValidationMessage.ShouldBeEmpty();
     }
 
     [Fact]
@@ -142,10 +170,27 @@ public sealed class CameraProfilesViewModelTests
     [Fact]
     public void DeleteCommand_Success()
     {
+        _settings
+            .Setup(s => s.RemoveCameraProfile(_secondProfile.Id))
+            .Callback(() => _settings.Setup(s => s.ActiveCameraProfileId).Returns(_firstProfile.Id));
+
         _viewModel.DeleteCommand.Execute(null);
 
+        _dialogService.Verify(d => d.ShowConfirmation(string.Format(Strings.CameraProfile_DeleteConfirm, "Cam B"), Strings.Common_Delete), Times.Once);
         _settings.Verify(s => s.RemoveCameraProfile(_secondProfile.Id), Times.Once);
         _viewModel.Cameras.ShouldHaveSingleItem().Id.ShouldBe(_firstProfile.Id);
+        _viewModel.Cameras[0].IsActive.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void DeleteCommand_WhenNotConfirmed_DoesNotDelete()
+    {
+        _dialogService.Setup(d => d.ShowConfirmation(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
+
+        _viewModel.DeleteCommand.Execute(null);
+
+        _settings.Verify(s => s.RemoveCameraProfile(It.IsAny<Guid>()), Times.Never);
+        _viewModel.Cameras.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -168,6 +213,6 @@ public sealed class CameraProfilesViewModelTests
 
     private CameraProfilesViewModel CreateSut()
     {
-        return new CameraProfilesViewModel(_settings.Object, () => _closed = true);
+        return new CameraProfilesViewModel(_settings.Object, _dialogService.Object, () => _closed = true);
     }
 }

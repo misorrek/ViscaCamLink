@@ -41,7 +41,7 @@ public class DialogService(
     public void ShowCameraProfilesDialog()
     {
         var view = new CameraProfilesView();
-        var viewModel = new CameraProfilesViewModel(settingsService, view.Close);
+        var viewModel = new CameraProfilesViewModel(settingsService, this, view.Close);
 
         view.DataContext = viewModel;
         view.ShowDialog();

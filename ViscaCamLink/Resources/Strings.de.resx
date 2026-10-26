@@ -455,4 +455,10 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="Options_Version" xml:space="preserve">
     <value>Version</value>
   </data>
+  <data name="CameraProfile_Active" xml:space="preserve">
+    <value>Aktiv</value>
+  </data>
+  <data name="CameraProfile_DeleteConfirm" xml:space="preserve">
+    <value>Das Kameraprofil &quot;{0}&quot; löschen?</value>
+  </data>
 </root>

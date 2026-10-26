@@ -9,6 +9,7 @@ public class CameraProfileItemViewModel(CameraProfile profile) : ViewModelBase
     private string _name = profile.Name;
     private string _ip = profile.Ip;
     private int _port = profile.Port;
+    private bool _isActive;
 
     public Guid Id { get; } = profile.Id;
 
@@ -40,6 +41,22 @@ public class CameraProfileItemViewModel(CameraProfile profile) : ViewModelBase
         private set
         {
             _port = value;
+
+            NotifyPropertyChanged();
+        }
+    }
+
+    public bool IsActive
+    {
+        get => _isActive;
+        set
+        {
+            if (_isActive == value)
+            {
+                return;
+            }
+
+            _isActive = value;
 
             NotifyPropertyChanged();
         }

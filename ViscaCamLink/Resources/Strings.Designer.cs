@@ -61,11 +61,29 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die active ähnelt.
+        /// </summary>
+        public static string CameraProfile_Active {
+            get {
+                return ResourceManager.GetString("CameraProfile_Active", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Camera {0} ähnelt.
         /// </summary>
         public static string CameraProfile_DefaultName {
             get {
                 return ResourceManager.GetString("CameraProfile_DefaultName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Delete the camera profile &quot;{0}&quot;? ähnelt.
+        /// </summary>
+        public static string CameraProfile_DeleteConfirm {
+            get {
+                return ResourceManager.GetString("CameraProfile_DeleteConfirm", resourceCulture);
             }
         }
         
@@ -799,7 +817,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("PresetGroup_Add", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Default ähnelt.
         /// </summary>
@@ -817,7 +835,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("PresetGroup_LimitReached", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Group {0} ähnelt.
         /// </summary>
@@ -835,7 +853,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("PresetGroup_Remove", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Remove the group &quot;{0}&quot;? ähnelt.
         /// </summary>
@@ -844,7 +862,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("PresetGroup_RemoveConfirm", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Cancel saving a preset ähnelt.
         /// </summary>
@@ -853,7 +871,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("Presets_CancelSave", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Choose a slot ähnelt.
         /// </summary>
@@ -1006,7 +1024,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("Updater_DownloadErrorDetail", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Downloading... ähnelt.
         /// </summary>

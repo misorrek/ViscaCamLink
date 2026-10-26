@@ -455,4 +455,10 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="Options_Version" xml:space="preserve">
     <value>Version</value>
   </data>
+  <data name="CameraProfile_Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="CameraProfile_DeleteConfirm" xml:space="preserve">
+    <value>Delete the camera profile &quot;{0}&quot;?</value>
+  </data>
 </root>

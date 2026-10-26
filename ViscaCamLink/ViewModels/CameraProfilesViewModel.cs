@@ -1,6 +1,7 @@
 namespace ViscaCamLink.ViewModels;
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -17,6 +18,7 @@ public partial class CameraProfilesViewModel : ViewModelBase
     private const int MaximumPort = 65535;
 
     private readonly ISettingsService _settings;
+    private readonly IDialogService _dialogService;
     private readonly Action _closeHandler;
 
     private CameraProfileItemViewModel? _selectedCamera;
@@ -26,9 +28,10 @@ public partial class CameraProfilesViewModel : ViewModelBase
     private string _editPort = string.Empty;
     private Guid _editingId = Guid.Empty;
 
-    public CameraProfilesViewModel(ISettingsService settings, Action closeHandler)
+    public CameraProfilesViewModel(ISettingsService settings, IDialogService dialogService, Action closeHandler)
     {
         _settings = settings;
+        _dialogService = dialogService;
         _closeHandler = closeHandler;
 
         Cameras = new ObservableCollection<CameraProfileItemViewModel>(
@@ -40,6 +43,8 @@ public partial class CameraProfilesViewModel : ViewModelBase
         SaveEditCommand = new Command(ExecuteSaveEdit, () => IsEditNameValid && IsEditIpValid && IsEditPortValid);
         CancelEditCommand = new Command(ExecuteCancelEdit);
         CloseCommand = new Command(() => _closeHandler());
+
+        RefreshActiveCamera();
 
         SelectedCamera = Cameras.FirstOrDefault(camera => camera.Id == _settings.ActiveCameraProfileId)
                          ?? Cameras.FirstOrDefault();
@@ -92,6 +97,7 @@ public partial class CameraProfilesViewModel : ViewModelBase
 
             NotifyPropertyChanged();
             NotifyPropertyChanged(nameof(IsEditNameValid));
+            NotifyPropertyChanged(nameof(ValidationMessage));
             ((Command)SaveEditCommand).Invalidate();
         }
     }
@@ -105,6 +111,7 @@ public partial class CameraProfilesViewModel : ViewModelBase
 
             NotifyPropertyChanged();
             NotifyPropertyChanged(nameof(IsEditIpValid));
+            NotifyPropertyChanged(nameof(ValidationMessage));
             ((Command)SaveEditCommand).Invalidate();
         }
     }
@@ -118,6 +125,7 @@ public partial class CameraProfilesViewModel : ViewModelBase
 
             NotifyPropertyChanged();
             NotifyPropertyChanged(nameof(IsEditPortValid));
+            NotifyPropertyChanged(nameof(ValidationMessage));
             ((Command)SaveEditCommand).Invalidate();
         }
     }
@@ -127,6 +135,31 @@ public partial class CameraProfilesViewModel : ViewModelBase
     public bool IsEditIpValid => !string.IsNullOrWhiteSpace(EditIp) && IpRegex().IsMatch(EditIp);
 
     public bool IsEditPortValid => int.TryParse(EditPort, out var port) && port is >= MinimumPort and <= MaximumPort;
+
+    public string ValidationMessage
+    {
+        get
+        {
+            var messages = new List<string>();
+
+            if (!IsEditNameValid)
+            {
+                messages.Add(Strings.CameraProfile_Name_Invalid);
+            }
+
+            if (!IsEditIpValid)
+            {
+                messages.Add(Strings.CameraProfile_Ip_Invalid);
+            }
+
+            if (!IsEditPortValid)
+            {
+                messages.Add(Strings.CameraProfile_Port_Invalid);
+            }
+
+            return string.Join(Environment.NewLine, messages);
+        }
+    }
 
     private void ExecuteAdd()
     {
@@ -158,6 +191,13 @@ public partial class CameraProfilesViewModel : ViewModelBase
             return;
         }
 
+        var confirmationMessage = string.Format(Strings.CameraProfile_DeleteConfirm, SelectedCamera.Name);
+
+        if (!_dialogService.ShowConfirmation(confirmationMessage, Strings.Common_Delete))
+        {
+            return;
+        }
+
         var idToDelete = SelectedCamera.Id;
 
         _settings.RemoveCameraProfile(idToDelete);
@@ -165,6 +205,7 @@ public partial class CameraProfilesViewModel : ViewModelBase
         var item = Cameras.First(camera => camera.Id == idToDelete);
 
         Cameras.Remove(item);
+        RefreshActiveCamera();
 
         SelectedCamera = Cameras.FirstOrDefault(camera => camera.Id == _settings.ActiveCameraProfileId)
                          ?? Cameras.FirstOrDefault();
@@ -209,6 +250,16 @@ public partial class CameraProfilesViewModel : ViewModelBase
     private void ExecuteCancelEdit()
     {
         IsEditing = false;
+    }
+
+    private void RefreshActiveCamera()
+    {
+        var activeId = _settings.ActiveCameraProfileId;
+
+        foreach (var camera in Cameras)
+        {
+            camera.IsActive = camera.Id == activeId;
+        }
     }
 
     private void InvalidateEditCommands()
