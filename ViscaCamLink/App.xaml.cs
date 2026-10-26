@@ -1,13 +1,18 @@
 namespace ViscaCamLink;
 
 using System;
+using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Win32;
+
+using Velopack.Locators;
 
 using ViscaCamLink.Infrastructure;
 using ViscaCamLink.Infrastructure.HotKeys;
@@ -27,6 +32,7 @@ public partial class App : Application
 {
     // Used until settings are loaded; afterwards FileLoggerProvider.MinimumLevel is the only filter and follows the Options dialog live.
     private const LogLevel BootstrapLogLevel = LogLevel.Information;
+    private const string UnknownVersion = "unknown";
 
     private FileLoggerProvider? _fileLoggerProvider;
     private ILoggerFactory? _bootstrapLoggerFactory;
