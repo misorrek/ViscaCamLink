@@ -48,6 +48,7 @@ public sealed class PresetsViewModelTests
         _presetService.Setup(p => p.Presets).Returns(() => _presets);
         _presetService.Setup(p => p.Groups).Returns(() => _groups);
         _presetService.Setup(p => p.ActiveGroupId).Returns(DefaultGroupId);
+        _presetService.Setup(p => p.CanAddGroup).Returns(true);
         _settings.SetupProperty(s => s.UseNumpadLayout, true);
         _settings.SetupProperty(s => s.UsePresetGroups, true);
         _settings.Setup(s => s.ActiveCameraProfile).Returns(new CameraProfile());
@@ -124,6 +125,11 @@ public sealed class PresetsViewModelTests
     [Fact]
     public void MemoryCommand_WhenSettingMemory_SetsMemorySlot()
     {
+        _connectionService.Raise(
+            service => service.ConnectionStatusChanged += null,
+            _connectionService.Object,
+            ConnectionStatus.Ok);
+
         _viewModel.MemorySetCommand.Execute(null);
 
         _viewModel.IsSettingMemory.ShouldBeTrue();
@@ -133,7 +139,17 @@ public sealed class PresetsViewModelTests
 
         _presetService.Verify(p => p.SetMemoryAsync(5), Times.Once);
         _viewModel.IsSettingMemory.ShouldBeFalse();
-        _viewModel.MemoryInfo.ShouldBe(Strings.Common_Saved);
+        _viewModel.MemoryInfo.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void MemorySetCommand_WhenNotConnected_CannotExecute()
+    {
+        _viewModel.MemorySetCommand.CanExecute(null).ShouldBeFalse();
+
+        _viewModel.MemorySetCommand.Execute(null);
+
+        _viewModel.IsSettingMemory.ShouldBeFalse();
     }
 
     [Fact]
@@ -202,6 +218,78 @@ public sealed class PresetsViewModelTests
 
         _presetService.Verify(p => p.AddGroup(string.Format(Strings.PresetGroup_NewName, 3)), Times.Once);
         _presetService.Verify(p => p.SwitchGroup(SecondGroupId), Times.Once);
+    }
+
+    [Fact]
+    public void GroupAddCommand_WhenGroupLimitIsReached_CannotExecute()
+    {
+        _presetService.Setup(p => p.CanAddGroup).Returns(false);
+
+        _viewModel.GroupAddCommand.Execute(null);
+
+        _viewModel.CanAddGroup.ShouldBeFalse();
+        _viewModel.GroupAddCommand.CanExecute(null).ShouldBeFalse();
+        _presetService.Verify(p => p.AddGroup(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public void GroupAddCommand_WhenGroupsChangeToLimit_RaisesCanExecuteChanged()
+    {
+        var changedProperties = new List<string?>();
+        var canExecuteChanged = false;
+
+        _viewModel.PropertyChanged += (_, eventArgs) => changedProperties.Add(eventArgs.PropertyName);
+        _viewModel.GroupAddCommand.CanExecuteChanged += (_, _) => canExecuteChanged = true;
+        _presetService.Setup(p => p.CanAddGroup).Returns(false);
+
+        _presetService.Raise(p => p.GroupsChanged += null);
+
+        changedProperties.ShouldContain(nameof(PresetsViewModel.CanAddGroup));
+        canExecuteChanged.ShouldBeTrue();
+        _viewModel.GroupAddCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void GroupRemoveCommand_Success()
+    {
+        _dialogService.Setup(d => d.ShowConfirmation(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+
+        _viewModel.GroupRemoveCommand.Execute(SecondGroupId);
+
+        _dialogService.Verify(d => d.ShowConfirmation(string.Format(Strings.PresetGroup_RemoveConfirm, "Second"), Strings.PresetGroup_Remove), Times.Once);
+        _presetService.Verify(p => p.RemoveGroup(SecondGroupId), Times.Once);
+    }
+
+    [Fact]
+    public void GroupRemoveCommand_WhenNoParameter_RemovesActiveGroupAfterConfirmation()
+    {
+        _dialogService.Setup(d => d.ShowConfirmation(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+
+        _viewModel.GroupRemoveCommand.Execute(null);
+
+        _dialogService.Verify(d => d.ShowConfirmation(string.Format(Strings.PresetGroup_RemoveConfirm, "Default"), Strings.PresetGroup_Remove), Times.Once);
+        _presetService.Verify(p => p.RemoveGroup(DefaultGroupId), Times.Once);
+    }
+
+    [Fact]
+    public void GroupRemoveCommand_WhenConfirmationIsDeclined_DoesNotRemove()
+    {
+        _dialogService.Setup(d => d.ShowConfirmation(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
+
+        _viewModel.GroupRemoveCommand.Execute(SecondGroupId);
+
+        _presetService.Verify(p => p.RemoveGroup(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Fact]
+    public void GroupRemoveCommand_WhenOnlyOneGroupExists_DoesNotAsk()
+    {
+        _groups = [_groups[0]];
+
+        _viewModel.GroupRemoveCommand.Execute(DefaultGroupId);
+
+        _dialogService.Verify(d => d.ShowConfirmation(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _presetService.Verify(p => p.RemoveGroup(It.IsAny<Guid>()), Times.Never);
     }
 
     [Fact]
@@ -301,7 +389,7 @@ public sealed class PresetsViewModelTests
             _dialogService.Object,
             _hotKeyService.Object);
 
-        return new PresetsViewModel(_presetService.Object, _settings.Object, _hotKeyService.Object, connection);
+        return new PresetsViewModel(_presetService.Object, _settings.Object, _hotKeyService.Object, _dialogService.Object, connection);
     }
 
     private static List<PresetMetadata> CreatePresets(int startSlot, int count)

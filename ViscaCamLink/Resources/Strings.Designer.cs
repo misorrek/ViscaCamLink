@@ -738,6 +738,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Add group ähnelt.
+        /// </summary>
+        public static string PresetGroup_Add {
+            get {
+                return ResourceManager.GetString("PresetGroup_Add", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Default ähnelt.
         /// </summary>
         public static string PresetGroup_DefaultName {
@@ -747,6 +756,15 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximum number of groups reached ähnelt.
+        /// </summary>
+        public static string PresetGroup_LimitReached {
+            get {
+                return ResourceManager.GetString("PresetGroup_LimitReached", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Group {0} ähnelt.
         /// </summary>
         public static string PresetGroup_NewName {
@@ -755,6 +773,33 @@ namespace ViscaCamLink.Resources {
             }
         }
         
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Remove group ähnelt.
+        /// </summary>
+        public static string PresetGroup_Remove {
+            get {
+                return ResourceManager.GetString("PresetGroup_Remove", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Remove the group &quot;{0}&quot;? ähnelt.
+        /// </summary>
+        public static string PresetGroup_RemoveConfirm {
+            get {
+                return ResourceManager.GetString("PresetGroup_RemoveConfirm", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cancel saving a preset ähnelt.
+        /// </summary>
+        public static string Presets_CancelSave {
+            get {
+                return ResourceManager.GetString("Presets_CancelSave", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Choose a slot ähnelt.
         /// </summary>

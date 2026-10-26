@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Services;
 
 using System.Reflection;
+using System.Windows;
 
 using Microsoft.Extensions.Logging;
 
@@ -59,4 +60,15 @@ public class DialogService(
         view.DataContext = viewModel;
         view.ShowDialog();
     }
+
+    public bool ShowConfirmation(string message, string title)
+    {
+        var owner = Application.Current.MainWindow;
+        var result = owner is { IsVisible: true }
+            ? MessageBox.Show(owner, message, title, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No)
+            : MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+
+        return result == MessageBoxResult.Yes;
+    }
+
 }

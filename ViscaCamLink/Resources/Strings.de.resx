@@ -422,4 +422,19 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="Hint_PresetRename" xml:space="preserve">
     <value>Tipp: Doppelklick auf eine Voreinstellung oder einen Gruppennamen, um sie umzubenennen.</value>
   </data>
+  <data name="PresetGroup_Add" xml:space="preserve">
+    <value>Gruppe hinzufügen</value>
+  </data>
+  <data name="PresetGroup_LimitReached" xml:space="preserve">
+    <value>Maximale Anzahl an Gruppen erreicht</value>
+  </data>
+  <data name="PresetGroup_Remove" xml:space="preserve">
+    <value>Gruppe entfernen</value>
+  </data>
+  <data name="PresetGroup_RemoveConfirm" xml:space="preserve">
+    <value>Die Gruppe &quot;{0}&quot; entfernen?</value>
+  </data>
+  <data name="Presets_CancelSave" xml:space="preserve">
+    <value>Speichern der Voreinstellung abbrechen</value>
+  </data>
 </root>

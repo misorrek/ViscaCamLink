@@ -207,6 +207,28 @@ public sealed class PresetServiceTests
     }
 
     [Fact]
+    public void CanAddGroup_Success()
+    {
+        _presetService.CanAddGroup.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CanAddGroup_WhenAllCameraSlotsAreUsed_ReturnsFalse()
+    {
+        while (_presetService.CanAddGroup)
+        {
+            _presetService.AddGroup("Group");
+        }
+
+        var groupCount = _presetService.Groups.Count;
+
+        _presetService.AddGroup("Overflow");
+
+        _presetService.Groups.Count.ShouldBe(groupCount);
+        _presetService.Groups.Sum(group => group.Presets.Count).ShouldBe(PresetLayout.MaxCameraSlots);
+    }
+
+    [Fact]
     public void RemoveGroup_Success()
     {
         _presetService.AddGroup("Second");

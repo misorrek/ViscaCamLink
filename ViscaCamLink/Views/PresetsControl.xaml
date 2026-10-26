@@ -7,6 +7,7 @@
              xmlns:converters="clr-namespace:ViscaCamLink.Converters"
              xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
              xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"
+             xmlns:views="clr-namespace:ViscaCamLink.Views"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:PresetsViewModel}">
 
@@ -51,8 +52,21 @@
                         DockPanel.Dock="Right"
                         Width="24"
                         VerticalAlignment="Stretch"
-                        Command="{Binding MemorySetCommand}"
-                        ToolTip="{Binding [Presets_Save], Source={x:Static localization:TranslationSource.Instance}}">
+                        Command="{Binding MemorySetCommand}">
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}"
+                               BasedOn="{StaticResource BorderlessButton}">
+                            <Setter Property="ToolTip"
+                                    Value="{Binding [Presets_Save], Source={x:Static localization:TranslationSource.Instance}}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSettingMemory}"
+                                             Value="True">
+                                    <Setter Property="ToolTip"
+                                            Value="{Binding [Presets_CancelSave], Source={x:Static localization:TranslationSource.Instance}}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
                     <Path>
                         <Path.Style>
                             <Style TargetType="{x:Type Path}"
@@ -79,8 +93,8 @@
                    StaysOpen="True"
                    AllowsTransparency="True"
                    PopupAnimation="Fade">
-                <Border Background="{DynamicResource PrimaryBackgroundBrush}"
-                        BorderBrush="{DynamicResource DefaultBorderBrush}"
+                <Border Background="{DynamicResource SurfaceRaisedBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="4"
                         Padding="8,4">
@@ -100,8 +114,9 @@
                   Visibility="{Binding UseNumpadLayout,
                                        Converter={StaticResource TrueToCollapsedConverter}}">
                 <Button Content="{Binding Presets[0].Name}"
-                        Command="{Binding MemoryCommand}"
                         CommandParameter="{Binding Presets[0].SlotIndex}"
+                        Click="PresetButton_Click"
+                        PreviewMouseLeftButtonDown="PresetButton_PreviewMouseLeftButtonDown"
                         Style="{StaticResource PresetButton}">
                     <Button.Visibility>
                         <MultiBinding Converter="{StaticResource IntEqualsToCollapsedConverter}">
@@ -109,12 +124,6 @@
                             <Binding Path="RenamingSlotIndex" />
                         </MultiBinding>
                     </Button.Visibility>
-                    <behaviors:Interaction.Triggers>
-                        <behaviors:EventTrigger EventName="MouseDoubleClick">
-                            <behaviors:InvokeCommandAction Command="{Binding MemoryRenameCommand}"
-                                                           CommandParameter="{Binding Presets[0].SlotIndex}" />
-                        </behaviors:EventTrigger>
-                    </behaviors:Interaction.Triggers>
                 </Button>
                 <!-- Last-recalled indicator dot for Preset 0 (standard top position) -->
                 <Ellipse Width="8" Height="8"
@@ -130,18 +139,18 @@
                     </Ellipse.Visibility>
                     <Ellipse.Style>
                         <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="LimeGreen" />
+                            <Setter Property="Fill" Value="{DynamicResource StatusOkBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding PresetIndicatorState}"
                                              Value="{x:Static viewmodels:PresetIndicatorState.Moved}">
-                                    <Setter Property="Fill" Value="Gold" />
+                                    <Setter Property="Fill" Value="{DynamicResource StatusWarningBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Ellipse.Style>
                 </Ellipse>
-                <Border Background="{DynamicResource PrimaryBackgroundBrush}"
-                        BorderBrush="{DynamicResource PrimaryHighlightBrush}"
+                <Border Background="{DynamicResource SurfaceBrush}"
+                        BorderBrush="{DynamicResource FocusBorderBrush}"
                         BorderThickness="1" CornerRadius="4" Margin="0,4,0,0">
                     <Border.Visibility>
                         <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
@@ -151,14 +160,15 @@
                     </Border.Visibility>
                     <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
-                             Margin="4,0" BorderThickness="0" Background="Transparent"
+                             Margin="4,0" BorderThickness="0" TextAlignment="Center" FontSize="{StaticResource HeaderFontSize}" Background="Transparent"
                              Foreground="{DynamicResource AccentBrush}" MaxLength="20"
                              IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                 </Border>
             </Grid>
 
             <!-- 3x3 Preset Grid -->
-            <ItemsControl ItemsSource="{Binding GridPresets}">
+            <ItemsControl ItemsSource="{Binding GridPresets}"
+                          Margin="-2,0,-2,0">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="3" />
@@ -168,9 +178,9 @@
                     <DataTemplate>
                         <Grid Height="40" Margin="2,4,2,0">
                             <Button Content="{Binding Name}"
-                                    Command="{Binding DataContext.MemoryCommand, 
-                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                     CommandParameter="{Binding SlotIndex}"
+                                    Click="PresetButton_Click"
+                                    PreviewMouseLeftButtonDown="PresetButton_PreviewMouseLeftButtonDown"
                                     Style="{StaticResource LargeButton}">
                                 <Button.Visibility>
                                     <MultiBinding Converter="{StaticResource IntEqualsToCollapsedConverter}">
@@ -179,14 +189,6 @@
                                                  RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
                                     </MultiBinding>
                                 </Button.Visibility>
-                                <behaviors:Interaction.Triggers>
-                                    <behaviors:EventTrigger EventName="MouseDoubleClick">
-                                        <behaviors:InvokeCommandAction 
-                                            Command="{Binding DataContext.MemoryRenameCommand, 
-                                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            CommandParameter="{Binding SlotIndex}" />
-                                    </behaviors:EventTrigger>
-                                </behaviors:Interaction.Triggers>
                             </Button>
                             <!-- Last-recalled indicator dot for each grid preset button -->
                             <Ellipse Width="8" Height="8"
@@ -203,19 +205,19 @@
                                 </Ellipse.Visibility>
                                 <Ellipse.Style>
                                     <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="LimeGreen" />
+                                        <Setter Property="Fill" Value="{DynamicResource StatusOkBrush}" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding DataContext.PresetIndicatorState,
                                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                          Value="{x:Static viewmodels:PresetIndicatorState.Moved}">
-                                                <Setter Property="Fill" Value="Gold" />
+                                                <Setter Property="Fill" Value="{DynamicResource StatusWarningBrush}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Ellipse.Style>
                             </Ellipse>
-                            <Border Background="{DynamicResource PrimaryBackgroundBrush}"
-                                    BorderBrush="{DynamicResource PrimaryHighlightBrush}"
+                            <Border Background="{DynamicResource SurfaceBrush}"
+                                    BorderBrush="{DynamicResource FocusBorderBrush}"
                                     BorderThickness="1" CornerRadius="4">
                                 <Border.Visibility>
                                     <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
@@ -228,7 +230,7 @@
                                                         RelativeSource={RelativeSource AncestorType=ItemsControl}, 
                                                         UpdateSourceTrigger=PropertyChanged}"
                                          VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
-                                         Margin="4,0" BorderThickness="0" Background="Transparent"
+                                         Margin="4,0" BorderThickness="0" TextAlignment="Center" FontSize="{StaticResource HeaderFontSize}" Background="Transparent"
                                          Foreground="{DynamicResource AccentBrush}" MaxLength="20"
                                          IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                             </Border>
@@ -238,10 +240,13 @@
             </ItemsControl>
 
             <!-- Preset 0 full-width at bottom (Numpad layout) -->
-            <Grid Height="40">
+            <Grid Height="40"
+                  Visibility="{Binding UseNumpadLayout,
+                                       Converter={StaticResource FalseToCollapsedConverter}}">
                 <Button Content="{Binding Presets[0].Name}"
-                        Command="{Binding MemoryCommand}"
                         CommandParameter="{Binding Presets[0].SlotIndex}"
+                        Click="PresetButton_Click"
+                        PreviewMouseLeftButtonDown="PresetButton_PreviewMouseLeftButtonDown"
                         Style="{StaticResource PresetButton}">
                     <Button.Visibility>
                         <MultiBinding Converter="{StaticResource IntEqualsToCollapsedConverter}">
@@ -249,12 +254,6 @@
                             <Binding Path="RenamingSlotIndex" />
                         </MultiBinding>
                     </Button.Visibility>
-                    <behaviors:Interaction.Triggers>
-                        <behaviors:EventTrigger EventName="MouseDoubleClick">
-                            <behaviors:InvokeCommandAction Command="{Binding MemoryRenameCommand}"
-                                                           CommandParameter="{Binding Presets[0].SlotIndex}" />
-                        </behaviors:EventTrigger>
-                    </behaviors:Interaction.Triggers>
                 </Button>
                 <!-- Last-recalled indicator dot for Preset 0 (numpad bottom position) -->
                 <Ellipse Width="8" Height="8"
@@ -270,18 +269,18 @@
                     </Ellipse.Visibility>
                     <Ellipse.Style>
                         <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="LimeGreen" />
+                            <Setter Property="Fill" Value="{DynamicResource StatusOkBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding PresetIndicatorState}"
                                              Value="{x:Static viewmodels:PresetIndicatorState.Moved}">
-                                    <Setter Property="Fill" Value="Gold" />
+                                    <Setter Property="Fill" Value="{DynamicResource StatusWarningBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Ellipse.Style>
                 </Ellipse>
-                <Border Background="{DynamicResource PrimaryBackgroundBrush}"
-                        BorderBrush="{DynamicResource PrimaryHighlightBrush}"
+                <Border Background="{DynamicResource SurfaceBrush}"
+                        BorderBrush="{DynamicResource FocusBorderBrush}"
                         BorderThickness="1" CornerRadius="4" Margin="0,4,0,0">
                     <Border.Visibility>
                         <MultiBinding Converter="{StaticResource IntEqualsToVisibleConverter}">
@@ -291,7 +290,7 @@
                     </Border.Visibility>
                     <TextBox Text="{Binding RenamingText, UpdateSourceTrigger=PropertyChanged}"
                              VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
-                             Margin="4,0" BorderThickness="0" Background="Transparent"
+                             Margin="4,0" BorderThickness="0" TextAlignment="Center" FontSize="{StaticResource HeaderFontSize}" Background="Transparent"
                              Foreground="{DynamicResource AccentBrush}" MaxLength="20"
                              IsVisibleChanged="RenameTextBox_IsVisibleChanged" />
                 </Border>
@@ -306,8 +305,21 @@
                             VerticalAlignment="Center">
                     <Button Width="20" Height="20" Margin="4,0,0,0"
                             Command="{Binding GroupAddCommand}"
-                            Style="{StaticResource BorderlessButton}"
-                            ToolTip="Add Group">
+                            ToolTipService.ShowOnDisabled="True">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}"
+                                   BasedOn="{StaticResource BorderlessButton}">
+                                <Setter Property="ToolTip"
+                                        Value="{Binding [PresetGroup_Add], Source={x:Static localization:TranslationSource.Instance}}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CanAddGroup}"
+                                                 Value="False">
+                                        <Setter Property="ToolTip"
+                                                Value="{Binding [PresetGroup_LimitReached], Source={x:Static localization:TranslationSource.Instance}}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                         <Button.IsEnabled>
                             <Binding Path="IsSettingMemory"
                                      Converter="{StaticResource InverseBooleanConverter}" />
@@ -319,7 +331,7 @@
                     <Button Width="20" Height="20" Margin="2,0,0,0"
                             Command="{Binding GroupRemoveCommand}"
                             Style="{StaticResource BorderlessButton}"
-                            ToolTip="Remove Group"
+                            ToolTip="{Binding [PresetGroup_Remove], Source={x:Static localization:TranslationSource.Instance}}"
                             Visibility="{Binding HasMultipleGroups,
                                                  Converter={StaticResource FalseToCollapsedConverter}}">
                         <Button.IsEnabled>
@@ -373,8 +385,8 @@
                                         </behaviors:EventTrigger>
                                     </behaviors:Interaction.Triggers>
                                 </Button>
-                                <Border Background="{DynamicResource PrimaryBackgroundBrush}"
-                                        BorderBrush="{DynamicResource PrimaryHighlightBrush}"
+                                <Border Background="{DynamicResource SurfaceBrush}"
+                                        BorderBrush="{DynamicResource FocusBorderBrush}"
                                         BorderThickness="1" CornerRadius="3"
                                         Visibility="{Binding IsRenaming,
                                                              Converter={StaticResource FalseToCollapsedConverter}}">

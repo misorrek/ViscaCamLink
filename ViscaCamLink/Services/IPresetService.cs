@@ -14,6 +14,8 @@ public interface IPresetService
 
     Guid ActiveGroupId { get; }
 
+    bool CanAddGroup { get; }
+
     event Action? PresetsChanged;
 
     event Action? GroupsChanged;

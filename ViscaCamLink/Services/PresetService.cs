@@ -45,6 +45,8 @@ public partial class PresetService : IPresetService
 
     public Guid ActiveGroupId => _activeGroupId;
 
+    public bool CanAddGroup => FindNextAvailableBaseSlot(GetUsedSlots()) is not null;
+
     private PresetGroup ActiveGroup => _presetData.Groups.First(group => group.Id == _activeGroupId);
 
     public async Task SetMemoryAsync(byte slot)
@@ -119,15 +121,12 @@ public partial class PresetService : IPresetService
 
     public void AddGroup(string name)
     {
-        var usedSlots = _presetData.Groups
-            .SelectMany(group => group.Presets)
-            .Select(preset => preset.SlotIndex)
-            .ToHashSet();
-
-        var nextBaseSlot = FindNextAvailableBaseSlot(usedSlots);
+        var nextBaseSlot = FindNextAvailableBaseSlot(GetUsedSlots());
 
         if (nextBaseSlot is null)
         {
+            LogGroupLimitReached(_logger, name);
+
             return;
         }
 
@@ -218,6 +217,14 @@ public partial class PresetService : IPresetService
 
     private void SavePresetData() =>
         _repository.SaveForCameraProfile(_settingsService.ActiveCameraProfileId, _presetData);
+
+    private HashSet<int> GetUsedSlots()
+    {
+        return _presetData.Groups
+            .SelectMany(group => group.Presets)
+            .Select(preset => preset.SlotIndex)
+            .ToHashSet();
+    }
 
     private static Guid ResolveActiveGroupId(PresetData presetData)
     {

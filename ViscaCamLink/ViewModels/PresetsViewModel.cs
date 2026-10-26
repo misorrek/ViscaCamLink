@@ -18,7 +18,6 @@ using ViscaCamLink.Visca.Types;
 
 public class PresetsViewModel : ViewModelBase
 {
-    private static readonly TimeSpan MemoryInfoDisplayDuration = TimeSpan.FromSeconds(5);
 
     // Grid cell order (left to right, top to bottom) mapped to preset indexes 1-9.
     private static readonly int[] NumpadLayoutPositions = [7, 8, 9, 4, 5, 6, 1, 2, 3];
@@ -27,7 +26,9 @@ public class PresetsViewModel : ViewModelBase
     private readonly IPresetService _presetService;
     private readonly ISettingsService _settings;
     private readonly IHotKeyService _hotKeyService;
+    private readonly IDialogService _dialogService;
     private readonly ConnectionViewModel _connection;
+    private readonly Command _groupAddCommand;
 
     private bool _isSettingMemory;
     private string _memoryInfo = string.Empty;
@@ -39,17 +40,19 @@ public class PresetsViewModel : ViewModelBase
     private string _renamingGroupText = string.Empty;
     private int _lastRecalledPresetSlot = -1;
     private PresetIndicatorState _presetIndicatorState = PresetIndicatorState.None;
-    private CancellationTokenSource? _memoryInfoCancellation;
+    private readonly Command _memorySetCommand;
 
     public PresetsViewModel(
         IPresetService presetService,
         ISettingsService settings,
         IHotKeyService hotKeyService,
+        IDialogService dialogService,
         ConnectionViewModel connection)
     {
         _presetService = presetService;
         _settings = settings;
         _hotKeyService = hotKeyService;
+        _dialogService = dialogService;
         _connection = connection;
 
         _useNumpadLayout = _settings.UseNumpadLayout;
@@ -67,10 +70,12 @@ public class PresetsViewModel : ViewModelBase
         MemoryRenameCommand = new Command(ExecuteMemoryRename);
         MemoryRenameConfirmCommand = new Command(ExecuteMemoryRenameConfirm);
         MemoryRenameCancelCommand = new Command(ExecuteMemoryRenameCancel);
-        MemorySetCommand = new Command(ExecuteMemorySet);
+        _memorySetCommand = new Command(ExecuteMemorySet, () => _connection.ConnectionStatus == ConnectionStatus.Ok);
+        MemorySetCommand = _memorySetCommand;
         MemoryCommand = new Command(ExecuteMemorySetOrRecall);
         GroupSwitchCommand = new Command(ExecuteGroupSwitch);
-        GroupAddCommand = new Command(ExecuteGroupAdd);
+        _groupAddCommand = new Command(ExecuteGroupAdd, () => CanAddGroup);
+        GroupAddCommand = _groupAddCommand;
         GroupRemoveCommand = new Command(ExecuteGroupRemove);
         GroupRenameCommand = new Command(ExecuteGroupRename);
         GroupRenameConfirmCommand = new Command(ExecuteGroupRenameConfirm);
@@ -108,6 +113,8 @@ public class PresetsViewModel : ViewModelBase
     public ObservableCollection<PresetGroupViewModel> PresetGroups { get; private set; }
 
     public bool HasMultipleGroups => PresetGroups.Count > 1;
+
+    public bool CanAddGroup => _presetService.CanAddGroup;
 
     public bool IsSettingMemory
     {
@@ -258,7 +265,6 @@ public class PresetsViewModel : ViewModelBase
     {
         if (IsSettingMemory)
         {
-            _memoryInfoCancellation?.Cancel();
             IsSettingMemory = false;
             MemoryInfo = string.Empty;
         }
@@ -287,6 +293,17 @@ public class PresetsViewModel : ViewModelBase
 
     private void OnConnectionPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
+        if (eventArgs.PropertyName == nameof(ConnectionViewModel.ConnectionStatus))
+        {
+            if (_connection.ConnectionStatus != ConnectionStatus.Ok && IsSettingMemory)
+            {
+                IsSettingMemory = false;
+                MemoryInfo = string.Empty;
+            }
+
+            _memorySetCommand.Invalidate();
+        }
+
         if (eventArgs.PropertyName is nameof(ConnectionViewModel.ConnectionStatus) or nameof(ConnectionViewModel.PowerStatus))
         {
             var isConnectedAndOn = _connection.ConnectionStatus == ConnectionStatus.Ok
@@ -319,6 +336,8 @@ public class PresetsViewModel : ViewModelBase
 
         NotifyPropertyChanged(nameof(PresetGroups));
         NotifyPropertyChanged(nameof(HasMultipleGroups));
+        NotifyPropertyChanged(nameof(CanAddGroup));
+        _groupAddCommand.Invalidate();
     }
 
     private ObservableCollection<PresetGroupViewModel> BuildPresetGroups()
@@ -376,6 +395,19 @@ public class PresetsViewModel : ViewModelBase
     private void ExecuteGroupRemove(object? parameter)
     {
         var groupId = parameter as Guid? ?? _presetService.ActiveGroupId;
+        var group = _presetService.Groups.FirstOrDefault(candidate => candidate.Id == groupId);
+
+        if (group is null || _presetService.Groups.Count <= 1)
+        {
+            return;
+        }
+
+        var message = string.Format(Strings.PresetGroup_RemoveConfirm, group.Name);
+
+        if (!_dialogService.ShowConfirmation(message, Strings.PresetGroup_Remove))
+        {
+            return;
+        }
 
         _presetService.RemoveGroup(groupId);
     }
@@ -425,20 +457,10 @@ public class PresetsViewModel : ViewModelBase
         RenamingGroupText = string.Empty;
     }
 
-    private async void ExecuteMemorySet()
+    private void ExecuteMemorySet()
     {
         IsSettingMemory = !IsSettingMemory;
-
-        if (IsSettingMemory)
-        {
-            MemoryInfo = Strings.Presets_ChooseSlot;
-            _memoryInfoCancellation?.Cancel();
-        }
-        else
-        {
-            MemoryInfo = Strings.Common_Cancel;
-            await ResetMemorySetInfoAsync();
-        }
+        MemoryInfo = IsSettingMemory ? Strings.Presets_ChooseSlot : string.Empty;
     }
 
     private async void ExecuteMemorySetOrRecall(object? parameter)
@@ -545,9 +567,7 @@ public class PresetsViewModel : ViewModelBase
             await TryCameraOperation(_presetService.SetMemoryAsync(slot));
 
             IsSettingMemory = false;
-            MemoryInfo = Strings.Common_Saved;
-
-            await ResetMemorySetInfoAsync();
+            MemoryInfo = string.Empty;
         }
         else
         {
@@ -557,21 +577,5 @@ public class PresetsViewModel : ViewModelBase
 
             await TryCameraOperation(_presetService.RecallMemoryAsync(slot));
         }
-    }
-
-    private async Task ResetMemorySetInfoAsync()
-    {
-        _memoryInfoCancellation = new CancellationTokenSource();
-
-        try
-        {
-            await Task.Delay(MemoryInfoDisplayDuration, _memoryInfoCancellation.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
-
-        MemoryInfo = string.Empty;
     }
 }

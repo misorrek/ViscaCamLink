@@ -11,4 +11,6 @@ public interface IDialogService
     void ShowUpdateDownloadDialog(UpdateInfo updateInfo);
 
     void ShowMigrationDialog(string uninstallString);
+
+    bool ShowConfirmation(string message, string title);
 }

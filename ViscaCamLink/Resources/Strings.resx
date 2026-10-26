@@ -422,4 +422,19 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="Hint_PresetRename" xml:space="preserve">
     <value>Tip: double-click a preset or group name to rename it.</value>
   </data>
+  <data name="PresetGroup_Add" xml:space="preserve">
+    <value>Add group</value>
+  </data>
+  <data name="PresetGroup_LimitReached" xml:space="preserve">
+    <value>Maximum number of groups reached</value>
+  </data>
+  <data name="PresetGroup_Remove" xml:space="preserve">
+    <value>Remove group</value>
+  </data>
+  <data name="PresetGroup_RemoveConfirm" xml:space="preserve">
+    <value>Remove the group &quot;{0}&quot;?</value>
+  </data>
+  <data name="Presets_CancelSave" xml:space="preserve">
+    <value>Cancel saving a preset</value>
+  </data>
 </root>
