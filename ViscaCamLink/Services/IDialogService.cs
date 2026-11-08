@@ -13,4 +13,10 @@ public interface IDialogService
     void ShowMigrationDialog(string uninstallString);
 
     bool ShowConfirmation(string message, string title);
+
+    void ShowInformation(string message, string title);
+
+    void ShowWarning(string message, string title);
+
+    void ShowError(string message, string title);
 }

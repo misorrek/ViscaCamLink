@@ -356,6 +356,12 @@ Die frühere systemweite Installation wird nicht mehr benötigt. Du kannst sie j
   <data name="Common_Delete" xml:space="preserve">
     <value>Entfernen</value>
   </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>Nein</value>
+  </data>
   <data name="CameraProfile_Name" xml:space="preserve">
     <value>Name</value>
   </data>

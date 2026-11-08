@@ -356,6 +356,12 @@ The previous system-wide installation is no longer needed. You can remove it now
   <data name="Common_Delete" xml:space="preserve">
     <value>Delete</value>
   </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="CameraProfile_Name" xml:space="preserve">
     <value>Name</value>
   </data>

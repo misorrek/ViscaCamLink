@@ -205,6 +205,24 @@ namespace ViscaCamLink.Resources {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Yes ähnelt.
+        /// </summary>
+        public static string Common_Yes {
+            get {
+                return ResourceManager.GetString("Common_Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die No ähnelt.
+        /// </summary>
+        public static string Common_No {
+            get {
+                return ResourceManager.GetString("Common_No", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Edit ähnelt.
         /// </summary>
         public static string Common_Edit {

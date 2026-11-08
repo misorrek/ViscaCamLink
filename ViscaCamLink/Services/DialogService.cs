@@ -10,6 +10,7 @@ using System.Windows;
 using Microsoft.Extensions.Logging;
 
 using ViscaCamLink.Infrastructure;
+using ViscaCamLink.Resources;
 using ViscaCamLink.ViewModels;
 using ViscaCamLink.Views;
 
@@ -74,14 +75,40 @@ public class DialogService(
         view.ShowDialog();
     }
 
-    public bool ShowConfirmation(string message, string title)
-    {
-        var owner = Application.Current.MainWindow;
-        var result = owner is { IsVisible: true }
-            ? MessageBox.Show(owner, message, title, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No)
-            : MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+    public bool ShowConfirmation(string message, string title) =>
+        ShowMessage(title, message, MessageKind.Question, Strings.Common_Yes, Strings.Common_No, defaultToSecondary: true);
 
-        return result == MessageBoxResult.Yes;
+    public void ShowInformation(string message, string title) =>
+        ShowMessage(title, message, MessageKind.Information, Strings.Common_OK);
+
+    public void ShowWarning(string message, string title) =>
+        ShowMessage(title, message, MessageKind.Warning, Strings.Common_OK);
+
+    public void ShowError(string message, string title) =>
+        ShowMessage(title, message, MessageKind.Error, Strings.Common_OK);
+
+    private static bool ShowMessage(
+        string title,
+        string text,
+        MessageKind kind,
+        string primaryButtonText,
+        string? secondaryButtonText = null,
+        bool defaultToSecondary = false)
+    {
+        var view = new MessageView();
+        var viewModel = new MessageViewModel(title, text, kind, primaryButtonText, secondaryButtonText, defaultToSecondary, view.Close);
+
+        var owner = Application.Current?.MainWindow;
+
+        if (owner is { IsVisible: true } && !ReferenceEquals(owner, view))
+        {
+            view.Owner = owner;
+        }
+
+        view.DataContext = viewModel;
+        view.ShowDialog();
+
+        return viewModel.Result;
     }
 
     private string GetAppVersion() =>
