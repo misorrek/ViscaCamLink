@@ -6,6 +6,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Services;
@@ -31,6 +33,7 @@ public class MovementViewModel : ViewModelBase
 
     private readonly ICameraMovementService _movementService;
     private readonly ISettingsService _settings;
+    private readonly ILogger<MovementViewModel> _logger;
 
     private DateTime _lastMousePanTiltTime = DateTime.MinValue;
     private bool _isMousePanning;
@@ -39,10 +42,12 @@ public class MovementViewModel : ViewModelBase
     public MovementViewModel(
         ICameraMovementService movementService,
         ISettingsService settings,
-        IHotKeyService hotKeyService)
+        IHotKeyService hotKeyService,
+        ILogger<MovementViewModel> logger)
     {
         _movementService = movementService;
         _settings = settings;
+        _logger = logger;
 
         HomeCommand = new Command(ExecuteHome);
         MoveBeginCommand = new Command(ExecuteMoveBegin);
@@ -109,12 +114,13 @@ public class MovementViewModel : ViewModelBase
         }
     }
 
-    private async void ExecuteHome()
-    {
-        HomeExecuted?.Invoke();
+    private void ExecuteHome() =>
+        _ = RunSafeAsync(async () =>
+        {
+            HomeExecuted?.Invoke();
 
-        await TryCameraOperation(_movementService.GoHomeAsync());
-    }
+            await TryCameraOperation(_movementService.GoHomeAsync());
+        }, _logger, nameof(ExecuteHome));
 
     private void ExecuteMoveBegin(object? parameter)
     {
@@ -127,64 +133,64 @@ public class MovementViewModel : ViewModelBase
         }
     }
 
-    private async void ExecuteMouseMovePanTilt(object? parameter)
-    {
-        if (parameter is not MouseEventArgs eventArgs ||
-            eventArgs.Source is not FrameworkElement element ||
-            eventArgs.LeftButton != MouseButtonState.Pressed)
+    private void ExecuteMouseMovePanTilt(object? parameter) =>
+        _ = RunSafeAsync(async () =>
         {
-            return;
-        }
+            if (parameter is not MouseEventArgs eventArgs ||
+                eventArgs.Source is not FrameworkElement element ||
+                eventArgs.LeftButton != MouseButtonState.Pressed)
+            {
+                return;
+            }
 
-        IsMousePanning = true;
+            IsMousePanning = true;
 
-        var position = eventArgs.GetPosition(element);
+            var position = eventArgs.GetPosition(element);
 
-        if (parameter is MouseButtonEventArgs)
+            if (parameter is MouseButtonEventArgs)
+            {
+                _mousePanStartPosition = position;
+                _lastMousePanTiltTime = DateTime.UtcNow - MousePanTiltThrottle;
+                return;
+            }
+
+            if (_mousePanStartPosition is null)
+            {
+                return;
+            }
+
+            var now = DateTime.UtcNow;
+
+            if (now - _lastMousePanTiltTime < MousePanTiltThrottle)
+            {
+                return;
+            }
+
+            _lastMousePanTiltTime = now;
+
+            MovementStarted?.Invoke();
+
+            var deltaX = position.X - _mousePanStartPosition.Value.X;
+            var deltaY = position.Y - _mousePanStartPosition.Value.Y;
+            var panSpeed = NormalizeSpeedFromDelta(deltaX, MousePanSensitivity, _movementService.MaxPanTiltSpeed);
+            var tiltSpeed = -NormalizeSpeedFromDelta(deltaY, MouseTiltSensitivity, _movementService.MaxProportionalTiltSpeed);
+            var panTiltDirection = GetPanTiltDirectionFromSpeed(panSpeed, tiltSpeed);
+
+            await TryCameraOperation(_movementService.PanTiltAsync(panTiltDirection, AbsoluteSpeed(panSpeed), AbsoluteSpeed(tiltSpeed)));
+        }, _logger, nameof(ExecuteMouseMovePanTilt));
+
+    private void ExecuteMousePanEnd(object? parameter) =>
+        _ = RunSafeAsync(async () =>
         {
-            _mousePanStartPosition = position;
-            _lastMousePanTiltTime = DateTime.UtcNow - MousePanTiltThrottle;
-            return;
-        }
+            IsMousePanning = false;
+            _lastMousePanTiltTime = DateTime.MinValue;
+            _mousePanStartPosition = null;
 
-        if (_mousePanStartPosition is null)
-        {
-            return;
-        }
+            await TryCameraOperation(_movementService.StopPanTiltAsync());
+        }, _logger, nameof(ExecuteMousePanEnd));
 
-        var now = DateTime.UtcNow;
-
-        if (now - _lastMousePanTiltTime < MousePanTiltThrottle)
-        {
-            return;
-        }
-
-        _lastMousePanTiltTime = now;
-
-        MovementStarted?.Invoke();
-
-        var deltaX = position.X - _mousePanStartPosition.Value.X;
-        var deltaY = position.Y - _mousePanStartPosition.Value.Y;
-        var panSpeed = NormalizeSpeedFromDelta(deltaX, MousePanSensitivity, _movementService.MaxPanTiltSpeed);
-        var tiltSpeed = -NormalizeSpeedFromDelta(deltaY, MouseTiltSensitivity, _movementService.MaxProportionalTiltSpeed);
-        var panTiltDirection = GetPanTiltDirectionFromSpeed(panSpeed, tiltSpeed);
-
-        await TryCameraOperation(_movementService.PanTiltAsync(panTiltDirection, AbsoluteSpeed(panSpeed), AbsoluteSpeed(tiltSpeed)));
-    }
-
-    private async void ExecuteMousePanEnd(object? parameter)
-    {
-        IsMousePanning = false;
-        _lastMousePanTiltTime = DateTime.MinValue;
-        _mousePanStartPosition = null;
-
-        await TryCameraOperation(_movementService.StopPanTiltAsync());
-    }
-
-    private async void ExecuteMoveEnd(object? parameter)
-    {
-        await TryCameraOperation(_movementService.StopPanTiltAsync());
-    }
+    private void ExecuteMoveEnd(object? parameter) =>
+        _ = RunSafeAsync(() => TryCameraOperation(_movementService.StopPanTiltAsync()), _logger, nameof(ExecuteMoveEnd));
 
     private void ExecuteMoveSpeedDecrease()
     {

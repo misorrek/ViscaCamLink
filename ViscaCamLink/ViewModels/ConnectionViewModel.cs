@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Repositories.HotKeys;
@@ -20,6 +22,7 @@ public class ConnectionViewModel : ViewModelBase
     private readonly IPowerService _powerService;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly IDialogService _dialogService;
+    private readonly ILogger<ConnectionViewModel> _logger;
 
     private string _ip = string.Empty;
     private string _port = string.Empty;
@@ -36,13 +39,15 @@ public class ConnectionViewModel : ViewModelBase
         IPowerService powerService,
         IUiDispatcher uiDispatcher,
         IDialogService dialogService,
-        IHotKeyService hotKeyService)
+        IHotKeyService hotKeyService,
+        ILogger<ConnectionViewModel> logger)
     {
         _settings = settings;
         _connectionService = connectionService;
         _powerService = powerService;
         _uiDispatcher = uiDispatcher;
         _dialogService = dialogService;
+        _logger = logger;
 
         hotKeyService.RegisterActions(CreateHotKeyActions());
 
@@ -218,19 +223,20 @@ public class ConnectionViewModel : ViewModelBase
         }
     }
 
-    private async void OnConnectionStatusChanged(object? sender, ConnectionStatus status)
-    {
-        await _uiDispatcher.InvokeAsync(() => ConnectionStatus = status);
+    private void OnConnectionStatusChanged(object? sender, ConnectionStatus status) =>
+        _ = RunSafeAsync(async () =>
+        {
+            await _uiDispatcher.InvokeAsync(() => ConnectionStatus = status);
 
-        if (status == ConnectionStatus.Ok)
-        {
-            await TryCameraOperation(_powerService.RefreshPowerStatusAsync());
-        }
-        else
-        {
-            await _uiDispatcher.InvokeAsync(() => PowerStatus = PowerStatus.Unknown);
-        }
-    }
+            if (status == ConnectionStatus.Ok)
+            {
+                await TryCameraOperation(_powerService.RefreshPowerStatusAsync());
+            }
+            else
+            {
+                await _uiDispatcher.InvokeAsync(() => PowerStatus = PowerStatus.Unknown);
+            }
+        }, _logger, nameof(OnConnectionStatusChanged));
 
     private void OnPowerStatusChanged(object? sender, PowerStatus status)
     {
@@ -242,41 +248,39 @@ public class ConnectionViewModel : ViewModelBase
         _uiDispatcher.Post(() => ChangingPowerStatus = true);
     }
 
-    private async void ExecuteReconnect()
-    {
-        await _connectionService.ReconnectAsync();
-    }
+    private void ExecuteReconnect() =>
+        _ = RunSafeAsync(() => _connectionService.ReconnectAsync(), _logger, nameof(ExecuteReconnect));
 
-    private async void ExecutePowerSwitch()
-    {
-        await TryCameraOperation(_powerService.SwitchPowerAsync());
-    }
+    private void ExecutePowerSwitch() =>
+        _ = RunSafeAsync(() => TryCameraOperation(_powerService.SwitchPowerAsync()), _logger, nameof(ExecutePowerSwitch));
 
     private bool CanCycleCamera() => _settings.CameraProfiles.Count > 1;
 
-    private async void ExecutePrevCamera()
-    {
-        var target = GetAdjacentCamera(-1);
-
-        if (target is null)
+    private void ExecutePrevCamera() =>
+        _ = RunSafeAsync(async () =>
         {
-            return;
-        }
+            var target = GetAdjacentCamera(-1);
 
-        await SwitchToCameraAsync(target);
-    }
+            if (target is null)
+            {
+                return;
+            }
 
-    private async void ExecuteNextCamera()
-    {
-        var target = GetAdjacentCamera(+1);
+            await SwitchToCameraAsync(target);
+        }, _logger, nameof(ExecutePrevCamera));
 
-        if (target is null)
+    private void ExecuteNextCamera() =>
+        _ = RunSafeAsync(async () =>
         {
-            return;
-        }
+            var target = GetAdjacentCamera(+1);
 
-        await SwitchToCameraAsync(target);
-    }
+            if (target is null)
+            {
+                return;
+            }
+
+            await SwitchToCameraAsync(target);
+        }, _logger, nameof(ExecuteNextCamera));
 
     private async Task SwitchToCameraAsync(CameraProfile target)
     {

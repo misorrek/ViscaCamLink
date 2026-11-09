@@ -3,6 +3,10 @@ namespace ViscaCamLink.Tests.ViewModels;
 using System;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
+using Moq;
+
 using Shouldly;
 
 using ViscaCamLink.ViewModels;
@@ -30,6 +34,31 @@ public sealed class ViewModelBaseTests
     }
 
     [Fact]
+    public async Task RunSafeAsync_WhenOperationThrows_LogsAndSwallowsException()
+    {
+        var logger = new Mock<ILogger>();
+        var operationException = new InvalidOperationException("command error");
+
+        logger.Setup(log => log.IsEnabled(LogLevel.Error)).Returns(true);
+
+        Task act() => TestViewModel.RunSafeOperation(
+            () => Task.FromException(operationException),
+            logger.Object,
+            "TestCommand");
+
+        await Should.NotThrowAsync(act);
+
+        logger.Verify(
+            logged => logged.Log(
+                LogLevel.Error,
+                It.Is<EventId>(eventId => eventId.Id == 2901),
+                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("TestCommand")),
+                It.Is<Exception>(exception => exception == operationException),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
     public void NotifyPropertyChanged_Success()
     {
         var viewModel = new TestViewModel();
@@ -45,6 +74,9 @@ public sealed class ViewModelBaseTests
     private sealed class TestViewModel : ViewModelBase
     {
         public static Task RunOperation(Task operation) => TryCameraOperation(operation);
+
+        public static Task RunSafeOperation(Func<Task> operation, ILogger logger, string operationName) =>
+            RunSafeAsync(operation, logger, operationName);
 
         public void Notify(string propertyName) => NotifyPropertyChanged(propertyName);
     }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using Shouldly;
@@ -72,9 +74,20 @@ public sealed class ViscaCamLinkViewModelTests
             _powerService.Object,
             _uiDispatcher.Object,
             _dialogService.Object,
-            _hotKeyService.Object);
-        _presets = new PresetsViewModel(_presetService.Object, _settings.Object, _hotKeyService.Object, _dialogService.Object, _connection);
-        _movement = new MovementViewModel(_movementService.Object, _settings.Object, _hotKeyService.Object);
+            _hotKeyService.Object,
+            NullLogger<ConnectionViewModel>.Instance);
+        _presets = new PresetsViewModel(
+            _presetService.Object,
+            _settings.Object,
+            _hotKeyService.Object,
+            _dialogService.Object,
+            _connection,
+            NullLogger<PresetsViewModel>.Instance);
+        _movement = new MovementViewModel(
+            _movementService.Object,
+            _settings.Object,
+            _hotKeyService.Object,
+            NullLogger<MovementViewModel>.Instance);
         _zoom = new ZoomViewModel(_movementService.Object, _settings.Object, _hotKeyService.Object);
         _hints = new HintHostViewModel(_hintService.Object, _uiDispatcher.Object);
 

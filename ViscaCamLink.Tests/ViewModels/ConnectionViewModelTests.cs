@@ -3,6 +3,8 @@ namespace ViscaCamLink.Tests.ViewModels;
 using System;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using Shouldly;
@@ -48,7 +50,8 @@ public sealed class ConnectionViewModelTests
             _powerService.Object,
             _uiDispatcher.Object,
             _dialogService.Object,
-            _hotKeyService.Object);
+            _hotKeyService.Object,
+            NullLogger<ConnectionViewModel>.Instance);
     }
 
     [Fact]

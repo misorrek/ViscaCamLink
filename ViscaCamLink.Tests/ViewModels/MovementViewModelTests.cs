@@ -2,6 +2,8 @@ namespace ViscaCamLink.Tests.ViewModels;
 
 using System.Collections.Generic;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using Shouldly;
@@ -23,7 +25,11 @@ public sealed class MovementViewModelTests
         _movementService.Setup(m => m.MaxPanTiltSpeed).Returns(24);
         _settings.SetupProperty(s => s.PanTiltSpeed, 3);
 
-        _viewModel = new MovementViewModel(_movementService.Object, _settings.Object, _hotKeyService.Object);
+        _viewModel = new MovementViewModel(
+            _movementService.Object,
+            _settings.Object,
+            _hotKeyService.Object,
+            NullLogger<MovementViewModel>.Instance);
     }
 
     [Fact]

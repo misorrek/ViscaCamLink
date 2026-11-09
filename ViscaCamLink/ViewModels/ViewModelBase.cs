@@ -5,9 +5,23 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-public abstract class ViewModelBase : INotifyPropertyChanged
+using Microsoft.Extensions.Logging;
+
+public abstract partial class ViewModelBase : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected static async Task RunSafeAsync(Func<Task> operation, ILogger logger, string operationName)
+    {
+        try
+        {
+            await operation();
+        }
+        catch (Exception exception)
+        {
+            LogAsyncOperationFailed(logger, operationName, exception);
+        }
+    }
 
     /// <summary>
     /// Awaits a camera operation task, swallowing any exceptions.
@@ -32,4 +46,7 @@ public abstract class ViewModelBase : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
+    [LoggerMessage(EventId = 2901, Level = LogLevel.Error, Message = "Async command or handler {Operation} failed")]
+    private static partial void LogAsyncOperationFailed(ILogger logger, string operation, Exception exception);
 }

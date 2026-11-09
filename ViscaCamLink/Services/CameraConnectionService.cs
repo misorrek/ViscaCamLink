@@ -23,8 +23,10 @@ public partial class CameraConnectionService(
 
     private readonly TimeSpan _healthCheckInterval = healthCheckInterval ?? DefaultHealthCheckInterval;
 
+    private readonly object _cancellationLock = new();
     private CancellationTokenSource _healthCheckCancellation = new();
     private CancellationTokenSource _pendingConnectionCancellation = new();
+    private bool _isDisposed;
 
     public event EventHandler<ConnectionStatus>? ConnectionStatusChanged;
 
@@ -34,16 +36,30 @@ public partial class CameraConnectionService(
 
     public void Dispose()
     {
-        _healthCheckCancellation.Cancel();
-        _healthCheckCancellation.Dispose();
-        _pendingConnectionCancellation.Cancel();
-        _pendingConnectionCancellation.Dispose();
+        CancellationTokenSource healthCheckCancellation;
+        CancellationTokenSource pendingConnectionCancellation;
+
+        lock (_cancellationLock)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
+            healthCheckCancellation = _healthCheckCancellation;
+            pendingConnectionCancellation = _pendingConnectionCancellation;
+        }
+
+        healthCheckCancellation.Cancel();
+        healthCheckCancellation.Dispose();
+        pendingConnectionCancellation.Cancel();
+        pendingConnectionCancellation.Dispose();
     }
 
     public async Task ReconnectAsync()
     {
-        var pendingConnection = StartNewPendingConnection();
-        var cancellationToken = pendingConnection.Token;
+        var (pendingConnection, cancellationToken) = StartNewPendingConnection();
 
         try
         {
@@ -53,19 +69,25 @@ public partial class CameraConnectionService(
 
             await ConnectAsync(cancellationToken).ConfigureAwait(false);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Superseded by a newer switch/reconnect request; don't update the connection status.
+        }
         finally
         {
-            if (_pendingConnectionCancellation == pendingConnection)
+            lock (_cancellationLock)
             {
-                IsSwitchingCameraProfile = false;
+                if (_pendingConnectionCancellation == pendingConnection)
+                {
+                    IsSwitchingCameraProfile = false;
+                }
             }
         }
     }
 
     public async Task SwitchCameraProfileAsync(CameraProfile camera)
     {
-        var pendingConnection = StartNewPendingConnection();
-        var cancellationToken = pendingConnection.Token;
+        var (pendingConnection, cancellationToken) = StartNewPendingConnection();
 
         try
         {
@@ -88,9 +110,12 @@ public partial class CameraConnectionService(
         }
         finally
         {
-            if (_pendingConnectionCancellation == pendingConnection)
+            lock (_cancellationLock)
             {
-                IsSwitchingCameraProfile = false;
+                if (_pendingConnectionCancellation == pendingConnection)
+                {
+                    IsSwitchingCameraProfile = false;
+                }
             }
         }
     }
@@ -115,14 +140,26 @@ public partial class CameraConnectionService(
         settingsService.UpdateCameraProfile(updatedProfile);
     }
 
-    private CancellationTokenSource StartNewPendingConnection()
+    private (CancellationTokenSource Source, CancellationToken Token) StartNewPendingConnection()
     {
-        var oldCancellation = Interlocked.Exchange(ref _pendingConnectionCancellation, new CancellationTokenSource());
+        CancellationTokenSource oldCancellation;
+        CancellationTokenSource newCancellation;
+        CancellationToken cancellationToken;
+
+        lock (_cancellationLock)
+        {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
+            oldCancellation = _pendingConnectionCancellation;
+            newCancellation = new CancellationTokenSource();
+            cancellationToken = newCancellation.Token;
+            _pendingConnectionCancellation = newCancellation;
+        }
 
         oldCancellation.Cancel();
         oldCancellation.Dispose();
 
-        return _pendingConnectionCancellation;
+        return (newCancellation, cancellationToken);
     }
 
     private async Task ConnectAsync(CancellationToken cancellationToken)
@@ -157,13 +194,39 @@ public partial class CameraConnectionService(
 
     private void StartHealthCheck()
     {
-        _ = MonitorConnectionAsync(_healthCheckCancellation.Token);
+        CancellationToken cancellationToken;
+
+        lock (_cancellationLock)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            cancellationToken = _healthCheckCancellation.Token;
+        }
+
+        _ = MonitorConnectionAsync(cancellationToken).ContinueWith(
+            task => LogHealthCheckMonitorFailed(logger, task.Exception!),
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     private void StopHealthCheck()
     {
-        var oldCancellation = _healthCheckCancellation;
-        _healthCheckCancellation = new CancellationTokenSource();
+        CancellationTokenSource oldCancellation;
+
+        lock (_cancellationLock)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            oldCancellation = _healthCheckCancellation;
+            _healthCheckCancellation = new CancellationTokenSource();
+        }
 
         oldCancellation.Cancel();
         oldCancellation.Dispose();
@@ -250,4 +313,7 @@ public partial class CameraConnectionService(
 
     [LoggerMessage(EventId = 2006, Level = LogLevel.Information, Message = "Connection health check succeeded again; connection recovered")]
     private static partial void LogHealthCheckRecovered(ILogger logger);
+
+    [LoggerMessage(EventId = 2007, Level = LogLevel.Error, Message = "Connection health check monitor failed unexpectedly")]
+    private static partial void LogHealthCheckMonitorFailed(ILogger logger, Exception exception);
 }

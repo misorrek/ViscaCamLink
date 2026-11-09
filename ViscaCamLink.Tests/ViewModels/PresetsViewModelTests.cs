@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using Shouldly;
@@ -387,9 +389,16 @@ public sealed class PresetsViewModelTests
             _powerService.Object,
             _uiDispatcher.Object,
             _dialogService.Object,
-            _hotKeyService.Object);
+            _hotKeyService.Object,
+            NullLogger<ConnectionViewModel>.Instance);
 
-        return new PresetsViewModel(_presetService.Object, _settings.Object, _hotKeyService.Object, _dialogService.Object, connection);
+        return new PresetsViewModel(
+            _presetService.Object,
+            _settings.Object,
+            _hotKeyService.Object,
+            _dialogService.Object,
+            connection,
+            NullLogger<PresetsViewModel>.Instance);
     }
 
     private static List<PresetMetadata> CreatePresets(int startSlot, int count)

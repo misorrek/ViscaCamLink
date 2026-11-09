@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+using Microsoft.Extensions.Logging;
+
 using ViscaCamLink.Infrastructure.Interface;
 using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Repositories.Presets;
@@ -28,6 +30,7 @@ public class PresetsViewModel : ViewModelBase
     private readonly IHotKeyService _hotKeyService;
     private readonly IDialogService _dialogService;
     private readonly ConnectionViewModel _connection;
+    private readonly ILogger<PresetsViewModel> _logger;
     private readonly Command _groupAddCommand;
 
     private bool _isSettingMemory;
@@ -47,13 +50,15 @@ public class PresetsViewModel : ViewModelBase
         ISettingsService settings,
         IHotKeyService hotKeyService,
         IDialogService dialogService,
-        ConnectionViewModel connection)
+        ConnectionViewModel connection,
+        ILogger<PresetsViewModel> logger)
     {
         _presetService = presetService;
         _settings = settings;
         _hotKeyService = hotKeyService;
         _dialogService = dialogService;
         _connection = connection;
+        _logger = logger;
 
         _useNumpadLayout = _settings.UseNumpadLayout;
         _usePresetGroups = _settings.UsePresetGroups;
@@ -463,17 +468,18 @@ public class PresetsViewModel : ViewModelBase
         MemoryInfo = IsSettingMemory ? Strings.Presets_ChooseSlot : string.Empty;
     }
 
-    private async void ExecuteMemorySetOrRecall(object? parameter)
-    {
-        if (parameter is int slotNumber)
+    private void ExecuteMemorySetOrRecall(object? parameter) =>
+        _ = RunSafeAsync(async () =>
         {
-            await MemorySetOrRecallAsync((byte)slotNumber);
-        }
-        else if (parameter is string slotText && byte.TryParse(slotText, out var slot))
-        {
-            await MemorySetOrRecallAsync(slot);
-        }
-    }
+            if (parameter is int slotNumber)
+            {
+                await MemorySetOrRecallAsync((byte)slotNumber);
+            }
+            else if (parameter is string slotText && byte.TryParse(slotText, out var slot))
+            {
+                await MemorySetOrRecallAsync(slot);
+            }
+        }, _logger, nameof(ExecuteMemorySetOrRecall));
 
     private void ExecuteMemoryRename(object? parameter)
     {
@@ -549,16 +555,17 @@ public class PresetsViewModel : ViewModelBase
         ExecuteGroupSwitch(PresetGroups[targetIndex].Id);
     }
 
-    private async void ExecutePresetHotKey(HotKeyAction action)
-    {
-        if (!HotKeyDefinitions.TryGetPresetPosition(action, out var presetPosition) ||
-            presetPosition >= _presetService.Presets.Count)
+    private void ExecutePresetHotKey(HotKeyAction action) =>
+        _ = RunSafeAsync(async () =>
         {
-            return;
-        }
+            if (!HotKeyDefinitions.TryGetPresetPosition(action, out var presetPosition) ||
+                presetPosition >= _presetService.Presets.Count)
+            {
+                return;
+            }
 
-        await MemorySetOrRecallAsync((byte)_presetService.Presets[presetPosition].SlotIndex);
-    }
+            await MemorySetOrRecallAsync((byte)_presetService.Presets[presetPosition].SlotIndex);
+        }, _logger, nameof(ExecutePresetHotKey));
 
     private async Task MemorySetOrRecallAsync(byte slot)
     {

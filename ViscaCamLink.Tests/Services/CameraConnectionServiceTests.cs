@@ -102,6 +102,37 @@ public sealed class CameraConnectionServiceTests
     }
 
     [Fact]
+    public async Task ReconnectAsync_WhenSuperseded_DoesNotThrow()
+    {
+        var firstAttemptStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reconnectCount = 0;
+
+        _viscaController.Setup(v => v.Connected).Returns(true);
+        _viscaController
+            .Setup(v => v.ReconnectAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns((string _, int _, CancellationToken cancellationToken) =>
+            {
+                if (Interlocked.Increment(ref reconnectCount) == 1)
+                {
+                    firstAttemptStarted.TrySetResult();
+
+                    return Task.Delay(Timeout.Infinite, cancellationToken);
+                }
+
+                return Task.CompletedTask;
+            });
+
+        using var service = CreateSut();
+        var firstReconnect = service.ReconnectAsync();
+
+        await firstAttemptStarted.Task.WaitAsync(WaitTimeout);
+        await service.ReconnectAsync();
+        await Should.NotThrowAsync(() => firstReconnect);
+
+        service.Status.ShouldBe(ConnectionStatus.Ok);
+    }
+
+    [Fact]
     public void CommitConnectionSettings_Success()
     {
         using var service = CreateSut();
