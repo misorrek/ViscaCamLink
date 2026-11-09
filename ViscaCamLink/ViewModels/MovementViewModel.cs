@@ -2,6 +2,7 @@ namespace ViscaCamLink.ViewModels;
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -52,6 +53,7 @@ public class MovementViewModel : ViewModelBase
         HomeCommand = new Command(ExecuteHome);
         MoveBeginCommand = new Command(ExecuteMoveBegin);
         MoveEndCommand = new Command(ExecuteMoveEnd);
+        StopPanTiltCommand = new Command(ExecuteStopPanTilt);
         MoveSpeedDecreaseCommand = new Command(ExecuteMoveSpeedDecrease);
         MoveSpeedIncreaseCommand = new Command(ExecuteMoveSpeedIncrease);
         MouseMovePanTiltCommand = new Command(ExecuteMouseMovePanTilt);
@@ -71,6 +73,8 @@ public class MovementViewModel : ViewModelBase
     public ICommand MoveBeginCommand { get; }
 
     public ICommand MoveEndCommand { get; }
+
+    public ICommand StopPanTiltCommand { get; }
 
     public ICommand MoveSpeedDecreaseCommand { get; }
 
@@ -180,17 +184,22 @@ public class MovementViewModel : ViewModelBase
         }, _logger, nameof(ExecuteMouseMovePanTilt));
 
     private void ExecuteMousePanEnd(object? parameter) =>
-        _ = RunSafeAsync(async () =>
-        {
-            IsMousePanning = false;
-            _lastMousePanTiltTime = DateTime.MinValue;
-            _mousePanStartPosition = null;
-
-            await TryCameraOperation(_movementService.StopPanTiltAsync());
-        }, _logger, nameof(ExecuteMousePanEnd));
+        _ = RunSafeAsync(StopPanTiltAsync, _logger, nameof(ExecuteMousePanEnd));
 
     private void ExecuteMoveEnd(object? parameter) =>
-        _ = RunSafeAsync(() => TryCameraOperation(_movementService.StopPanTiltAsync()), _logger, nameof(ExecuteMoveEnd));
+        _ = RunSafeAsync(StopPanTiltAsync, _logger, nameof(ExecuteMoveEnd));
+
+    private void ExecuteStopPanTilt() =>
+        _ = RunSafeAsync(StopPanTiltAsync, _logger, nameof(ExecuteStopPanTilt));
+
+    private async Task StopPanTiltAsync()
+    {
+        IsMousePanning = false;
+        _lastMousePanTiltTime = DateTime.MinValue;
+        _mousePanStartPosition = null;
+
+        await TryCameraOperation(_movementService.StopPanTiltAsync());
+    }
 
     private void ExecuteMoveSpeedDecrease()
     {

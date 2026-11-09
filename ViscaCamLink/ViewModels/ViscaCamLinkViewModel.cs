@@ -69,6 +69,12 @@ public class ViscaCamLinkViewModel : ViewModelBase
 
     public ICommand OptionsCommand { get; }
 
+    public void StopMovement()
+    {
+        Movement.StopPanTiltCommand.Execute(null);
+        Zoom.StopZoomCommand.Execute(null);
+    }
+
     public bool ConnectionContainerVisible
     {
         get => _settings.ConnectionContainerVisible;

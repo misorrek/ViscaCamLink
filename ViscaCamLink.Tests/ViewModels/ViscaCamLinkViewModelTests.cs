@@ -146,6 +146,15 @@ public sealed class ViscaCamLinkViewModelTests
     }
 
     [Fact]
+    public void StopMovement_Success()
+    {
+        _viewModel.StopMovement();
+
+        _movementService.Verify(m => m.StopPanTiltAsync(), Times.Once);
+        _movementService.Verify(m => m.ZoomAsync(ViscaCamLink.Visca.Types.ZoomDirection.None, 0), Times.Once);
+    }
+
+    [Fact]
     public void PresetIndicator_WhenHomeIsExecuted_IsCleared()
     {
         _presets.MemoryCommand.Execute(3);

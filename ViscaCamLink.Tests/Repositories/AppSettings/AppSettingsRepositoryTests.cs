@@ -47,7 +47,18 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         settings.Language.ShouldBe(Language.System);
         settings.CameraProfiles.ShouldBeEmpty();
         settings.ActiveCameraProfileId.ShouldBe(Guid.Empty);
+        settings.UseGlobalHotKeys.ShouldBeFalse();
         File.Exists(_settingsFilePath).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Load_WhenSavedGlobalHotkeysAreEnabled_PreservesSetting()
+    {
+        _repository.Save(new AppSettings { UseGlobalHotKeys = true });
+
+        var settings = _repository.Load();
+
+        settings.UseGlobalHotKeys.ShouldBeTrue();
     }
 
     [Fact]

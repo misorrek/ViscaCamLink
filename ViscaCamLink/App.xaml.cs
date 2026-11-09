@@ -127,7 +127,9 @@ public partial class App : Application
         });
         services.AddSingleton<IViscaController, ViscaController>();
 
-        services.AddSingleton<IHotKeyManager>(provider => new HotKeyManager(provider.GetRequiredService<ViscaCamLinkView>()));
+        services.AddSingleton<IHotKeyManager>(provider => new HotKeyManager(
+            provider.GetRequiredService<ViscaCamLinkView>(),
+            provider.GetRequiredService<ILogger<HotKeyManager>>()));
         services.AddSingleton<IHotKeyRepository, HotKeyRepository>();
         services.AddSingleton<IPresetRepository, PresetRepository>();
 

@@ -219,7 +219,7 @@ public sealed class SettingsServiceTests : IDisposable
             UseCompactView: true,
             UsePresetGroups: true,
             UseNumpadLayout: true,
-            UseGlobalHotKeys: true,
+            UseGlobalHotKeys: false,
             LogLevel: LogLevel.Information));
 
         _appliedLanguages.ShouldBeEmpty();

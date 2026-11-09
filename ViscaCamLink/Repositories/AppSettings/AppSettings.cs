@@ -40,7 +40,7 @@ public class AppSettings
 
     public bool UseNumpadLayout { get; set; } = true;
 
-    public bool UseGlobalHotKeys { get; set; } = true;
+    public bool UseGlobalHotKeys { get; set; }
 
     public bool WixUninstallPrompted { get; set; }
 

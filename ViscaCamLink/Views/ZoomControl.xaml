@@ -24,6 +24,9 @@
                 <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
                     <behaviors:InvokeCommandAction Command="{Binding ZoomCommand}" PassEventArgsToCommand="True" />
                 </behaviors:EventTrigger>
+                <behaviors:EventTrigger EventName="LostMouseCapture">
+                    <behaviors:InvokeCommandAction Command="{Binding StopZoomCommand}" />
+                </behaviors:EventTrigger>
             </interface:Triggers>
 
             <Style x:Key="ZoomButton"

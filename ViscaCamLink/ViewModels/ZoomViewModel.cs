@@ -26,6 +26,7 @@ public class ZoomViewModel : ViewModelBase
         _settings = settings;
 
         ZoomCommand = new Command(ExecuteZoom);
+        StopZoomCommand = new Command(StopZoom);
         ZoomSpeedDecreaseCommand = new Command(ExecuteZoomSpeedDecrease);
         ZoomSpeedIncreaseCommand = new Command(ExecuteZoomSpeedIncrease);
 
@@ -35,6 +36,8 @@ public class ZoomViewModel : ViewModelBase
     public event Action? ZoomStarted;
 
     public ICommand ZoomCommand { get; }
+
+    public ICommand StopZoomCommand { get; }
 
     public ICommand ZoomSpeedIncreaseCommand { get; }
 

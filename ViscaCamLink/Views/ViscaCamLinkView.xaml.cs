@@ -94,9 +94,9 @@ public partial class ViscaCamLinkView : Window
 
     private void Window_Deactivated(object sender, EventArgs eventArgs)
     {
-        if (DataContext is ViscaCamLinkViewModel viewModel && viewModel.Movement.IsMousePanning)
+        if (DataContext is ViscaCamLinkViewModel viewModel)
         {
-            viewModel.Movement.MousePanEndCommand.Execute(null);
+            viewModel.StopMovement();
         }
     }
 

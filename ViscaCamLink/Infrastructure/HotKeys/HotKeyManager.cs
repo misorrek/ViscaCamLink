@@ -9,6 +9,8 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 
+using Microsoft.Extensions.Logging;
+
 public partial class HotKeyManager : IHotKeyManager
 {
     private const int WH_KEYBOARD_LL = 13;
@@ -18,6 +20,7 @@ public partial class HotKeyManager : IHotKeyManager
 
     private readonly IntPtr _mainWindowHandle;
     private readonly HwndSource _hwndSource;
+    private readonly ILogger<HotKeyManager> _logger;
     private readonly List<LocalKeyTargetState> _localKeyTargets = [];
 
     private readonly Dictionary<int, Action> _globalRegistrations = [];
@@ -31,9 +34,11 @@ public partial class HotKeyManager : IHotKeyManager
     private int _currentHotKeyId;
     private LowLevelKeyboardProc? _lowLevelKeyboardProc;
     private IntPtr _lowLevelHookHandle = IntPtr.Zero;
+    private bool _lowLevelHookInstallationFailed;
 
-    public HotKeyManager(Window mainWindow)
+    public HotKeyManager(Window mainWindow, ILogger<HotKeyManager> logger)
     {
+        _logger = logger;
         _localKeyTargets.Add(new LocalKeyTargetState(mainWindow));
 
         var windowInteropHelper = new WindowInteropHelper(mainWindow);
@@ -99,15 +104,16 @@ public partial class HotKeyManager : IHotKeyManager
 
     public void UnregisterAll()
     {
+        _lowLevelHookInstallationFailed = false;
+
         foreach (var id in _globalRegistrations.Keys.ToList())
         {
             UnregisterHotKey(_mainWindowHandle, id);
         }
 
+        RemoveLowLevelHook();
         _globalRegistrations.Clear();
         _globalHoldRegistrations.Clear();
-        _activeGlobalHoldKeys.Clear();
-        RemoveLowLevelHook();
 
         foreach (var target in _localKeyTargets)
         {
@@ -122,11 +128,17 @@ public partial class HotKeyManager : IHotKeyManager
                 target.Window.PreviewKeyUp -= OnLocalPreviewKeyUp;
                 target.IsKeyUpHandlerAttached = false;
             }
+
+            if (target.IsDeactivatedHandlerAttached)
+            {
+                target.Window.Deactivated -= OnLocalTargetDeactivated;
+                target.IsDeactivatedHandlerAttached = false;
+            }
         }
 
+        ReleaseActiveLocalHoldKeys();
         _localRegistrations.Clear();
         _localHoldReleaseCallbacks.Clear();
-        _activeLocalHoldKeys.Clear();
     }
 
     private bool RegisterGlobalHotKey(ModifierKeys modifier, Key key, Action action)
@@ -148,14 +160,21 @@ public partial class HotKeyManager : IHotKeyManager
 
     private bool RegisterGlobalHoldHotKey(ModifierKeys modifier, Key key, Action pressAction, Action releaseAction)
     {
+        if (!EnsureLowLevelHook())
+        {
+            return false;
+        }
+
         var virtualKeyCode = (uint)KeyInterop.VirtualKeyFromKey(key);
         var registered = RegisterGlobalHotKey(modifier, key, pressAction);
 
         if (registered)
         {
             _globalHoldRegistrations[_currentHotKeyId] = (virtualKeyCode, releaseAction);
-
-            EnsureLowLevelHook();
+        }
+        else if (_globalHoldRegistrations.Count == 0)
+        {
+            RemoveLowLevelHook();
         }
 
         return registered;
@@ -219,14 +238,21 @@ public partial class HotKeyManager : IHotKeyManager
         }
 
         target.Window.PreviewKeyUp += OnLocalPreviewKeyUp;
+        target.Window.Deactivated += OnLocalTargetDeactivated;
         target.IsKeyUpHandlerAttached = true;
+        target.IsDeactivatedHandlerAttached = true;
     }
 
-    private void EnsureLowLevelHook()
+    private bool EnsureLowLevelHook()
     {
+        if (_lowLevelHookInstallationFailed)
+        {
+            return false;
+        }
+
         if (_lowLevelHookHandle != IntPtr.Zero)
         {
-            return;
+            return true;
         }
 
         _lowLevelKeyboardProc = LowLevelKeyboardHook;
@@ -239,6 +265,19 @@ public partial class HotKeyManager : IHotKeyManager
             Marshal.GetFunctionPointerForDelegate(_lowLevelKeyboardProc),
             GetModuleHandle(mainModule?.ModuleName),
             0);
+
+        if (_lowLevelHookHandle != IntPtr.Zero)
+        {
+            return true;
+        }
+
+        var errorCode = Marshal.GetLastWin32Error();
+
+        LogLowLevelHookInstallationFailed(_logger, errorCode);
+        _lowLevelKeyboardProc = null;
+        _lowLevelHookInstallationFailed = true;
+
+        return false;
     }
 
     private void RemoveLowLevelHook()
@@ -248,10 +287,19 @@ public partial class HotKeyManager : IHotKeyManager
             return;
         }
 
-        UnhookWindowsHookEx(_lowLevelHookHandle);
+        var unhooked = UnhookWindowsHookEx(_lowLevelHookHandle);
+        var errorCode = unhooked ? 0 : Marshal.GetLastWin32Error();
 
         _lowLevelHookHandle = IntPtr.Zero;
         _lowLevelKeyboardProc = null;
+
+        ReleaseActiveGlobalHoldKeys();
+        ReleaseActiveLocalHoldKeys();
+
+        if (!unhooked)
+        {
+            LogLowLevelHookRemovalFailed(_logger, errorCode);
+        }
     }
 
     private IntPtr LowLevelKeyboardHook(int hookCode, IntPtr wParam, IntPtr lParam)
@@ -260,17 +308,7 @@ public partial class HotKeyManager : IHotKeyManager
         {
             var hookStruct = Marshal.PtrToStructure<KBDLLHOOKSTRUCT>(lParam);
 
-            if (_activeGlobalHoldKeys.Remove(hookStruct.vkCode))
-            {
-                foreach (var (virtualKeyCode, releaseAction) in _globalHoldRegistrations.Values)
-                {
-                    if (virtualKeyCode == hookStruct.vkCode)
-                    {
-                        releaseAction.Invoke();
-                        break;
-                    }
-                }
-            }
+            ReleaseGlobalHoldKey(hookStruct.vkCode);
         }
 
         return CallNextHookEx(_lowLevelHookHandle, hookCode, wParam, lParam);
@@ -308,6 +346,47 @@ public partial class HotKeyManager : IHotKeyManager
         }
     }
 
+    private void OnLocalTargetDeactivated(object? sender, EventArgs eventArgs) =>
+        ReleaseActiveLocalHoldKeys();
+
+    private void ReleaseActiveLocalHoldKeys()
+    {
+        foreach (var key in _activeLocalHoldKeys.ToArray())
+        {
+            if (_localHoldReleaseCallbacks.TryGetValue(key, out var releaseAction))
+            {
+                releaseAction.Invoke();
+            }
+        }
+
+        _activeLocalHoldKeys.Clear();
+    }
+
+    private void ReleaseActiveGlobalHoldKeys()
+    {
+        foreach (var virtualKeyCode in _activeGlobalHoldKeys.ToArray())
+        {
+            ReleaseGlobalHoldKey(virtualKeyCode);
+        }
+    }
+
+    private void ReleaseGlobalHoldKey(uint virtualKeyCode)
+    {
+        if (!_activeGlobalHoldKeys.Remove(virtualKeyCode))
+        {
+            return;
+        }
+
+        foreach (var (registeredVirtualKeyCode, releaseAction) in _globalHoldRegistrations.Values)
+        {
+            if (registeredVirtualKeyCode == virtualKeyCode)
+            {
+                releaseAction.Invoke();
+                break;
+            }
+        }
+    }
+
     private IntPtr HwndHook(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         if (message == WM_HOTKEY)
@@ -336,7 +415,7 @@ public partial class HotKeyManager : IHotKeyManager
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool UnregisterHotKey(IntPtr hWnd, int id);
 
-    [LibraryImport("user32.dll", EntryPoint = "SetWindowsHookExA", SetLastError = true)]
+    [LibraryImport("user32.dll", EntryPoint = "SetWindowsHookExW", SetLastError = true)]
     private static partial IntPtr SetWindowsHookEx(int idHook, IntPtr lpfn, IntPtr hMod, uint dwThreadId);
 
     [LibraryImport("user32.dll", SetLastError = true)]
@@ -346,8 +425,14 @@ public partial class HotKeyManager : IHotKeyManager
     [LibraryImport("user32.dll")]
     private static partial IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
-    [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleA", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     private static partial IntPtr GetModuleHandle(string? lpModuleName);
+
+    [LoggerMessage(EventId = 2304, Level = LogLevel.Error, Message = "Could not install the low-level keyboard hook; global hold hotkeys will not be registered (error {ErrorCode})")]
+    private static partial void LogLowLevelHookInstallationFailed(ILogger logger, int errorCode);
+
+    [LoggerMessage(EventId = 2305, Level = LogLevel.Error, Message = "Could not remove the low-level keyboard hook (error {ErrorCode})")]
+    private static partial void LogLowLevelHookRemovalFailed(ILogger logger, int errorCode);
 
     private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
@@ -368,5 +453,7 @@ public partial class HotKeyManager : IHotKeyManager
         public bool IsKeyDownHandlerAttached { get; set; }
 
         public bool IsKeyUpHandlerAttached { get; set; }
+
+        public bool IsDeactivatedHandlerAttached { get; set; }
     }
 }

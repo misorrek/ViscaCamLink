@@ -24,6 +24,9 @@
                 <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
                     <behaviors:InvokeCommandAction Command="{Binding MoveEndCommand}" PassEventArgsToCommand="True" />
                 </behaviors:EventTrigger>
+                <behaviors:EventTrigger EventName="LostMouseCapture">
+                    <behaviors:InvokeCommandAction Command="{Binding MoveEndCommand}" />
+                </behaviors:EventTrigger>
             </interface:Triggers>
 
             <Style x:Key="MoveButton"
@@ -204,6 +207,9 @@
                     </behaviors:EventTrigger>
                     <behaviors:EventTrigger EventName="PreviewMouseLeftButtonUp">
                         <behaviors:InvokeCommandAction Command="{Binding MousePanEndCommand}" PassEventArgsToCommand="True" />
+                    </behaviors:EventTrigger>
+                    <behaviors:EventTrigger EventName="LostMouseCapture">
+                        <behaviors:InvokeCommandAction Command="{Binding StopPanTiltCommand}" />
                     </behaviors:EventTrigger>
                 </behaviors:Interaction.Triggers>
 
