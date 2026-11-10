@@ -15,19 +15,22 @@ using Xunit;
 
 public sealed class HotKeyRepositoryTests : IDisposable
 {
-    private readonly string _filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+    private readonly string _rootDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+    private readonly string _filePath;
     private readonly HotKeyRepository _repository;
 
     public HotKeyRepositoryTests()
     {
+        Directory.CreateDirectory(_rootDirectory);
+        _filePath = Path.Combine(_rootDirectory, "hotkeys.json");
         _repository = new HotKeyRepository(_filePath, NullLogger<HotKeyRepository>.Instance);
     }
 
     public void Dispose()
     {
-        if (File.Exists(_filePath))
+        if (Directory.Exists(_rootDirectory))
         {
-            File.Delete(_filePath);
+            Directory.Delete(_rootDirectory, recursive: true);
         }
     }
 
@@ -63,6 +66,45 @@ public sealed class HotKeyRepositoryTests : IDisposable
     }
 
     [Fact]
+    public void Load_WhenListContainsNullEntries_IgnoresThem()
+    {
+        File.WriteAllText(_filePath, "[null]");
+
+        var bindings = _repository.Load();
+
+        bindings.Count.ShouldBe(HotKeyDefinitions.CreateDefaultBindings().Count);
+        bindings[0].Action.ShouldBe(HotKeyAction.Preset0);
+    }
+
+    [Fact]
+    public void Load_WhenFileIsCorrupt_PreservesIt()
+    {
+        File.WriteAllText(_filePath, "[");
+
+        var bindings = _repository.Load();
+
+        bindings.Count.ShouldBe(HotKeyDefinitions.CreateDefaultBindings().Count);
+        var rejectedFiles = Directory.GetFiles(_rootDirectory, "hotkeys.json.corrupt-*");
+        rejectedFiles.Length.ShouldBe(1);
+        File.ReadAllText(rejectedFiles[0]).ShouldBe("[");
+    }
+
+    [Fact]
+    public void Load_WhenFileCannotBeRead_DoesNotOverwriteIt()
+    {
+        File.WriteAllText(_filePath, "[]");
+
+        using (new FileStream(_filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            var bindings = _repository.Load();
+
+            bindings.Count.ShouldBe(HotKeyDefinitions.CreateDefaultBindings().Count);
+        }
+
+        File.ReadAllText(_filePath).ShouldBe("[]");
+    }
+
+    [Fact]
     public void Save_Success()
     {
         var bindings = HotKeyDefinitions.CreateDefaultBindings()
@@ -84,5 +126,20 @@ public sealed class HotKeyRepositoryTests : IDisposable
             binding.Action == HotKeyAction.Preset0 &&
             binding.Modifier == ModifierKeys.Control &&
             binding.Key == Key.D0);
+    }
+
+    [Fact]
+    public void Save_WhenReplacingExistingBindings_CreatesBackup()
+    {
+        var bindings = HotKeyDefinitions.CreateDefaultBindings()
+            .Select(binding => binding.Copy())
+            .ToList();
+        _repository.Save(bindings);
+        bindings[0].Key = Key.D0;
+
+        _repository.Save(bindings);
+
+        File.ReadAllText($"{_filePath}.bak").ShouldContain("\"Key\": \"NumPad0\"");
+        _repository.Load().First().Key.ShouldBe(Key.D0);
     }
 }

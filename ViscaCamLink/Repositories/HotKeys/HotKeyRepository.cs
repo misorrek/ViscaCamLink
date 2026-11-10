@@ -29,11 +29,20 @@ public partial class HotKeyRepository(string filePath, ILogger<HotKeyRepository>
             using var stream = File.OpenRead(filePath);
             var loadedBindings = JsonSerializer.Deserialize(stream, RepositoryJsonContext.Default.ListHotKeyBinding);
 
-            return MergeWithDefaults(loadedBindings ?? []);
+            return MergeWithDefaults(loadedBindings?.Where(binding => binding is not null).ToList() ?? []);
         }
         catch (JsonException exception)
         {
             LogLoadFailed(logger, filePath, exception);
+
+            RepositoryFileStorage.PreserveRejectedFile(filePath, logger);
+
+            return HotKeyDefinitions.CreateDefaultBindings();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            LogLoadFailed(logger, filePath, exception);
+            RepositoryFileStorage.PreserveRejectedFile(filePath, logger);
 
             return HotKeyDefinitions.CreateDefaultBindings();
         }
@@ -41,18 +50,14 @@ public partial class HotKeyRepository(string filePath, ILogger<HotKeyRepository>
 
     public void Save(IReadOnlyList<HotKeyBinding> bindings)
     {
-        var directory = Path.GetDirectoryName(filePath);
         var bindingsList = bindings is List<HotKeyBinding> list ? list : [.. bindings];
 
         try
         {
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            using var stream = File.Create(filePath);
-            JsonSerializer.Serialize(stream, bindingsList, RepositoryJsonContext.Default.ListHotKeyBinding);
+            RepositoryFileStorage.WriteAtomically(
+                filePath,
+                stream => JsonSerializer.Serialize(stream, bindingsList, RepositoryJsonContext.Default.ListHotKeyBinding),
+                logger);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

@@ -12,6 +12,7 @@ using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using ViscaCamLink.Repositories;
 using ViscaCamLink.Visca;
 
 public partial class AppSettingsRepository(
@@ -32,7 +33,6 @@ public partial class AppSettingsRepository(
         {
             ClampMovementSpeeds(migratedSettings, legacySearchRoot);
             Save(migratedSettings);
-            DeleteLegacyUserDataPath();
 
             return migratedSettings;
         }
@@ -48,10 +48,10 @@ public partial class AppSettingsRepository(
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(settingsFilePath)!);
-
-            using var stream = File.Create(settingsFilePath);
-            JsonSerializer.Serialize(stream, settings, AppSettingsJsonContext.Default.AppSettings);
+            RepositoryFileStorage.WriteAtomically(
+                settingsFilePath,
+                stream => JsonSerializer.Serialize(stream, settings, AppSettingsJsonContext.Default.AppSettings),
+                logger);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -68,20 +68,34 @@ public partial class AppSettingsRepository(
             using var stream = File.OpenRead(filePath);
             var settings = JsonSerializer.Deserialize(stream, AppSettingsJsonContext.Default.AppSettings);
             settings ??= new AppSettings();
+            settings.CameraProfiles ??= [];
+            settings.DismissedHints ??= [];
 
             ClampMovementSpeeds(settings, filePath);
 
             return settings;
         }
-        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
+        catch (JsonException exception)
         {
             LogLoadFailed(logger, filePath, exception);
+
+            if (!RepositoryFileStorage.PreserveRejectedFile(filePath, logger))
+            {
+                return new AppSettings();
+            }
 
             var defaultSettings = new AppSettings();
 
             Save(defaultSettings);
 
             return defaultSettings;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            LogLoadFailed(logger, filePath, exception);
+            RepositoryFileStorage.PreserveRejectedFile(filePath, logger);
+
+            return new AppSettings();
         }
     }
 
@@ -141,22 +155,6 @@ public partial class AppSettingsRepository(
             LogLegacyMigrationFailed(logger, legacyFile.FullName, exception);
 
             return null;
-        }
-    }
-
-    private void DeleteLegacyUserDataPath()
-    {
-        try
-        {
-            if (Directory.Exists(legacySearchRoot))
-            {
-                Directory.Delete(legacySearchRoot, recursive: true);
-            }
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            // The legacy directory is only cleaned up as a courtesy; leaving it behind is harmless.
-            LogLegacyCleanupFailed(logger, legacySearchRoot, exception);
         }
     }
 
@@ -246,9 +244,6 @@ public partial class AppSettingsRepository(
 
     [LoggerMessage(EventId = 3005, Level = LogLevel.Warning, Message = "Legacy settings '{FilePath}' could not be migrated; using defaults")]
     private static partial void LogLegacyMigrationFailed(ILogger logger, string filePath, Exception exception);
-
-    [LoggerMessage(EventId = 3006, Level = LogLevel.Warning, Message = "Legacy user data directory '{DirectoryPath}' could not be deleted")]
-    private static partial void LogLegacyCleanupFailed(ILogger logger, string directoryPath, Exception exception);
 
     [LoggerMessage(EventId = 3007, Level = LogLevel.Warning, Message = "Clamped movement speeds from '{SourcePath}': pan/tilt {OriginalPanTiltSpeed} -> {PanTiltSpeed}, zoom {OriginalZoomSpeed} -> {ZoomSpeed}")]
     private static partial void LogMovementSpeedsClamped(

@@ -61,6 +61,56 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         settings.UseGlobalHotKeys.ShouldBeTrue();
     }
 
+    [Fact]
+    public void Load_WhenSettingsCollectionsAreNull_NormalizesThemToEmpty()
+    {
+        File.WriteAllText(_settingsFilePath, """{"CameraProfiles":null,"DismissedHints":null}""");
+
+        var settings = _repository.Load();
+
+        settings.CameraProfiles.ShouldBeEmpty();
+        settings.DismissedHints.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Load_WhenSettingsFileIsCorrupt_PreservesItBeforeSavingDefaults()
+    {
+        File.WriteAllText(_settingsFilePath, "{");
+
+        var settings = _repository.Load();
+
+        settings.CameraProfiles.ShouldBeEmpty();
+        File.ReadAllText(_settingsFilePath).ShouldContain("\"CameraProfiles\"");
+        var rejectedFiles = Directory.GetFiles(_rootDirectory, "settings.json.corrupt-*");
+        rejectedFiles.Length.ShouldBe(1);
+        File.ReadAllText(rejectedFiles[0]).ShouldBe("{");
+    }
+
+    [Fact]
+    public void Load_WhenSettingsFileCannotBeRead_DoesNotOverwriteIt()
+    {
+        File.WriteAllText(_settingsFilePath, """{"UseGlobalHotKeys":true}""");
+        var originalContents = File.ReadAllText(_settingsFilePath);
+
+        using (new FileStream(_settingsFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            _repository.Load().UseGlobalHotKeys.ShouldBeFalse();
+        }
+
+        File.ReadAllText(_settingsFilePath).ShouldBe(originalContents);
+    }
+
+    [Fact]
+    public void Save_WhenReplacingExistingSettings_CreatesBackup()
+    {
+        _repository.Save(new AppSettings { UseGlobalHotKeys = true });
+
+        _repository.Save(new AppSettings { UseGlobalHotKeys = false });
+
+        File.ReadAllText($"{_settingsFilePath}.bak").ShouldContain("\"UseGlobalHotKeys\": true");
+        _repository.Load().UseGlobalHotKeys.ShouldBeFalse();
+    }
+
     [Theory]
     [InlineData(-5, 0, 1, 1)]
     [InlineData(30, 10, 24, 7)]
@@ -84,7 +134,8 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         var legacyConfigDirectory = Path.Combine(_legacyRoot, "ViscaCamLink_Url_test", "1.0.0.0");
 
         Directory.CreateDirectory(legacyConfigDirectory);
-        File.WriteAllText(Path.Combine(legacyConfigDirectory, "user.config"), """
+        var legacyConfigPath = Path.Combine(legacyConfigDirectory, "user.config");
+        File.WriteAllText(legacyConfigPath, """
             <?xml version="1.0" encoding="utf-8"?>
             <configuration>
               <userSettings>
@@ -101,6 +152,8 @@ public sealed class AppSettingsRepositoryTests : IDisposable
               </userSettings>
             </configuration>
             """);
+        var unrelatedFilePath = Path.Combine(_legacyRoot, "unrelated.dat");
+        File.WriteAllText(unrelatedFilePath, "keep");
 
         var settings = _repository.Load();
 
@@ -115,7 +168,8 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         settings.ZoomSpeed.ShouldBe(7);
         settings.Language.ShouldBe(Language.German);
         File.Exists(_settingsFilePath).ShouldBeTrue();
-        Directory.Exists(_legacyRoot).ShouldBeFalse();
+        File.Exists(legacyConfigPath).ShouldBeTrue();
+        File.ReadAllText(unrelatedFilePath).ShouldBe("keep");
     }
 
     [Fact]
