@@ -10,7 +10,7 @@ ViscaCamLink ist eine Kamerasteuerung für [PTZ-Kameras](https://de.m.wikipedia.
 
 * Speichern und Abrufen von Kamerapositionen (inklusive Zoom) als Voreinstellung
 * Numpad-Anordnung (Standard) oder normale Anordnung, auswählbar in den Einstellungen
-* Optionale Gruppen mit je 10 Voreinstellungen, insgesamt bis zu 256 Kamera-Speicherplätze
+* Optionale Gruppen mit je 10 Voreinstellungen, insgesamt bis zu 255 Kamera-Speicherplätze (0–254)
 * Umbenennen einer Voreinstellung oder Gruppe per Doppelklick auf den Namen (Enter bestätigt, Escape bricht ab)
 
 <br/>

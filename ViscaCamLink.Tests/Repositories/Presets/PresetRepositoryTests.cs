@@ -102,6 +102,32 @@ public sealed class PresetRepositoryTests : IDisposable
     }
 
     [Fact]
+    public void LoadForCameraProfile_WhenPresetUsesSlot255_DropsOnlyThatPreset()
+    {
+        File.WriteAllText(PresetsFilePath, """
+            {
+                "groups": [
+                    {
+                        "id": "11111111-1111-1111-1111-111111111111",
+                        "name": "Default",
+                        "presets": [
+                            { "groupId": "11111111-1111-1111-1111-111111111111", "slotIndex": 254, "name": "Valid" },
+                            { "groupId": "11111111-1111-1111-1111-111111111111", "slotIndex": 255, "name": "Unsupported" }
+                        ]
+                    }
+                ]
+            }
+            """);
+
+        var data = _repository.LoadForCameraProfile(_cameraId);
+
+        data.Groups.Count.ShouldBe(1);
+        data.Groups[0].Presets.Count.ShouldBe(1);
+        data.Groups[0].Presets[0].SlotIndex.ShouldBe(254);
+        File.Exists($"{PresetsFilePath}.bak").ShouldBeFalse();
+    }
+
+    [Fact]
     public void LoadForCameraProfile_WhenSlotsAreDuplicatedAcrossGroups_ReturnsDefaultAndBacksUpRejectedFile()
     {
         File.WriteAllText(PresetsFilePath, """

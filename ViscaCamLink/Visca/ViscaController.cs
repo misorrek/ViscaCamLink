@@ -323,6 +323,8 @@ public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaCont
 
     private static byte EncodeZoomDirection(ZoomDirection zoomDirection, byte speed)
     {
+        speed &= 0x07;
+
         return zoomDirection switch
         {
             ZoomDirection.None => ViscaProtocol.ZoomStop,

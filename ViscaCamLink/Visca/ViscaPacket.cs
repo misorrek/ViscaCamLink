@@ -92,6 +92,14 @@ public readonly struct ViscaPacket(long head, long tail, int length, string? cac
         ArgumentOutOfRangeException.ThrowIfGreaterThan(length, MaximumLength);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(length, bytes.Length - start);
 
+        for (var i = 0; i < length - 1; i++)
+        {
+            if (bytes[start + i] == ViscaProtocol.Terminator)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytes), "A VISCA packet cannot contain a terminator before its final byte.");
+            }
+        }
+
         var head = PackBytesIntoLong(bytes, start, length, byteOffset: 0);
         var tail = PackBytesIntoLong(bytes, start, length, byteOffset: BytesPerSegment);
         var packet = new ViscaPacket(head, tail, length, cachedText: null);

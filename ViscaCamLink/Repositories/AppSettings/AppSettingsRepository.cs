@@ -12,6 +12,8 @@ using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
 
+using ViscaCamLink.Visca;
+
 public partial class AppSettingsRepository(
     string settingsFilePath,
     string legacySearchRoot,
@@ -28,6 +30,7 @@ public partial class AppSettingsRepository(
 
         if (migratedSettings is not null)
         {
+            ClampMovementSpeeds(migratedSettings, legacySearchRoot);
             Save(migratedSettings);
             DeleteLegacyUserDataPath();
 
@@ -64,8 +67,11 @@ public partial class AppSettingsRepository(
         {
             using var stream = File.OpenRead(filePath);
             var settings = JsonSerializer.Deserialize(stream, AppSettingsJsonContext.Default.AppSettings);
+            settings ??= new AppSettings();
 
-            return settings ?? new AppSettings();
+            ClampMovementSpeeds(settings, filePath);
+
+            return settings;
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
@@ -154,6 +160,20 @@ public partial class AppSettingsRepository(
         }
     }
 
+    private void ClampMovementSpeeds(AppSettings settings, string sourcePath)
+    {
+        var originalPanTiltSpeed = settings.PanTiltSpeed;
+        var originalZoomSpeed = settings.ZoomSpeed;
+
+        settings.PanTiltSpeed = Math.Clamp(settings.PanTiltSpeed, (int)ViscaProtocol.MinSpeed, (int)ViscaProtocol.MaxPanSpeed);
+        settings.ZoomSpeed = Math.Clamp(settings.ZoomSpeed, (int)ViscaProtocol.MinSpeed, (int)ViscaProtocol.MaxZoomSpeed);
+
+        if (settings.PanTiltSpeed != originalPanTiltSpeed || settings.ZoomSpeed != originalZoomSpeed)
+        {
+            LogMovementSpeedsClamped(logger, sourcePath, originalPanTiltSpeed, settings.PanTiltSpeed, originalZoomSpeed, settings.ZoomSpeed);
+        }
+    }
+
     private static void MigrateCameraProfile(AppSettings settings, Dictionary<string, string> values)
     {
         var profile = new CameraProfile();
@@ -229,4 +249,13 @@ public partial class AppSettingsRepository(
 
     [LoggerMessage(EventId = 3006, Level = LogLevel.Warning, Message = "Legacy user data directory '{DirectoryPath}' could not be deleted")]
     private static partial void LogLegacyCleanupFailed(ILogger logger, string directoryPath, Exception exception);
+
+    [LoggerMessage(EventId = 3007, Level = LogLevel.Warning, Message = "Clamped movement speeds from '{SourcePath}': pan/tilt {OriginalPanTiltSpeed} -> {PanTiltSpeed}, zoom {OriginalZoomSpeed} -> {ZoomSpeed}")]
+    private static partial void LogMovementSpeedsClamped(
+        ILogger logger,
+        string sourcePath,
+        int originalPanTiltSpeed,
+        int panTiltSpeed,
+        int originalZoomSpeed,
+        int zoomSpeed);
 }

@@ -61,6 +61,23 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         settings.UseGlobalHotKeys.ShouldBeTrue();
     }
 
+    [Theory]
+    [InlineData(-5, 0, 1, 1)]
+    [InlineData(30, 10, 24, 7)]
+    public void Load_WhenMovementSpeedsAreOutsideProtocolLimits_ClampsSpeeds(
+        int panTiltSpeed,
+        int zoomSpeed,
+        int expectedPanTiltSpeed,
+        int expectedZoomSpeed)
+    {
+        _repository.Save(new AppSettings { PanTiltSpeed = panTiltSpeed, ZoomSpeed = zoomSpeed });
+
+        var settings = _repository.Load();
+
+        settings.PanTiltSpeed.ShouldBe(expectedPanTiltSpeed);
+        settings.ZoomSpeed.ShouldBe(expectedZoomSpeed);
+    }
+
     [Fact]
     public void Load_WhenLegacyUserConfigExists_MigratesValues()
     {
@@ -95,7 +112,7 @@ public sealed class AppSettingsRepositoryTests : IDisposable
         settings.MoveContainerVisible.ShouldBeTrue();
         settings.ZoomContainerVisible.ShouldBeFalse();
         settings.PanTiltSpeed.ShouldBe(7);
-        settings.ZoomSpeed.ShouldBe(8);
+        settings.ZoomSpeed.ShouldBe(7);
         settings.Language.ShouldBe(Language.German);
         File.Exists(_settingsFilePath).ShouldBeTrue();
         Directory.Exists(_legacyRoot).ShouldBeFalse();

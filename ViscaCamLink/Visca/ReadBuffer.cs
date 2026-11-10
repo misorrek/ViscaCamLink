@@ -60,15 +60,26 @@ public class ReadBuffer
     private ViscaPacket ConsumePacket(int packetLengthIncludingTerminator)
     {
         var packetDataLength = packetLengthIncludingTerminator - 1;
-        var packet = ViscaPacket.FromBytes(_buffer, 0, packetDataLength);
 
+        if (packetDataLength < ViscaPacket.MinimumLength || packetDataLength > ViscaPacket.MaximumLength)
+        {
+            DiscardPacket(packetLengthIncludingTerminator);
+            throw new ViscaProtocolException($"Received VISCA frame with {packetDataLength} data bytes");
+        }
+
+        var packet = ViscaPacket.FromBytes(_buffer, 0, packetDataLength);
+        DiscardPacket(packetLengthIncludingTerminator);
+
+        return packet;
+    }
+
+    private void DiscardPacket(int packetLengthIncludingTerminator)
+    {
         _bytesInBuffer -= packetLengthIncludingTerminator;
 
         if (_bytesInBuffer > 0)
         {
             Buffer.BlockCopy(_buffer, packetLengthIncludingTerminator, _buffer, 0, _bytesInBuffer);
         }
-
-        return packet;
     }
 }

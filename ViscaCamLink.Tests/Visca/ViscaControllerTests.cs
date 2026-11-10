@@ -162,6 +162,13 @@ public sealed class ViscaControllerTests
             ViscaProtocol.CmdMemoryReset, ViscaProtocol.MemorySubSet, slot, ViscaProtocol.Terminator]);
     }
 
+    [Fact]
+    public async Task MemorySetAsync_WhenSlotIsTerminator_ThrowsArgumentOutOfRangeException()
+    {
+        await Should.ThrowAsync<ArgumentOutOfRangeException>(() => _controller.MemorySetAsync(byte.MaxValue));
+        _viscaClient.Verify(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
@@ -176,6 +183,13 @@ public sealed class ViscaControllerTests
         AssertPacketBytes(sent.Value!.Value, [
             ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
             ViscaProtocol.CmdMemoryReset, ViscaProtocol.MemorySubRecall, slot, ViscaProtocol.Terminator]);
+    }
+
+    [Fact]
+    public async Task MemoryRecallAsync_WhenSlotIsTerminator_ThrowsArgumentOutOfRangeException()
+    {
+        await Should.ThrowAsync<ArgumentOutOfRangeException>(() => _controller.MemoryRecallAsync(byte.MaxValue));
+        _viscaClient.Verify(c => c.SendAsync(It.IsAny<ViscaPacket>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -218,6 +232,24 @@ public sealed class ViscaControllerTests
     [InlineData(ZoomDirection.Out, 0x03, ViscaProtocol.ZoomOutMask | 0x03)]
     [InlineData(ZoomDirection.None, 0x00, ViscaProtocol.ZoomStop)]
     public async Task ContinuousZoomAsync_Success(ZoomDirection direction, byte zoomSpeed, byte expectedZoomByte)
+    {
+        var sent = CapturePacket();
+
+        await _controller.ContinuousZoomAsync(direction, zoomSpeed);
+
+        sent.Value.ShouldNotBeNull();
+        AssertPacketBytes(sent.Value!.Value, [
+            ViscaProtocol.CameraAddress, ViscaProtocol.CommandPrefix, ViscaProtocol.CategoryCamera,
+            ViscaProtocol.CmdZoomVariable, expectedZoomByte, ViscaProtocol.Terminator]);
+    }
+
+    [Theory]
+    [InlineData(ZoomDirection.In, 0xff, 0x27)]
+    [InlineData(ZoomDirection.Out, 0xff, 0x37)]
+    public async Task ContinuousZoomAsync_WhenSpeedExceedsParameterBits_MasksSpeed(
+        ZoomDirection direction,
+        byte zoomSpeed,
+        byte expectedZoomByte)
     {
         var sent = CapturePacket();
 

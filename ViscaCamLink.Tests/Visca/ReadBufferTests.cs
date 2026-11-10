@@ -60,6 +60,35 @@ public sealed class ReadBufferTests
     }
 
     [Fact]
+    public async Task ReadAsync_WhenFrameIsEmpty_ThrowsViscaProtocolExceptionAndDropsFrame()
+    {
+        using var stream = new MemoryStream([0xff, 0x90, 0x50, 0xff]);
+
+        await Should.ThrowAsync<ViscaProtocolException>(() => _readBuffer.ReadAsync(stream, CancellationToken.None));
+
+        var packet = await _readBuffer.ReadAsync(stream, CancellationToken.None);
+        packet.Length.ShouldBe(2);
+        packet[0].ShouldBe((byte)0x90);
+    }
+
+    [Fact]
+    public async Task ReadAsync_WhenFrameExceedsMaximumLength_ThrowsViscaProtocolExceptionAndDropsFrame()
+    {
+        var streamData = new byte[ViscaPacket.MaximumLength + 1 + 1 + 2 + 1];
+        streamData[ViscaPacket.MaximumLength + 1] = 0xff;
+        streamData[^3] = 0x90;
+        streamData[^2] = 0x50;
+        streamData[^1] = 0xff;
+        using var stream = new MemoryStream(streamData);
+
+        await Should.ThrowAsync<ViscaProtocolException>(() => _readBuffer.ReadAsync(stream, CancellationToken.None));
+
+        var packet = await _readBuffer.ReadAsync(stream, CancellationToken.None);
+        packet.Length.ShouldBe(2);
+        packet[0].ShouldBe((byte)0x90);
+    }
+
+    [Fact]
     public async Task ReadAsync_WhenStreamEndsWithoutTerminator_ThrowsViscaProtocolException()
     {
         byte[] incompleteData = [0x90, 0x50];

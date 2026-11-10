@@ -60,6 +60,16 @@ public sealed class ViscaPacketTests
     }
 
     [Fact]
+    public void FromBytes_WhenTerminatorAppearsBeforeLastByte_ThrowsArgumentOutOfRangeException()
+    {
+        byte[] data = [0x81, 0xff, 0x01];
+
+        void act() => _ = ViscaPacket.FromBytes(data, 0, data.Length);
+
+        Should.Throw<ArgumentOutOfRangeException>(act);
+    }
+
+    [Fact]
     public void Indexer_Success()
     {
         byte[] data = [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a];

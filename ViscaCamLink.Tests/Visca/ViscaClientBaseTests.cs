@@ -38,6 +38,20 @@ public sealed class ViscaClientBaseTests
     }
 
     [Fact]
+    public async Task SendAsync_WhenReplyAddressDoesNotMatch_DiscardsReplyAndContinues()
+    {
+        var client = new FakeClient([
+            CreateResponsePacket(0xa0, 0x50),
+            CreateResponsePacket(0x90, 0x50, 0x02)
+        ]);
+
+        var result = await ((IViscaClient)client).SendAsync(CreateRequest(), CancellationToken.None);
+
+        result[0].ShouldBe((byte)0x90);
+        result[1].ShouldBe((byte)0x50);
+    }
+
+    [Fact]
     public async Task SendAsync_WhenEndpointReturnsError_ThrowsViscaResponseExceptionAndDisconnects()
     {
         var client = new FakeClient([CreateResponsePacket(0x90, 0x60, 0x02)]);

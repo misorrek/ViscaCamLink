@@ -10,7 +10,7 @@ ViscaCamLink is a camera controller for [PTZ cameras](https://en.wikipedia.org/w
 
 * Save and recall camera positions (including zoom) as presets
 * Numpad layout (default) or standard layout, selectable in Options
-* Optional preset groups of 10 presets each, up to 256 camera slots in total
+* Optional preset groups of 10 presets each, up to 255 camera slots (0–254)
 * Rename a preset or a group by double-clicking its name (Enter confirms, Escape cancels)
 
 <br/>

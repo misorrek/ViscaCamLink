@@ -30,6 +30,12 @@ public partial class PresetRepository(string directory, ILogger<PresetRepository
         {
             using var stream = File.OpenRead(filePath);
             var data = JsonSerializer.Deserialize(stream, RepositoryJsonContext.Default.PresetData);
+            var droppedPresetCount = DropUnrepresentablePresets(data);
+
+            if (droppedPresetCount > 0)
+            {
+                LogUnrepresentablePresetsDropped(logger, filePath, droppedPresetCount);
+            }
 
             if (IsValid(data))
             {
@@ -103,6 +109,26 @@ public partial class PresetRepository(string directory, ILogger<PresetRepository
             // Best effort only; a leftover temp file is harmless.
             LogTemporaryFileDeleteFailed(logger, path, exception);
         }
+    }
+
+    private static int DropUnrepresentablePresets(PresetData? data)
+    {
+        if (data?.Groups is null)
+        {
+            return 0;
+        }
+
+        var droppedPresetCount = 0;
+
+        foreach (var group in data.Groups)
+        {
+            if (group?.Presets is not null)
+            {
+                droppedPresetCount += group.Presets.RemoveAll(preset => preset?.SlotIndex == byte.MaxValue);
+            }
+        }
+
+        return droppedPresetCount;
     }
 
     private static bool IsValid(PresetData? data)
@@ -186,4 +212,7 @@ public partial class PresetRepository(string directory, ILogger<PresetRepository
 
     [LoggerMessage(EventId = 3205, Level = LogLevel.Debug, Message = "Temporary preset file '{FilePath}' could not be deleted")]
     private static partial void LogTemporaryFileDeleteFailed(ILogger logger, string filePath, Exception exception);
+
+    [LoggerMessage(EventId = 3206, Level = LogLevel.Warning, Message = "Dropped {PresetCount} preset(s) using unsupported VISCA slot 255 from '{FilePath}'")]
+    private static partial void LogUnrepresentablePresetsDropped(ILogger logger, string filePath, int presetCount);
 }
