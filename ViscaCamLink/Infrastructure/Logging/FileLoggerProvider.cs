@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Infrastructure.Logging;
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -22,6 +23,7 @@ public sealed class FileLoggerProvider : ILoggerProvider
 
     private string _currentLogPath = string.Empty;
     private StreamWriter? _writer;
+    private bool _disposed;
     private volatile int _minimumLevel = (int)LogLevel.Information;
 
     public FileLoggerProvider(string logDirectory, TimeProvider? timeProvider = null)
@@ -36,6 +38,12 @@ public sealed class FileLoggerProvider : ILoggerProvider
     {
         lock (_writeLock)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
             _writer?.Dispose();
             _writer = null;
         }
@@ -57,8 +65,26 @@ public sealed class FileLoggerProvider : ILoggerProvider
     {
         lock (_writeLock)
         {
-            EnsureWriter();
-            _writer!.WriteLine(message);
+            if (_disposed)
+            {
+                return;
+            }
+
+            try
+            {
+                EnsureWriter();
+                _writer!.WriteLine(message);
+            }
+            catch (Exception exception)
+            {
+                try
+                {
+                    Trace.TraceError("Failed to write ViscaCamLink log entry: {0}", exception);
+                }
+                catch (Exception)
+                {
+                }
+            }
         }
     }
 
@@ -74,8 +100,9 @@ public sealed class FileLoggerProvider : ILoggerProvider
         }
 
         _writer?.Dispose();
+        var stream = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+        _writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
         _currentLogPath = path;
-        _writer = new StreamWriter(path, append: true, Encoding.UTF8) { AutoFlush = true };
 
         DeleteExpiredLogFiles(today);
     }

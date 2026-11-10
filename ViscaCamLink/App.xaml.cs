@@ -39,6 +39,7 @@ public partial class App : Application
     private ILogger _logger = NullLogger.Instance;
     private IServiceProvider? _serviceProvider;
     private CancellationTokenSource? _updateCheckCancellation;
+    private bool _activateWhenReady;
 
     private void Application_Startup(object sender, StartupEventArgs startupEventArgs)
     {
@@ -86,10 +87,41 @@ public partial class App : Application
         _updateCheckCancellation = new CancellationTokenSource();
         _ = startupUpdateCheckService.RunAsync(_updateCheckCancellation.Token);
 
+        MainWindow = viscaCamLinkView;
         viscaCamLinkView.Show();
+
+        if (_activateWhenReady)
+        {
+            ActivateMainWindow();
+        }
 
         ShowMigrationDialogIfNeeded(appSettings, settingsRepository,
             _serviceProvider.GetRequiredService<IDialogService>());
+    }
+
+    public void ActivateMainWindow()
+    {
+        var window = MainWindow;
+        if (window is null)
+        {
+            _activateWhenReady = true;
+            return;
+        }
+
+        if (!window.IsVisible)
+        {
+            window.Show();
+        }
+
+        if (window.WindowState == WindowState.Minimized)
+        {
+            window.WindowState = WindowState.Normal;
+        }
+
+        var wasTopmost = window.Topmost;
+        window.Topmost = true;
+        window.Activate();
+        window.Topmost = wasTopmost;
     }
 
     private static ServiceProvider ConfigureServices(

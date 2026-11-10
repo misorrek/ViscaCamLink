@@ -61,6 +61,46 @@ public sealed class FileLoggerProviderTests : IDisposable
     }
 
     [Fact]
+    public void Log_AfterDispose_DoesNotThrowOrReopenFile()
+    {
+        var logger = _provider.CreateLogger("TestCategory");
+        _provider.Dispose();
+
+        Should.NotThrow(() =>
+            logger.Log(LogLevel.Information, new EventId(1), "After dispose", null, (state, _) => state));
+
+        Directory.GetFiles(_logDirectory, "*.log").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Log_WhenLogDirectoryIsUnavailable_DoesNotThrow()
+    {
+        var logger = _provider.CreateLogger("TestCategory");
+        Directory.Delete(_logDirectory);
+
+        Should.NotThrow(() =>
+            logger.Log(LogLevel.Information, new EventId(1), "Unavailable", null, (state, _) => state));
+    }
+
+    [Fact]
+    public void TwoProviders_CanWriteToTheSameFile()
+    {
+        using var secondProvider = new FileLoggerProvider(_logDirectory, _timeProvider);
+        var firstLogger = _provider.CreateLogger("FirstProvider");
+        var secondLogger = secondProvider.CreateLogger("SecondProvider");
+
+        firstLogger.Log(LogLevel.Information, new EventId(1), "First entry", null, (state, _) => state);
+        secondLogger.Log(LogLevel.Information, new EventId(2), "Second entry", null, (state, _) => state);
+
+        secondProvider.Dispose();
+        _provider.Dispose();
+
+        var logFilePath = Path.Combine(_logDirectory, "viscacamlink-2026-01-02.log");
+        File.ReadAllText(logFilePath).ShouldContain("FirstProvider: First entry");
+        File.ReadAllText(logFilePath).ShouldContain("SecondProvider: Second entry");
+    }
+
+    [Fact]
     public void CreateLogger_WhenDateChanges_WritesToNewFile()
     {
         var logger = _provider.CreateLogger("TestCategory");
