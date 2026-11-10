@@ -1,7 +1,6 @@
 namespace ViscaCamLink.Services;
 
 using System;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,8 +11,6 @@ public partial class VelopackUpdateService(
     Action requestShutdown,
     ILogger<VelopackUpdateService> logger) : IUpdateService
 {
-    private const string ReleaseTagUrlFormat = "{0}/releases/tag/v{1}";
-
     private Velopack.UpdateInfo? _pendingUpdate;
 
     public event EventHandler<UpdateInfo>? UpdateAvailable;
@@ -26,6 +23,8 @@ public partial class VelopackUpdateService(
     /// </summary>
     public async Task CheckForUpdateAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (!updateManager.IsInstalled)
         {
             LogUpdateCheckSkippedNotInstalled(logger);
@@ -43,6 +42,7 @@ public partial class VelopackUpdateService(
         cancellationToken.ThrowIfCancellationRequested();
 
         var newVersion = await updateManager.CheckForUpdatesAsync().ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (newVersion is null)
         {
@@ -50,17 +50,17 @@ public partial class VelopackUpdateService(
             return;
         }
 
-        _pendingUpdate = newVersion;
-
         var release = newVersion.TargetFullRelease;
-        var targetVersion = new Version(release.Version.Major, release.Version.Minor, release.Version.Patch);
+        var targetVersion = release.Version;
         var updateInfo = new UpdateInfo(
             Version: targetVersion,
             ReleaseNotes: release.NotesMarkdown ?? string.Empty,
-            HtmlUrl: string.Format(CultureInfo.InvariantCulture, ReleaseTagUrlFormat, VelopackUpdateManager.RepositoryUrl, targetVersion));
+            HtmlUrl: $"{VelopackUpdateManager.RepositoryUrl}/releases/tag/v{Uri.EscapeDataString(targetVersion.ToFullString())}");
 
-        LogUpdateAvailable(logger, targetVersion);
+        cancellationToken.ThrowIfCancellationRequested();
+        _pendingUpdate = newVersion;
 
+        LogUpdateAvailable(logger, targetVersion.ToFullString());
         UpdateAvailable?.Invoke(this, updateInfo);
     }
 
@@ -105,7 +105,7 @@ public partial class VelopackUpdateService(
     private static partial void LogNoUpdateAvailable(ILogger logger);
 
     [LoggerMessage(EventId = 4013, Level = LogLevel.Information, Message = "Update {Version} available")]
-    private static partial void LogUpdateAvailable(ILogger logger, Version version);
+    private static partial void LogUpdateAvailable(ILogger logger, string version);
 
     [LoggerMessage(EventId = 4014, Level = LogLevel.Information, Message = "Downloaded update {Version} is pending and will be applied on the next start")]
     private static partial void LogUpdatePendingRestart(ILogger logger, string version);

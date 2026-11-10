@@ -21,6 +21,8 @@ public static class AppPaths
 
     public static string LogsDirectory => Path.Combine(LocalBase, "logs");
 
+    public static string WebView2DataDirectory => Path.Combine(LocalBase, "webview2");
+
     public static string PresetsDirectory => Path.Combine(RoamingBase, "presets");
 
     public static string HotKeysFile => Path.Combine(RoamingBase, "hotkeys.json");

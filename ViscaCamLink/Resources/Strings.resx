@@ -318,6 +318,9 @@
   <data name="Updater_NewVersionAvailable" xml:space="preserve">
     <value>New version available!</value>
   </data>
+  <data name="Updater_OpenReleasePage" xml:space="preserve">
+    <value>Open the release page</value>
+  </data>
   <data name="Migration_Body" xml:space="preserve">
     <value>ViscaCamLink has been reinstalled as a per-user app and will keep itself up to date automatically.
 

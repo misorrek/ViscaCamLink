@@ -10,6 +10,8 @@ using Moq;
 
 using Shouldly;
 
+using SemanticVersion = Velopack.SemanticVersion;
+
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;
@@ -19,7 +21,7 @@ using Xunit;
 public sealed class UpdateDownloadViewModelTests
 {
     private static readonly UpdateInfo TestUpdateInfo = new(
-        Version: new Version(2, 0, 0),
+        Version: SemanticVersion.Parse("2.0.0"),
         ReleaseNotes: string.Empty,
         HtmlUrl: "https://example.test/releases/v2.0.0");
 

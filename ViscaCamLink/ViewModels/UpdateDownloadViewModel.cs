@@ -43,7 +43,7 @@ public partial class UpdateDownloadViewModel : ViewModelBase
 
     public ICommand RetryCommand { get; }
 
-    public string VersionText => $"v{_updateInfo.Version}";
+    public string VersionText => $"v{_updateInfo.Version.ToFullString()}";
 
     public int Progress
     {
@@ -121,7 +121,7 @@ public partial class UpdateDownloadViewModel : ViewModelBase
         }
         catch (Exception exception)
         {
-            LogDownloadFailed(_logger, _updateInfo.Version, exception);
+            LogDownloadFailed(_logger, _updateInfo.Version.ToString(), exception);
 
             IsDownloading = false;
             HasError = true;
@@ -144,5 +144,5 @@ public partial class UpdateDownloadViewModel : ViewModelBase
     }
 
     [LoggerMessage(EventId = 4022, Level = LogLevel.Error, Message = "Download of update {Version} failed")]
-    private static partial void LogDownloadFailed(ILogger logger, Version version, Exception exception);
+    private static partial void LogDownloadFailed(ILogger logger, string version, Exception exception);
 }

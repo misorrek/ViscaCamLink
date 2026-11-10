@@ -1,8 +1,8 @@
 namespace ViscaCamLink.Services;
 
-using System;
+using Velopack;
 
 public record UpdateInfo(
-    Version Version,
+    SemanticVersion Version,
     string ReleaseNotes,
     string HtmlUrl);

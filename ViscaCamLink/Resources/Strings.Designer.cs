@@ -1060,6 +1060,15 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("Updater_NewVersionAvailable", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Open the release page ähnelt.
+        /// </summary>
+        public static string Updater_OpenReleasePage {
+            get {
+                return ResourceManager.GetString("Updater_OpenReleasePage", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Retry ähnelt.

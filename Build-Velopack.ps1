@@ -93,6 +93,7 @@ dotnet publish $projectDir\ViscaCamLink.csproj `
     -c Release `
     --self-contained `
     -r win-x64 `
+    "-p:Version=$Version" `
     -o $publishDir
 
 if ($LASTEXITCODE -ne 0) {

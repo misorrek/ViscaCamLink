@@ -59,9 +59,30 @@ public sealed class VelopackUpdateServiceTests
         await _service.CheckForUpdateAsync();
 
         raisedUpdate.ShouldNotBeNull();
-        raisedUpdate.Version.ShouldBe(new Version(2, 1, 0));
+        raisedUpdate.Version.ShouldBe(SemanticVersion.Parse("2.1.0"));
         raisedUpdate.ReleaseNotes.ShouldBe("release notes");
         raisedUpdate.HtmlUrl.ShouldBe($"{VelopackUpdateManager.RepositoryUrl}/releases/tag/v2.1.0");
+    }
+
+    [Fact]
+    public async Task CheckForUpdateAsync_PreservesPrereleaseAndBuildMetadata()
+    {
+        var targetRelease = new VelopackAsset
+        {
+            Version = SemanticVersion.Parse("2.1.0-rc.2+build.7"),
+            NotesMarkdown = "release notes",
+        };
+        var availableUpdate = new Velopack.UpdateInfo(targetRelease, false, null!, []);
+        ViscaCamLink.Services.UpdateInfo? raisedUpdate = null;
+
+        _updateManager.Setup(manager => manager.CheckForUpdatesAsync()).ReturnsAsync(availableUpdate);
+        _service.UpdateAvailable += (_, updateInfo) => raisedUpdate = updateInfo;
+
+        await _service.CheckForUpdateAsync();
+
+        raisedUpdate.ShouldNotBeNull();
+        raisedUpdate.Version.ShouldBe(targetRelease.Version);
+        raisedUpdate.HtmlUrl.ShouldBe($"{VelopackUpdateManager.RepositoryUrl}/releases/tag/v2.1.0-rc.2%2Bbuild.7");
     }
 
     [Fact]
@@ -85,6 +106,25 @@ public sealed class VelopackUpdateServiceTests
         await _service.CheckForUpdateAsync();
 
         _updateManager.Verify(manager => manager.CheckForUpdatesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task CheckForUpdateAsync_WhenCancelledWhileChecking_DoesNotStoreOrRaiseUpdate()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var checkCompletion = new TaskCompletionSource<Velopack.UpdateInfo?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var raised = false;
+
+        _updateManager.Setup(manager => manager.CheckForUpdatesAsync()).Returns(checkCompletion.Task);
+        _service.UpdateAvailable += (_, _) => raised = true;
+
+        var checkTask = _service.CheckForUpdateAsync(cancellation.Token);
+        await cancellation.CancelAsync();
+        checkCompletion.SetResult(AvailableUpdate);
+
+        await Should.ThrowAsync<OperationCanceledException>(() => checkTask);
+        raised.ShouldBeFalse();
+        await Should.ThrowAsync<InvalidOperationException>(() => _service.DownloadAndApplyAsync());
     }
 
     [Fact]

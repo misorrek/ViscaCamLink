@@ -33,7 +33,7 @@ public class UpdateViewModel : ViewModelBase
 
     public ICommand CancelCommand { get; }
 
-    public string VersionText => $"v{_updateInfo.Version} ({Strings.Updater_CurrentVersion} v{_installedVersion})";
+    public string VersionText => $"v{_updateInfo.Version.ToFullString()} ({Strings.Updater_CurrentVersion} v{_installedVersion})";
 
     public string ChangelogUrl => _updateInfo.HtmlUrl;
 

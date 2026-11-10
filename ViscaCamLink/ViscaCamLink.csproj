@@ -8,10 +8,6 @@
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Copyright>Copyright © 2026 Max Groiser</Copyright>
-    <Version>1.0.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-    <ApplicationVersion>1.0.0.0</ApplicationVersion>
     <ApplicationIcon>Resources\program.ico</ApplicationIcon>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <Configurations>Debug;Release</Configurations>

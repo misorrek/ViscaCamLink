@@ -75,7 +75,22 @@
                 Margin="0,4,4,4"
                 VerticalAlignment="Stretch"
                 Style="{StaticResource BaseBorder}">
-            <wv2:WebView2 Source="{Binding ChangelogUrl}" />
+            <Grid>
+                <wv2:WebView2 x:Name="ChangelogWebView"
+                              Source="{Binding ChangelogUrl}"
+                              CoreWebView2InitializationCompleted="ChangelogWebView_CoreWebView2InitializationCompleted"
+                              NavigationStarting="ChangelogWebView_NavigationStarting" />
+                <TextBlock x:Name="ChangelogFallback"
+                           Visibility="Collapsed"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource BaseTextBlock}">
+                    <Hyperlink NavigateUri="{Binding ChangelogUrl}"
+                               RequestNavigate="ChangelogFallback_RequestNavigate">
+                        <Run Text="{Binding [Updater_OpenReleasePage], Source={x:Static localization:TranslationSource.Instance}}" />
+                    </Hyperlink>
+                </TextBlock>
+            </Grid>
         </Border>
 
         <StackPanel Grid.Column="1"

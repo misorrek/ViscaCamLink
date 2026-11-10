@@ -4,6 +4,8 @@ using System;
 
 using Shouldly;
 
+using SemanticVersion = Velopack.SemanticVersion;
+
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;
@@ -13,7 +15,7 @@ using Xunit;
 public sealed class UpdateViewModelTests
 {
     private readonly UpdateInfo _updateInfo = new(
-        new Version(2, 0, 0),
+        SemanticVersion.Parse("2.0.0"),
         "release notes",
         "https://example.test/release");
 
