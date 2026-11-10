@@ -61,7 +61,7 @@ public sealed class HintHostViewModelTests
 
         viewModel.HasHint.ShouldBeFalse();
 
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         viewModel.HasHint.ShouldBeTrue();
         changedProperties.ShouldContain(nameof(HintHostViewModel.CurrentHint));
@@ -99,7 +99,7 @@ public sealed class HintHostViewModelTests
 
         viewModel.HasHint.ShouldBeFalse();
 
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         viewModel.HasHint.ShouldBeTrue();
     }

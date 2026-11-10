@@ -125,7 +125,7 @@ public sealed class CameraConnectionServiceTests
         using var service = CreateSut();
         var firstReconnect = service.ReconnectAsync();
 
-        await firstAttemptStarted.Task.WaitAsync(WaitTimeout);
+        await firstAttemptStarted.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
         await service.ReconnectAsync();
         await Should.NotThrowAsync(() => firstReconnect);
 
@@ -161,7 +161,7 @@ public sealed class CameraConnectionServiceTests
 
         service.ConnectionStatusChanged += (_, _) => extraEvents++;
 
-        await Task.Delay(FastInterval * 4);
+        await Task.Delay(FastInterval * 4, TestContext.Current.CancellationToken);
 
         extraEvents.ShouldBe(0);
         service.Status.ShouldBe(ConnectionStatus.Ok);
@@ -183,7 +183,7 @@ public sealed class CameraConnectionServiceTests
 
         service.ConnectionStatusChanged += (_, status) => failedSource.TrySetResult(status);
 
-        var result = await failedSource.Task.WaitAsync(WaitTimeout);
+        var result = await failedSource.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
 
         result.ShouldBe(ConnectionStatus.Failed);
         service.Status.ShouldBe(ConnectionStatus.Failed);
@@ -224,7 +224,7 @@ public sealed class CameraConnectionServiceTests
             }
         };
 
-        await recoveredSource.Task.WaitAsync(WaitTimeout);
+        await recoveredSource.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
 
         statusChanges.ShouldBe([ConnectionStatus.Failed, ConnectionStatus.Ok]);
         service.Status.ShouldBe(ConnectionStatus.Ok);
@@ -248,7 +248,7 @@ public sealed class CameraConnectionServiceTests
 
         service.ConnectionStatusChanged += (_, _) => eventsAfterDispose++;
 
-        await Task.Delay(FastInterval * 4);
+        await Task.Delay(FastInterval * 4, TestContext.Current.CancellationToken);
 
         eventsAfterDispose.ShouldBe(0);
     }

@@ -89,7 +89,7 @@ public sealed class HotKeyServiceTests
             logger => logger.Log(
                 LogLevel.Warning,
                 It.Is<EventId>(eventId => eventId.Id == 2301),
-                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains(nameof(Key.NumPad1))),
+                It.Is<It.IsAnyType>((state, _) => state != null && state.ToString()!.Contains(nameof(Key.NumPad1))),
                 null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

@@ -56,7 +56,7 @@ public sealed class VelopackUpdateServiceTests
         _updateManager.Setup(manager => manager.CheckForUpdatesAsync()).ReturnsAsync(AvailableUpdate);
         _service.UpdateAvailable += (_, updateInfo) => raisedUpdate = updateInfo;
 
-        await _service.CheckForUpdateAsync();
+        await _service.CheckForUpdateAsync(TestContext.Current.CancellationToken);
 
         raisedUpdate.ShouldNotBeNull();
         raisedUpdate.Version.ShouldBe(SemanticVersion.Parse("2.1.0"));
@@ -78,7 +78,7 @@ public sealed class VelopackUpdateServiceTests
         _updateManager.Setup(manager => manager.CheckForUpdatesAsync()).ReturnsAsync(availableUpdate);
         _service.UpdateAvailable += (_, updateInfo) => raisedUpdate = updateInfo;
 
-        await _service.CheckForUpdateAsync();
+        await _service.CheckForUpdateAsync(TestContext.Current.CancellationToken);
 
         raisedUpdate.ShouldNotBeNull();
         raisedUpdate.Version.ShouldBe(targetRelease.Version);
@@ -93,7 +93,7 @@ public sealed class VelopackUpdateServiceTests
         _updateManager.Setup(manager => manager.CheckForUpdatesAsync()).ReturnsAsync((Velopack.UpdateInfo?)null);
         _service.UpdateAvailable += (_, _) => raised = true;
 
-        await _service.CheckForUpdateAsync();
+        await _service.CheckForUpdateAsync(TestContext.Current.CancellationToken);
 
         raised.ShouldBeFalse();
     }
@@ -103,7 +103,7 @@ public sealed class VelopackUpdateServiceTests
     {
         _updateManager.SetupGet(manager => manager.IsInstalled).Returns(false);
 
-        await _service.CheckForUpdateAsync();
+        await _service.CheckForUpdateAsync(TestContext.Current.CancellationToken);
 
         _updateManager.Verify(manager => manager.CheckForUpdatesAsync(), Times.Never);
     }
@@ -132,8 +132,8 @@ public sealed class VelopackUpdateServiceTests
     {
         _updateManager.Setup(manager => manager.CheckForUpdatesAsync()).ReturnsAsync(AvailableUpdate);
 
-        await _service.CheckForUpdateAsync();
-        await _service.DownloadAndApplyAsync();
+        await _service.CheckForUpdateAsync(TestContext.Current.CancellationToken);
+        await _service.DownloadAndApplyAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         _updateManager.Verify(
             manager => manager.DownloadUpdatesAsync(AvailableUpdate, It.IsAny<Action<int>>(), It.IsAny<CancellationToken>()),
@@ -162,8 +162,8 @@ public sealed class VelopackUpdateServiceTests
             .Callback<Velopack.UpdateInfo, Action<int>, CancellationToken>((_, reportProgress, _) => reportProgress(42))
             .Returns(Task.CompletedTask);
 
-        await _service.CheckForUpdateAsync();
-        await _service.DownloadAndApplyAsync(progress.Object);
+        await _service.CheckForUpdateAsync(TestContext.Current.CancellationToken);
+        await _service.DownloadAndApplyAsync(progress.Object, TestContext.Current.CancellationToken);
 
         progress.Verify(reporter => reporter.Report(42), Times.Once);
     }
@@ -178,7 +178,7 @@ public sealed class VelopackUpdateServiceTests
             .Setup(manager => manager.DownloadUpdatesAsync(AvailableUpdate, It.IsAny<Action<int>>(), cancellation.Token))
             .ThrowsAsync(new OperationCanceledException(cancellation.Token));
 
-        await _service.CheckForUpdateAsync();
+        await _service.CheckForUpdateAsync(TestContext.Current.CancellationToken);
         await cancellation.CancelAsync();
 
         var act = () => _service.DownloadAndApplyAsync(null, cancellation.Token);

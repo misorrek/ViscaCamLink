@@ -52,7 +52,7 @@ public sealed class ViewModelBaseTests
             logged => logged.Log(
                 LogLevel.Error,
                 It.Is<EventId>(eventId => eventId.Id == 2901),
-                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("TestCommand")),
+                It.Is<It.IsAnyType>((state, _) => state != null && state.ToString()!.Contains("TestCommand")),
                 It.Is<Exception>(exception => exception == operationException),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

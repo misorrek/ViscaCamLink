@@ -35,7 +35,7 @@ public sealed class StartupUpdateCheckServiceTests
             return Task.CompletedTask;
         });
 
-        await service.RunAsync();
+        await service.RunAsync(TestContext.Current.CancellationToken);
 
         delayCalls.ShouldHaveSingleItem().ShouldBe(TimeSpan.FromMilliseconds(10));
         _updateService.Verify(s => s.CheckForUpdateAsync(It.IsAny<CancellationToken>()), Times.Once);

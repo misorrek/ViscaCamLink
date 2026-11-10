@@ -59,7 +59,7 @@ public sealed class ViscaControllerTests
     [Fact]
     public async Task ReconnectAsync_Success()
     {
-        await _controller.ReconnectAsync("10.0.0.1", 5678);
+        await _controller.ReconnectAsync("10.0.0.1", 5678, TestContext.Current.CancellationToken);
 
         _viscaClient.Verify(c => c.ReconnectAsync("10.0.0.1", 5678, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -69,7 +69,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.PowerOnAsync();
+        await _controller.PowerOnAsync(TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -82,7 +82,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.PowerOffAsync();
+        await _controller.PowerOffAsync(TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -97,7 +97,7 @@ public sealed class ViscaControllerTests
     {
         SetupResponse([0x90, 0x50, (byte)powerStatus, 0xff]);
 
-        var status = await _controller.GetPowerStatusAsync();
+        var status = await _controller.GetPowerStatusAsync(TestContext.Current.CancellationToken);
 
         status.ShouldBe(powerStatus);
     }
@@ -127,7 +127,7 @@ public sealed class ViscaControllerTests
     {
         SetupResponse([0x90, 0x50, (byte)PowerStatus.Standby, 0xff]);
 
-        var status = await _controller.GetUpdatedPowerStatusAsync(PowerStatus.On);
+        var status = await _controller.GetUpdatedPowerStatusAsync(PowerStatus.On, TestContext.Current.CancellationToken);
 
         status.ShouldBe(PowerStatus.Standby);
     }
@@ -154,7 +154,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.MemorySetAsync(slot);
+        await _controller.MemorySetAsync(slot, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -177,7 +177,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.MemoryRecallAsync(slot);
+        await _controller.MemoryRecallAsync(slot, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -197,7 +197,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.GoHomeAsync();
+        await _controller.GoHomeAsync(TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -218,7 +218,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.ContinuousPanTiltAsync(direction, panSpeed, tiltSpeed);
+        await _controller.ContinuousPanTiltAsync(direction, panSpeed, tiltSpeed, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -235,7 +235,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.ContinuousZoomAsync(direction, zoomSpeed);
+        await _controller.ContinuousZoomAsync(direction, zoomSpeed, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -253,7 +253,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.ContinuousZoomAsync(direction, zoomSpeed);
+        await _controller.ContinuousZoomAsync(direction, zoomSpeed, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [
@@ -276,7 +276,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.ContinuousFocusAsync(direction, focusSpeed);
+        await _controller.ContinuousFocusAsync(direction, focusSpeed, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x08, expectedFocusByte, 0xff]);
@@ -289,7 +289,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.ContinuousFocusAsync(direction, 0xff);
+        await _controller.ContinuousFocusAsync(direction, 0xff, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x08, expectedFocusByte, 0xff]);
@@ -312,7 +312,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.SetFocusModeAsync(focusMode);
+        await _controller.SetFocusModeAsync(focusMode, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x38, expectedModeByte, 0xff]);
@@ -331,7 +331,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.TriggerOnePushFocusAsync();
+        await _controller.TriggerOnePushFocusAsync(TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x18, 0x01, 0xff]);
@@ -345,7 +345,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.SetFocusPositionAsync((ushort)focusPosition);
+        await _controller.SetFocusPositionAsync((ushort)focusPosition, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x48, p, q, r, s, 0xff]);
@@ -359,7 +359,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.AdjustIrisAsync(irisDirection);
+        await _controller.AdjustIrisAsync(irisDirection, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x0b, expectedIrisByte, 0xff]);
@@ -381,7 +381,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.SetIrisPositionAsync(irisPosition);
+        await _controller.SetIrisPositionAsync(irisPosition, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x4b, 0x00, 0x00, p, q, 0xff]);
@@ -397,7 +397,7 @@ public sealed class ViscaControllerTests
     {
         var sent = CapturePacket();
 
-        await _controller.SetExposureModeAsync(exposureMode);
+        await _controller.SetExposureModeAsync(exposureMode, TestContext.Current.CancellationToken);
 
         sent.Value.ShouldNotBeNull();
         AssertPacketBytes(sent.Value!.Value, [0x81, 0x01, 0x04, 0x39, expectedModeByte, 0xff]);
