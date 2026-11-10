@@ -16,26 +16,35 @@ public partial class TcpViscaClient(string host, int port, ILogger logger) : Vis
     private string _host = host;
     private int _port = port;
     private bool _isFirstConnection = true;
+    private int _connectionState = -1;
     private TcpClient? _tcpClient;
     private Stream? _networkStream;
 
     public override void Dispose()
     {
-        _tcpClient?.Dispose();
+        ExecuteWithSendReceiveLock(() =>
+        {
+            _tcpClient?.Dispose();
+            _tcpClient = null;
+            _networkStream = null;
+            _readBuffer.Clear();
+            Volatile.Write(ref _connectionState, -1);
+        });
     }
 
     public override bool? IsConnected()
     {
-        return _tcpClient?.Connected;
+        var state = Volatile.Read(ref _connectionState);
+        return state < 0 ? null : state == 1;
     }
 
-    public override Task ReconnectAsync(string? host = null, int? port = null, CancellationToken cancellationToken = default)
-    {
-        _host = host ?? _host;
-        _port = port ?? _port;
-
-        return ConnectAsync(cancellationToken);
-    }
+    public override Task ReconnectAsync(string? host = null, int? port = null, CancellationToken cancellationToken = default) =>
+        ExecuteWithSendReceiveLockAsync(async () =>
+        {
+            _host = host ?? _host;
+            _port = port ?? _port;
+            await ConnectAsync(cancellationToken).ConfigureAwait(false);
+        }, cancellationToken);
 
     protected override async Task ConnectAsync(CancellationToken cancellationToken)
     {
@@ -52,22 +61,30 @@ public partial class TcpViscaClient(string host, int port, ILogger logger) : Vis
 
         _readBuffer.Clear();
         _tcpClient?.Dispose();
-        _tcpClient = new TcpClient { NoDelay = true };
+        _networkStream = null;
+        Volatile.Write(ref _connectionState, -1);
+        var client = new TcpClient { NoDelay = true };
+        _tcpClient = client;
 
         try
         {
-            await _tcpClient.ConnectAsync(_host, _port, cancellationToken).ConfigureAwait(false);
+            using var timeoutSource = new CancellationTokenSource(ViscaProtocol.ConnectTimeout);
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
+            await client.ConnectAsync(_host, _port, linkedCancellation.Token).ConfigureAwait(false);
+            _networkStream = client.GetStream();
+            Volatile.Write(ref _connectionState, 1);
         }
         catch (Exception exception)
         {
+            client.Dispose();
             _tcpClient = null;
+            _networkStream = null;
+            Volatile.Write(ref _connectionState, -1);
 
             LogConnectFailed(Logger, _host, _port, exception);
 
             throw;
         }
-
-        _networkStream = _tcpClient.GetStream();
     }
 
     protected override void Disconnect()
@@ -75,6 +92,8 @@ public partial class TcpViscaClient(string host, int port, ILogger logger) : Vis
         _readBuffer.Clear();
         _tcpClient?.Dispose();
         _tcpClient = null;
+        _networkStream = null;
+        Volatile.Write(ref _connectionState, -1);
     }
 
     protected override async Task SendPacketAsync(ViscaPacket packet, CancellationToken cancellationToken)

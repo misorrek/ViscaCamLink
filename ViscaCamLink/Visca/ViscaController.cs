@@ -264,12 +264,11 @@ public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaCont
 
     private async Task<ViscaPacket> SendCommandAsync(ViscaPacket packet, CancellationToken cancellationToken, [CallerMemberName] string? commandName = null)
     {
-        using var timeoutSource = new CancellationTokenSource(ViscaProtocol.DefaultCommandTimeout);
-        using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
-
         LogSendingCommand(logger, commandName);
 
         var ticksBefore = _performanceTimer.ElapsedTicks;
+        using var timeoutSource = new CancellationTokenSource(ViscaProtocol.DefaultCommandTimeout);
+        using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
         ViscaPacket response;
 
         try

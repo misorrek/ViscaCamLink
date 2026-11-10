@@ -80,6 +80,8 @@ public static class ViscaProtocol
     public const int PowerStatusPollAttempts = 20;
 
     public static readonly TimeSpan DefaultCommandTimeout = TimeSpan.FromSeconds(15);
+    public static readonly TimeSpan ContinuousCommandTimeout = TimeSpan.FromSeconds(2);
+    public static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(3);
     public static readonly TimeSpan PowerStatusPollTimeout = TimeSpan.FromSeconds(1);
     public static readonly TimeSpan PowerStatusPollDelay = TimeSpan.FromSeconds(2);
 }
