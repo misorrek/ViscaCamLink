@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 
 using Moq;
 
@@ -88,17 +89,28 @@ public sealed class CameraConnectionServiceTests
     [Fact]
     public async Task ReconnectAsync_WhenCalledTwice_RestartsMonitorAndKeepsStatusOk()
     {
+        var fakeTimeProvider = new FakeTimeProvider();
+        var probeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
             .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.On);
+            .Returns(() =>
+            {
+                probeStarted.TrySetResult();
+                return Task.FromResult(PowerStatus.On);
+            });
 
-        using var service = CreateSut(FastInterval);
+        using var service = CreateSut(fakeTimeProvider, FastInterval);
 
         await service.ReconnectAsync();
         await service.ReconnectAsync();
+
+        fakeTimeProvider.Advance(FastInterval);
+        await probeStarted.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
 
         service.Status.ShouldBe(ConnectionStatus.Ok);
+        _viscaController.Verify(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -148,12 +160,21 @@ public sealed class CameraConnectionServiceTests
     [Fact]
     public async Task HealthCheck_Success()
     {
+        var fakeTimeProvider = new FakeTimeProvider();
+        var probeCount = 0;
+        var probeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
             .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(PowerStatus.On);
+            .Returns(() =>
+            {
+                probeCount++;
+                probeStarted.TrySetResult();
+                return Task.FromResult(PowerStatus.On);
+            });
 
-        using var service = CreateSut(FastInterval);
+        using var service = CreateSut(fakeTimeProvider, FastInterval);
 
         await service.ReconnectAsync();
 
@@ -161,27 +182,44 @@ public sealed class CameraConnectionServiceTests
 
         service.ConnectionStatusChanged += (_, _) => extraEvents++;
 
-        await Task.Delay(FastInterval * 4, TestContext.Current.CancellationToken);
+        for (var index = 0; index < 4; index++)
+        {
+            var probeCompleted = probeStarted.Task;
+            fakeTimeProvider.Advance(FastInterval);
+            await probeCompleted.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
+            probeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
 
         extraEvents.ShouldBe(0);
+        probeCount.ShouldBe(4);
         service.Status.ShouldBe(ConnectionStatus.Ok);
     }
 
     [Fact]
     public async Task HealthCheck_WhenProbeFails_SetsStatusToFailed()
     {
+        var fakeTimeProvider = new FakeTimeProvider();
+        var probeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
             .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("connection lost"));
+            .Returns(() =>
+            {
+                probeStarted.TrySetResult();
+                return Task.FromException<PowerStatus>(new InvalidOperationException("connection lost"));
+            });
 
-        using var service = CreateSut(FastInterval);
+        using var service = CreateSut(fakeTimeProvider, FastInterval);
 
         await service.ReconnectAsync();
 
         var failedSource = new TaskCompletionSource<ConnectionStatus>();
 
         service.ConnectionStatusChanged += (_, status) => failedSource.TrySetResult(status);
+
+        fakeTimeProvider.Advance(FastInterval);
+        await probeStarted.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
 
         var result = await failedSource.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
 
@@ -192,31 +230,41 @@ public sealed class CameraConnectionServiceTests
     [Fact]
     public async Task HealthCheck_WhenProbeSucceedsAfterFailure_RestoresStatusToOk()
     {
+        var fakeTimeProvider = new FakeTimeProvider();
         var probeCount = 0;
+        var probeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
             .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() =>
+            .Returns(() =>
             {
+                probeStarted.TrySetResult();
+
                 if (probeCount++ == 0)
                 {
-                    throw new InvalidOperationException("transient error");
+                    return Task.FromException<PowerStatus>(new InvalidOperationException("transient error"));
                 }
 
-                return PowerStatus.On;
+                return Task.FromResult(PowerStatus.On);
             });
 
-        using var service = CreateSut(FastInterval);
+        using var service = CreateSut(fakeTimeProvider, FastInterval);
 
         await service.ReconnectAsync();
 
         var statusChanges = new List<ConnectionStatus>();
+        var failedSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var recoveredSource = new TaskCompletionSource();
 
         service.ConnectionStatusChanged += (_, status) =>
         {
             statusChanges.Add(status);
+
+            if (status == ConnectionStatus.Failed)
+            {
+                failedSource.TrySetResult();
+            }
 
             if (status == ConnectionStatus.Ok && statusChanges.Count > 1)
             {
@@ -224,6 +272,13 @@ public sealed class CameraConnectionServiceTests
             }
         };
 
+        fakeTimeProvider.Advance(FastInterval);
+        await probeStarted.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
+        await failedSource.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
+
+        probeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        fakeTimeProvider.Advance(FastInterval);
+        await probeStarted.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
         await recoveredSource.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
 
         statusChanges.ShouldBe([ConnectionStatus.Failed, ConnectionStatus.Ok]);
@@ -233,28 +288,81 @@ public sealed class CameraConnectionServiceTests
     [Fact]
     public async Task Dispose_Success()
     {
+        var fakeTimeProvider = new FakeTimeProvider();
+        var probeStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var probeCount = 0;
+
         _viscaController.Setup(v => v.Connected).Returns(true);
         _viscaController
             .Setup(v => v.GetPowerStatusAsync(It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("connection lost"));
+            .Returns(() =>
+            {
+                probeCount++;
+                probeStarted.TrySetResult();
+                return Task.FromException<PowerStatus>(new InvalidOperationException("connection lost"));
+            });
 
-        var service = CreateSut(FastInterval);
+        var service = CreateSut(fakeTimeProvider, FastInterval);
 
         await service.ReconnectAsync();
 
-        var eventsAfterDispose = 0;
+        fakeTimeProvider.Advance(FastInterval);
+        await probeStarted.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
 
         service.Dispose();
+        fakeTimeProvider.Advance(FastInterval * 4);
 
-        service.ConnectionStatusChanged += (_, _) => eventsAfterDispose++;
-
-        await Task.Delay(FastInterval * 4, TestContext.Current.CancellationToken);
-
-        eventsAfterDispose.ShouldBe(0);
+        probeCount.ShouldBe(1);
     }
 
-    private CameraConnectionService CreateSut(TimeSpan? healthCheckInterval = null)
+    [Fact]
+    public async Task SwitchCameraProfileAsync_WhenSuperseded_ConnectsOnlyTheLatestProfile()
     {
-        return new CameraConnectionService(_viscaController.Object, _settings.Object, _presetService.Object, NullLogger<CameraConnectionService>.Instance, healthCheckInterval);
+        var fakeTimeProvider = new FakeTimeProvider();
+        var firstCamera = new CameraProfile { Name = "First", Ip = "192.168.1.101", Port = 5678 };
+        var latestCamera = new CameraProfile { Name = "Latest", Ip = "192.168.1.102", Port = 5678 };
+        var activeCamera = _activeCamera;
+        var connectStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _settings.Setup(s => s.ActiveCameraProfile).Returns(() => activeCamera);
+        _settings
+            .Setup(s => s.SetActiveCameraProfile(It.IsAny<Guid>()))
+            .Callback<Guid>(profileId => activeCamera = profileId == firstCamera.Id ? firstCamera : latestCamera);
+        _viscaController.Setup(v => v.Connected).Returns(true);
+        _viscaController
+            .Setup(v => v.ReconnectAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                connectStarted.TrySetResult();
+                return Task.CompletedTask;
+            });
+
+        using var service = CreateSut(fakeTimeProvider);
+        var firstSwitch = service.SwitchCameraProfileAsync(firstCamera);
+        var latestSwitch = service.SwitchCameraProfileAsync(latestCamera);
+
+        await firstSwitch.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
+        fakeTimeProvider.Advance(TimeSpan.FromSeconds(1));
+        await connectStarted.Task.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
+        await latestSwitch.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken);
+
+        _viscaController.Verify(
+            v => v.ReconnectAsync(latestCamera.Ip, latestCamera.Port, It.IsAny<CancellationToken>()),
+            Times.Once);
+        _viscaController.Verify(
+            v => v.ReconnectAsync(firstCamera.Ip, firstCamera.Port, It.IsAny<CancellationToken>()),
+            Times.Never);
+        service.Status.ShouldBe(ConnectionStatus.Ok);
+        service.IsSwitchingCameraProfile.ShouldBeFalse();
+    }
+
+    private CameraConnectionService CreateSut(TimeProvider? timeProvider = null, TimeSpan? healthCheckInterval = null)
+    {
+        return new CameraConnectionService(
+            _viscaController.Object,
+            _settings.Object,
+            _presetService.Object,
+            NullLogger<CameraConnectionService>.Instance,
+            healthCheckInterval,
+            timeProvider);
     }
 }

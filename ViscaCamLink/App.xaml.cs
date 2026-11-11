@@ -166,6 +166,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IHotKeyRepository, HotKeyRepository>();
         services.AddSingleton<IPresetRepository, PresetRepository>();
 
+        services.AddSingleton(TimeProvider.System);
         services.AddSingleton<ICameraConnectionService, CameraConnectionService>();
         services.AddSingleton<ICameraMovementService, CameraMovementService>();
         services.AddSingleton<IDialogService, DialogService>();

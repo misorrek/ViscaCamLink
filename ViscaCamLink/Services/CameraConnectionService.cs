@@ -15,13 +15,15 @@ public partial class CameraConnectionService(
     ISettingsService settingsService,
     IPresetService presetService,
     ILogger<CameraConnectionService> logger,
-    TimeSpan? healthCheckInterval = null) : ICameraConnectionService, IDisposable
+    TimeSpan? healthCheckInterval = null,
+    TimeProvider? timeProvider = null) : ICameraConnectionService, IDisposable
 {
     private static readonly TimeSpan DefaultHealthCheckInterval = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan HealthCheckTimeout = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan SwitchDelay = TimeSpan.FromSeconds(1);
 
     private readonly TimeSpan _healthCheckInterval = healthCheckInterval ?? DefaultHealthCheckInterval;
+    private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
 
     private readonly object _cancellationLock = new();
     private CancellationTokenSource _healthCheckCancellation = new();
@@ -99,7 +101,7 @@ public partial class CameraConnectionService(
             settingsService.SetActiveCameraProfile(camera.Id);
             presetService.SwitchCameraProfile(camera.Id);
 
-            await Task.Delay(SwitchDelay, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(SwitchDelay, _timeProvider, cancellationToken).ConfigureAwait(false);
 
             IsSwitchingCameraProfile = true;
             OnConnectionStatusChanged(ConnectionStatus.Working);
@@ -236,7 +238,7 @@ public partial class CameraConnectionService(
 
     private async Task MonitorConnectionAsync(CancellationToken cancellationToken)
     {
-        using var timer = new PeriodicTimer(_healthCheckInterval);
+        using var timer = new PeriodicTimer(_healthCheckInterval, _timeProvider);
 
         try
         {
@@ -255,11 +257,12 @@ public partial class CameraConnectionService(
     {
         try
         {
-            using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            using var timeoutCancellation = new CancellationTokenSource(HealthCheckTimeout, _timeProvider);
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                timeoutCancellation.Token);
 
-            timeoutCancellation.CancelAfter(HealthCheckTimeout);
-
-            await viscaController.GetPowerStatusAsync(timeoutCancellation.Token).ConfigureAwait(false);
+            await viscaController.GetPowerStatusAsync(linkedCancellation.Token).ConfigureAwait(false);
 
             if (Status == ConnectionStatus.Failed)
             {

@@ -25,11 +25,11 @@ public sealed partial class HotKeyManager : IHotKeyManager
 
     private readonly Dictionary<int, Action> _globalRegistrations = [];
     private readonly Dictionary<int, (uint VirtualKeyCode, Action ReleaseAction)> _globalHoldRegistrations = [];
-    private readonly HashSet<uint> _activeGlobalHoldKeys = [];
+    private readonly HoldKeyState<uint> _activeGlobalHoldKeys = new();
 
     private readonly Dictionary<(ModifierKeys Modifier, Key Key), Action> _localRegistrations = [];
     private readonly Dictionary<Key, Action> _localHoldReleaseCallbacks = [];
-    private readonly HashSet<Key> _activeLocalHoldKeys = [];
+    private readonly HoldKeyState<Key> _activeLocalHoldKeys = new();
 
     private int _currentHotKeyId;
     private LowLevelKeyboardProc? _lowLevelKeyboardProc;
@@ -143,8 +143,8 @@ public sealed partial class HotKeyManager : IHotKeyManager
 
     private bool RegisterGlobalHotKey(ModifierKeys modifier, Key key, Action action)
     {
-        var modifierCode = (uint)modifier;
-        var virtualKeyCode = (uint)KeyInterop.VirtualKeyFromKey(key);
+        var modifierCode = HotKeyMapping.ToModifierCode(modifier);
+        var virtualKeyCode = HotKeyMapping.ToVirtualKeyCode(key);
 
         _currentHotKeyId++;
 
@@ -165,7 +165,7 @@ public sealed partial class HotKeyManager : IHotKeyManager
             return false;
         }
 
-        var virtualKeyCode = (uint)KeyInterop.VirtualKeyFromKey(key);
+        var virtualKeyCode = HotKeyMapping.ToVirtualKeyCode(key);
         var registered = RegisterGlobalHotKey(modifier, key, pressAction);
 
         if (registered)
@@ -328,7 +328,7 @@ public sealed partial class HotKeyManager : IHotKeyManager
         {
             if (_localHoldReleaseCallbacks.ContainsKey(key))
             {
-                _activeLocalHoldKeys.Add(key);
+                _activeLocalHoldKeys.Press(key);
             }
 
             action.Invoke();
@@ -340,7 +340,7 @@ public sealed partial class HotKeyManager : IHotKeyManager
     {
         var key = eventArgs.Key == Key.System ? eventArgs.SystemKey : eventArgs.Key;
 
-        if (_activeLocalHoldKeys.Remove(key) && _localHoldReleaseCallbacks.TryGetValue(key, out var releaseAction))
+        if (_activeLocalHoldKeys.Release(key) && _localHoldReleaseCallbacks.TryGetValue(key, out var releaseAction))
         {
             releaseAction.Invoke();
         }
@@ -351,32 +351,35 @@ public sealed partial class HotKeyManager : IHotKeyManager
 
     private void ReleaseActiveLocalHoldKeys()
     {
-        foreach (var key in _activeLocalHoldKeys.ToArray())
+        foreach (var key in _activeLocalHoldKeys.ReleaseAll())
         {
             if (_localHoldReleaseCallbacks.TryGetValue(key, out var releaseAction))
             {
                 releaseAction.Invoke();
             }
         }
-
-        _activeLocalHoldKeys.Clear();
     }
 
     private void ReleaseActiveGlobalHoldKeys()
     {
-        foreach (var virtualKeyCode in _activeGlobalHoldKeys.ToArray())
+        foreach (var virtualKeyCode in _activeGlobalHoldKeys.ReleaseAll())
         {
-            ReleaseGlobalHoldKey(virtualKeyCode);
+            InvokeGlobalHoldRelease(virtualKeyCode);
         }
     }
 
     private void ReleaseGlobalHoldKey(uint virtualKeyCode)
     {
-        if (!_activeGlobalHoldKeys.Remove(virtualKeyCode))
+        if (!_activeGlobalHoldKeys.Release(virtualKeyCode))
         {
             return;
         }
 
+        InvokeGlobalHoldRelease(virtualKeyCode);
+    }
+
+    private void InvokeGlobalHoldRelease(uint virtualKeyCode)
+    {
         foreach (var (registeredVirtualKeyCode, releaseAction) in _globalHoldRegistrations.Values)
         {
             if (registeredVirtualKeyCode == virtualKeyCode)
@@ -397,7 +400,7 @@ public sealed partial class HotKeyManager : IHotKeyManager
             {
                 if (_globalHoldRegistrations.TryGetValue(hotKeyId, out var holdRegistration))
                 {
-                    _activeGlobalHoldKeys.Add(holdRegistration.VirtualKeyCode);
+                    _activeGlobalHoldKeys.Press(holdRegistration.VirtualKeyCode);
                 }
 
                 action.Invoke();
