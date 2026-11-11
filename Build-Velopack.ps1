@@ -112,6 +112,7 @@ $packArguments = @(
     "--packAuthors", "Max Groiser",
     "--packVersion", $Version,
     "--packDir", $publishDir,
+    "--runtime", "win-x64",
     "--mainExe", "ViscaCamLink.exe",
     "--icon", "$projectDir\Resources\program.ico",
     "--channel", $Channel,

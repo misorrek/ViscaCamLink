@@ -20,6 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\LICENSE" Link="LICENSE" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\THIRD-PARTY-NOTICES" Link="THIRD-PARTY-NOTICES" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Resources\update_available_dialog.gif" />
     <Resource Include="Resources\update_available_sidebar.gif" />
   </ItemGroup>
