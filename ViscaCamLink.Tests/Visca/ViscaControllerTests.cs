@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Tests.Visca;
 
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -412,11 +413,9 @@ public sealed class ViscaControllerTests
     }
 
     [Fact]
-    public void Dispose_Success()
+    public void ViscaController_DoesNotOwnViscaClient()
     {
-        _controller.Dispose();
-
-        _viscaClient.Verify(c => c.Dispose(), Times.Once);
+        typeof(ViscaController).GetInterfaces().ShouldNotContain(typeof(IDisposable));
     }
 
     private void SetupResponse(byte[] responseBytes)

@@ -2,6 +2,7 @@ namespace ViscaCamLink.Tests.ViewModels;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ using Moq;
 
 using Shouldly;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Repositories.Presets;
 using ViscaCamLink.Services;
@@ -169,6 +170,6 @@ public sealed class ViscaCamLinkViewModelTests
 
     private static List<PresetMetadata> CreatePresets()
     {
-        return [.. Enumerable.Range(0, 10).Select(i => new PresetMetadata { GroupId = DefaultGroupId, SlotIndex = i, Name = i.ToString() })];
+        return [.. Enumerable.Range(0, 10).Select(i => new PresetMetadata { GroupId = DefaultGroupId, SlotIndex = i, Name = i.ToString(CultureInfo.InvariantCulture) })];
     }
 }

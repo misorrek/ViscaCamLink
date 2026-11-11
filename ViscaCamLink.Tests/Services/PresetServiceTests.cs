@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Tests.Services;
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -175,7 +176,7 @@ public sealed class PresetServiceTests
         {
             Id = secondGroupId,
             Name = "Second",
-            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = secondGroupId, SlotIndex = i, Name = i.ToString() })],
+            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = secondGroupId, SlotIndex = i, Name = i.ToString(CultureInfo.InvariantCulture) })],
         });
         data.ActiveGroupId = secondGroupId;
         _repository.Setup(r => r.LoadForCameraProfile(_cameraId)).Returns(data);
@@ -295,7 +296,7 @@ public sealed class PresetServiceTests
             {
                 GroupId = DefaultGroupId,
                 SlotIndex = i,
-                Name = i.ToString(),
+                Name = i.ToString(CultureInfo.InvariantCulture),
             })
             .ToList();
 

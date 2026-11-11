@@ -34,7 +34,7 @@ public partial class VelopackUpdateService(
         if (updateManager.UpdatePendingRestart is { } pendingRestart)
         {
             // VelopackApp.Run() applies a downloaded update on the next start (SetAutoApplyOnStartup), so only record it.
-            LogUpdatePendingRestart(logger, pendingRestart.Version.ToString());
+            LogUpdatePendingRestart(logger, pendingRestart.Version);
         }
 
         LogUpdateCheckStarted(logger, updateManager.CurrentVersion);
@@ -60,7 +60,7 @@ public partial class VelopackUpdateService(
         cancellationToken.ThrowIfCancellationRequested();
         _pendingUpdate = newVersion;
 
-        LogUpdateAvailable(logger, targetVersion.ToFullString());
+        LogUpdateAvailable(logger, targetVersion);
         UpdateAvailable?.Invoke(this, updateInfo);
     }
 
@@ -105,10 +105,10 @@ public partial class VelopackUpdateService(
     private static partial void LogNoUpdateAvailable(ILogger logger);
 
     [LoggerMessage(EventId = 4013, Level = LogLevel.Information, Message = "Update {Version} available")]
-    private static partial void LogUpdateAvailable(ILogger logger, string version);
+    private static partial void LogUpdateAvailable(ILogger logger, object version);
 
     [LoggerMessage(EventId = 4014, Level = LogLevel.Information, Message = "Downloaded update {Version} is pending and will be applied on the next start")]
-    private static partial void LogUpdatePendingRestart(ILogger logger, string version);
+    private static partial void LogUpdatePendingRestart(ILogger logger, object version);
 
     [LoggerMessage(EventId = 4020, Level = LogLevel.Information, Message = "Downloading update {Version}")]
     private static partial void LogDownloadStarted(ILogger logger, string version);

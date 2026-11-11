@@ -7,11 +7,11 @@ using System.Windows.Input;
 
 using Microsoft.Extensions.Logging;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 
-public partial class UpdateDownloadViewModel : ViewModelBase
+public partial class UpdateDownloadViewModel : ViewModelBase, IDisposable
 {
     private readonly UpdateInfo _updateInfo;
     private readonly IUpdateService _updateService;
@@ -23,6 +23,7 @@ public partial class UpdateDownloadViewModel : ViewModelBase
     private bool _isDownloading = true;
     private bool _hasError;
     private string _errorMessage = string.Empty;
+    private bool _isDisposed;
 
     public UpdateDownloadViewModel(
         UpdateInfo updateInfo,
@@ -42,6 +43,28 @@ public partial class UpdateDownloadViewModel : ViewModelBase
     public ICommand CancelCommand { get; }
 
     public ICommand RetryCommand { get; }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            _downloadCancellation.Cancel();
+            _downloadCancellation.Dispose();
+        }
+
+        _isDisposed = true;
+    }
 
     public string VersionText => $"v{_updateInfo.Version.ToFullString()}";
 

@@ -2,13 +2,14 @@ namespace ViscaCamLink.ViewModels;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Microsoft.Extensions.Logging;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Resources;
@@ -182,7 +183,7 @@ public class ConnectionViewModel : ViewModelBase
         var camera = _settings.ActiveCameraProfile;
 
         Ip = camera?.Ip ?? string.Empty;
-        Port = camera?.Port.ToString() ?? string.Empty;
+        Port = camera?.Port.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
         ActiveCameraName = camera?.Name ?? string.Empty;
     }
 
@@ -288,7 +289,7 @@ public class ConnectionViewModel : ViewModelBase
         // The actual connection is debounced and performed on a background thread by the connection service.
         // A newer request cancels any pending attempt.
         Ip = target.Ip;
-        Port = target.Port.ToString();
+        Port = target.Port.ToString(CultureInfo.InvariantCulture);
         ActiveCameraName = target.Name;
 
         try

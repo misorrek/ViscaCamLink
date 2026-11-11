@@ -6,7 +6,7 @@ using System.IO;
 
 using Microsoft.Extensions.Logging;
 
-internal static class RepositoryFileStorage
+internal static partial class RepositoryFileStorage
 {
     public static void WriteAtomically(string filePath, Action<Stream> write, ILogger logger)
     {
@@ -40,7 +40,7 @@ internal static class RepositoryFileStorage
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
-                logger.LogWarning(exception, "Temporary repository file '{FilePath}' could not be deleted", temporaryPath);
+                LogTemporaryFileDeletionFailed(logger, exception, temporaryPath);
             }
         }
     }
@@ -53,13 +53,22 @@ internal static class RepositoryFileStorage
         try
         {
             File.Copy(filePath, rejectedFilePath, overwrite: false);
-            logger.LogWarning("Rejected repository file '{FilePath}' was preserved as '{RejectedFilePath}'", filePath, rejectedFilePath);
+            LogRejectedFilePreserved(logger, filePath, rejectedFilePath);
             return true;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            logger.LogWarning(exception, "Rejected repository file '{FilePath}' could not be preserved", filePath);
+            LogRejectedFilePreservationFailed(logger, exception, filePath);
             return false;
         }
     }
+
+    [LoggerMessage(EventId = 3301, Level = LogLevel.Warning, Message = "Temporary repository file '{FilePath}' could not be deleted")]
+    private static partial void LogTemporaryFileDeletionFailed(ILogger logger, Exception exception, string filePath);
+
+    [LoggerMessage(EventId = 3302, Level = LogLevel.Warning, Message = "Rejected repository file '{FilePath}' was preserved as '{RejectedFilePath}'")]
+    private static partial void LogRejectedFilePreserved(ILogger logger, string filePath, string rejectedFilePath);
+
+    [LoggerMessage(EventId = 3303, Level = LogLevel.Warning, Message = "Rejected repository file '{FilePath}' could not be preserved")]
+    private static partial void LogRejectedFilePreservationFailed(ILogger logger, Exception exception, string filePath);
 }

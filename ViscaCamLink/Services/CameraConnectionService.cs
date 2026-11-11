@@ -36,6 +36,8 @@ public partial class CameraConnectionService(
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
+
         CancellationTokenSource healthCheckCancellation;
         CancellationTokenSource pendingConnectionCancellation;
 

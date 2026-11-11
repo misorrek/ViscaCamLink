@@ -1,8 +1,8 @@
-namespace ViscaCamLink.Tests.Infrastructure.Interface;
+namespace ViscaCamLink.Tests.Infrastructure.Abstractions;
 
 using Shouldly;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 
 using Xunit;
 

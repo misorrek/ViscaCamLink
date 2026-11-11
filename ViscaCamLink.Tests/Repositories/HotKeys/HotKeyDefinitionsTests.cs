@@ -1,5 +1,7 @@
 namespace ViscaCamLink.Tests.Repositories.HotKeys;
 
+using System.Globalization;
+using System.Text;
 using System.Windows.Input;
 
 using Shouldly;
@@ -57,7 +59,10 @@ public sealed class HotKeyDefinitionsTests
     [Fact]
     public void GetDisplayName_Success()
     {
-        var expectedPresetName = string.Format(TranslationSource.Instance["HotKeyAction_Preset"], 3);
+        var expectedPresetName = string.Format(
+            CultureInfo.CurrentCulture,
+            CompositeFormat.Parse(TranslationSource.Instance["HotKeyAction_Preset"]),
+            3);
 
         HotKeyDefinitions.GetDisplayName(HotKeyAction.Preset3).ShouldBe(expectedPresetName);
         HotKeyDefinitions.GetDisplayName(HotKeyAction.MoveUp).ShouldBe(TranslationSource.Instance["HotKeyAction_MoveUp"]);

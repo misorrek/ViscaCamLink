@@ -1,6 +1,8 @@
 namespace ViscaCamLink.Repositories.AppSettings;
 
 using System;
+using System.Globalization;
+using System.Text;
 
 using ViscaCamLink.Resources;
 
@@ -13,7 +15,10 @@ public class CameraProfile
 
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public string Name { get; set; } = string.Format(Strings.CameraProfile_DefaultName, DefaultCameraProfileNumber);
+    public string Name { get; set; } = string.Format(
+        CultureInfo.CurrentCulture,
+        CompositeFormat.Parse(Strings.CameraProfile_DefaultName),
+        DefaultCameraProfileNumber);
 
     public string Ip { get; set; } = DefaultIp;
 

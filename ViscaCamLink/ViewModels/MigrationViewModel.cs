@@ -8,7 +8,7 @@ using System.Windows.Input;
 
 using Microsoft.Extensions.Logging;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 
 public partial class MigrationViewModel(
     string uninstallString,

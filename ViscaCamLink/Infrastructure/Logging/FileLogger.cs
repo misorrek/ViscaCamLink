@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Infrastructure.Logging;
 
 using System;
+using System.Globalization;
 
 using Microsoft.Extensions.Logging;
 
@@ -26,7 +27,7 @@ public class FileLogger(
             return;
         }
 
-        var timestamp = timeProvider.GetLocalNow().ToString("yyyy-MM-dd HH:mm:ss.fff");
+        var timestamp = timeProvider.GetLocalNow().ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
         var level = logLevel switch
         {
             LogLevel.Trace => "TRC",

@@ -9,6 +9,6 @@ using ViscaCamLink.Repositories.Presets;
 [JsonSourceGenerationOptions(WriteIndented = true, UseStringEnumConverter = true)]
 [JsonSerializable(typeof(List<HotKeyBinding>))]
 [JsonSerializable(typeof(PresetData))]
-internal partial class RepositoryJsonContext : JsonSerializerContext
+internal sealed partial class RepositoryJsonContext : JsonSerializerContext
 {
 }

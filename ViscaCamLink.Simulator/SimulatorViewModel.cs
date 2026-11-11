@@ -6,12 +6,13 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-public partial class SimulatorViewModel : ObservableObject
+public partial class SimulatorViewModel : ObservableObject, IDisposable
 {
     private readonly CameraState _state = new();
     private readonly DispatcherTimer _simulationTimer;
     private ViscaTcpServer? _server;
     private ViscaCommandHandler? _handler;
+    private bool _isDisposed;
 
     private const int ZoomSpeedMultiplier = 10;
     private static readonly TimeSpan SimulationStep = TimeSpan.FromMilliseconds(20);
@@ -54,6 +55,23 @@ public partial class SimulatorViewModel : ObservableObject
 
     public ObservableCollection<string> LogEntries { get; } = new();
 
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _simulationTimer.Stop();
+        _simulationTimer.Tick -= SimulationTick;
+        _server?.Dispose();
+        _server = null;
+        IsRunning = false;
+        IsClientConnected = false;
+        _isDisposed = true;
+        GC.SuppressFinalize(this);
+    }
+
     // --- Commands ---
 
     [RelayCommand]
@@ -74,7 +92,7 @@ public partial class SimulatorViewModel : ObservableObject
         if (!IsRunning) return;
 
         _simulationTimer.Stop();
-        _server?.Stop();
+        _server?.Dispose();
         _server = null;
         IsRunning = false;
         IsClientConnected = false;

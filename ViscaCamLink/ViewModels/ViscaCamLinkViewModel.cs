@@ -3,7 +3,7 @@ namespace ViscaCamLink.ViewModels;
 using System;
 using System.Windows.Input;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Services;
 

@@ -30,6 +30,8 @@ public partial class TcpViscaClient(string host, int port, ILogger logger) : Vis
             _readBuffer.Clear();
             Volatile.Write(ref _connectionState, -1);
         });
+
+        GC.SuppressFinalize(this);
     }
 
     public override bool? IsConnected()

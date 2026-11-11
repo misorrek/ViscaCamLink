@@ -1,9 +1,11 @@
 namespace ViscaCamLink.Infrastructure.Theming;
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Text;
 using System.Windows;
 
 using Microsoft.Extensions.Logging;
@@ -12,7 +14,8 @@ using Microsoft.Win32;
 
 public static partial class ThemeHelper
 {
-    private const string ThemeDictionaryUriFormat = "/ViscaCamLink;component/Resources/{0}Theme.xaml";
+    private static readonly CompositeFormat ThemeDictionaryUriFormat =
+        CompositeFormat.Parse("/ViscaCamLink;component/Resources/{0}Theme.xaml");
     private const string ThemeDictionarySuffix = "Theme.xaml";
     private const string PersonalizeKeyPath = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
     private const string AppsUseLightThemeValueName = "AppsUseLightTheme";
@@ -86,7 +89,7 @@ public static partial class ThemeHelper
 
     private static void LoadThemeDictionary(Theme resolvedTheme)
     {
-        var uri = new Uri(string.Format(ThemeDictionaryUriFormat, resolvedTheme), UriKind.Relative);
+        var uri = new Uri(string.Format(CultureInfo.InvariantCulture, ThemeDictionaryUriFormat, resolvedTheme), UriKind.Relative);
         var newDictionary = new ResourceDictionary { Source = uri };
         var mergedDictionaries = Application.Current.Resources.MergedDictionaries;
         var existingDictionary = mergedDictionaries.FirstOrDefault(dictionary =>

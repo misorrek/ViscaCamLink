@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Tests.Repositories.Presets;
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -48,7 +49,7 @@ public sealed class PresetRepositoryTests : IDisposable
         for (var i = 0; i < PresetLayout.PresetsPerGroup; i++)
         {
             data.Groups[0].Presets[i].SlotIndex.ShouldBe(i);
-            data.Groups[0].Presets[i].Name.ShouldBe(i.ToString());
+            data.Groups[0].Presets[i].Name.ShouldBe(i.ToString(CultureInfo.InvariantCulture));
             data.Groups[0].Presets[i].GroupId.ShouldBe(data.Groups[0].Id);
         }
     }
@@ -195,7 +196,7 @@ public sealed class PresetRepositoryTests : IDisposable
         {
             Id = secondGroupId,
             Name = "Second",
-            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = secondGroupId, SlotIndex = i, Name = i.ToString() })],
+            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = secondGroupId, SlotIndex = i, Name = i.ToString(CultureInfo.InvariantCulture) })],
         });
 
         _repository.SaveForCameraProfile(_cameraId, data);
@@ -219,7 +220,7 @@ public sealed class PresetRepositoryTests : IDisposable
         {
             Id = secondGroupId,
             Name = "Second",
-            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = secondGroupId, SlotIndex = i, Name = i.ToString() })],
+            Presets = [.. Enumerable.Range(10, 10).Select(i => new PresetMetadata { GroupId = secondGroupId, SlotIndex = i, Name = i.ToString(CultureInfo.InvariantCulture) })],
         });
         data.ActiveGroupId = secondGroupId;
 

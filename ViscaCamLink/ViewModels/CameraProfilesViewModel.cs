@@ -3,11 +3,13 @@ namespace ViscaCamLink.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
@@ -164,9 +166,12 @@ public partial class CameraProfilesViewModel : ViewModelBase
     private void ExecuteAdd()
     {
         _editingId = Guid.Empty;
-        EditName = string.Format(Strings.CameraProfile_DefaultName, Cameras.Count + 1);
+        EditName = string.Format(
+            CultureInfo.CurrentCulture,
+            CompositeFormat.Parse(Strings.CameraProfile_DefaultName),
+            Cameras.Count + 1);
         EditIp = CameraProfile.DefaultIp;
-        EditPort = CameraProfile.DefaultPort.ToString();
+        EditPort = CameraProfile.DefaultPort.ToString(CultureInfo.InvariantCulture);
         IsEditing = true;
     }
 
@@ -180,7 +185,7 @@ public partial class CameraProfilesViewModel : ViewModelBase
         _editingId = SelectedCamera.Id;
         EditName = SelectedCamera.Name;
         EditIp = SelectedCamera.Ip;
-        EditPort = SelectedCamera.Port.ToString();
+        EditPort = SelectedCamera.Port.ToString(CultureInfo.InvariantCulture);
         IsEditing = true;
     }
 
@@ -191,7 +196,10 @@ public partial class CameraProfilesViewModel : ViewModelBase
             return;
         }
 
-        var confirmationMessage = string.Format(Strings.CameraProfile_DeleteConfirm, SelectedCamera.Name);
+        var confirmationMessage = string.Format(
+            CultureInfo.CurrentCulture,
+            CompositeFormat.Parse(Strings.CameraProfile_DeleteConfirm),
+            SelectedCamera.Name);
 
         if (!_dialogService.ShowConfirmation(confirmationMessage, Strings.Common_Delete))
         {
@@ -215,7 +223,7 @@ public partial class CameraProfilesViewModel : ViewModelBase
 
     private void ExecuteSaveEdit()
     {
-        var port = int.Parse(EditPort);
+        var port = int.Parse(EditPort, CultureInfo.InvariantCulture);
 
         if (_editingId == Guid.Empty)
         {

@@ -63,6 +63,7 @@ public class DialogService(
         var viewModel = new UpdateDownloadViewModel(updateInfo, updateService, view.Close, updateDownloadLogger);
 
         view.DataContext = viewModel;
+        view.Closed += (_, _) => viewModel.Dispose();
         view.ShowDialog();
     }
 

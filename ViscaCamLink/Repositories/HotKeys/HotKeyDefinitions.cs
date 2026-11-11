@@ -1,6 +1,8 @@
 namespace ViscaCamLink.Repositories.HotKeys;
 
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Localization;
@@ -74,7 +76,10 @@ public static class HotKeyDefinitions
     {
         if (TryGetPresetPosition(action, out var presetPosition))
         {
-            return string.Format(TranslationSource.Instance[nameof(Strings.HotKeyAction_Preset)], presetPosition);
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                CompositeFormat.Parse(TranslationSource.Instance[nameof(Strings.HotKeyAction_Preset)]),
+                presetPosition);
         }
 
         return action switch

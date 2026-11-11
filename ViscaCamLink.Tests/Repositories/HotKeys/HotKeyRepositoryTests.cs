@@ -140,6 +140,6 @@ public sealed class HotKeyRepositoryTests : IDisposable
         _repository.Save(bindings);
 
         File.ReadAllText($"{_filePath}.bak").ShouldContain("\"Key\": \"NumPad0\"");
-        _repository.Load().First().Key.ShouldBe(Key.D0);
+        _repository.Load()[0].Key.ShouldBe(Key.D0);
     }
 }

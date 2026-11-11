@@ -133,10 +133,8 @@ public sealed class HotKeyServiceTests
     }
 
     [Fact]
-    public void Dispose_Success()
+    public void HotKeyService_DoesNotOwnHotKeyManager()
     {
-        _hotKeyService.Dispose();
-
-        _hotKeyManager.Verify(m => m.Dispose(), Times.Once);
+        typeof(HotKeyService).GetInterfaces().ShouldNotContain(typeof(IDisposable));
     }
 }

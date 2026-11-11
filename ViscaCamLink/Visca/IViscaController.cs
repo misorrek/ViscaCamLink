@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using ViscaCamLink.Visca.Types;
 
-public interface IViscaController : IDisposable
+public interface IViscaController
 {
     bool? Connected { get; }
 

@@ -8,6 +8,6 @@ using System.Text.Json.Serialization;
 [JsonSerializable(typeof(CameraProfile))]
 [JsonSerializable(typeof(List<CameraProfile>))]
 [JsonSerializable(typeof(WindowPlacementData))]
-internal partial class AppSettingsJsonContext : JsonSerializerContext
+internal sealed partial class AppSettingsJsonContext : JsonSerializerContext
 {
 }

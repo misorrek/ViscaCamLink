@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
-        xmlns:interface="clr-namespace:ViscaCamLink.Infrastructure.Interface"
+        xmlns:interface="clr-namespace:ViscaCamLink.Infrastructure.Abstractions"
         xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
         xmlns:types="clr-namespace:ViscaCamLink.Visca.Types"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"

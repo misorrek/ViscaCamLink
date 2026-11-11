@@ -1,0 +1,20 @@
+root = true
+
+[*.cs]
+charset = utf-8
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+csharp_prefer_braces = true
+csharp_style_namespace_declarations = file_scoped
+csharp_using_directive_placement = inside_namespace
+csharp_style_var_for_built_in_types = true
+csharp_style_var_when_type_is_apparent = true
+csharp_style_var_elsewhere = true
+dotnet_separate_import_directive_groups = true
+dotnet_sort_system_directives_first = true
+
+[ViscaCamLink.Tests/**/*.cs]
+# Test names intentionally use underscores, as required by UnitTestGuidelines.md.
+dotnet_diagnostic.CA1707.severity = none

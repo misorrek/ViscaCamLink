@@ -9,7 +9,7 @@ using Moq;
 
 using Shouldly;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;

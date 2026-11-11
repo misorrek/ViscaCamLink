@@ -6,13 +6,14 @@ using System.Net.Sockets;
 /// <summary>
 /// TCP server that listens for VISCA commands and dispatches them to the command handler.
 /// </summary>
-public class ViscaTcpServer
+public class ViscaTcpServer : IDisposable
 {
     private TcpListener? _listener;
     private CancellationTokenSource? _cts;
     private readonly ViscaCommandHandler _handler;
     private readonly Action<string> _log;
     private readonly Action<bool> _onClientConnected;
+    private bool _isDisposed;
 
     public int Port { get; private set; }
     public bool IsRunning { get; private set; }
@@ -26,37 +27,70 @@ public class ViscaTcpServer
 
     public void Start(int port)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
         Stop();
         Port = port;
-        _cts = new CancellationTokenSource();
-        _listener = new TcpListener(IPAddress.Loopback, port);
-        _listener.Start();
+        var cancellationSource = new CancellationTokenSource();
+        var listener = new TcpListener(IPAddress.Loopback, port);
+        try
+        {
+            listener.Start();
+        }
+        catch
+        {
+            listener.Dispose();
+            cancellationSource.Dispose();
+
+            throw;
+        }
+
+        _cts = cancellationSource;
+        _listener = listener;
         IsRunning = true;
         _log($"Server started on 127.0.0.1:{port}");
-        Task.Run(() => AcceptClientsAsync(_cts.Token));
+        Task.Run(() => AcceptClientsAsync(listener, cancellationSource.Token));
     }
 
     public void Stop()
     {
-        if (!IsRunning) return;
+        var wasRunning = IsRunning;
+
         _cts?.Cancel();
-        _listener?.Stop();
+        _listener?.Dispose();
         _listener = null;
+        _cts?.Dispose();
+        _cts = null;
         IsRunning = false;
-        _log("Server stopped");
+
+        if (wasRunning)
+        {
+            _log("Server stopped");
+        }
     }
 
-    private async Task AcceptClientsAsync(CancellationToken ct)
+    public void Dispose()
     {
-        while (!ct.IsCancellationRequested)
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        Stop();
+        _isDisposed = true;
+        GC.SuppressFinalize(this);
+    }
+
+    private async Task AcceptClientsAsync(TcpListener listener, CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
-                var client = await _listener!.AcceptTcpClientAsync(ct);
+                var client = await listener.AcceptTcpClientAsync(cancellationToken);
                 client.NoDelay = true;
                 _log($"Client connected: {client.Client.RemoteEndPoint}");
                 _onClientConnected(true);
-                _ = Task.Run(() => HandleClientAsync(client, ct), ct);
+                _ = Task.Run(() => HandleClientAsync(client, cancellationToken), cancellationToken);
             }
             catch (OperationCanceledException)
             {

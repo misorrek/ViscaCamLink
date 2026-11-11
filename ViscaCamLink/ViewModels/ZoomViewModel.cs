@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca.Types;

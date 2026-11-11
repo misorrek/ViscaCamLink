@@ -98,39 +98,39 @@ public partial class PresetsControl : UserControl
         eventArgs.Handled = true;
     }
 
-    protected override void OnPreviewKeyDown(KeyEventArgs eventArgs)
+    protected override void OnPreviewKeyDown(KeyEventArgs e)
     {
-        base.OnPreviewKeyDown(eventArgs);
+        base.OnPreviewKeyDown(e);
 
         if (DataContext is not PresetsViewModel viewModel)
         {
             return;
         }
 
-        if (eventArgs.Key == Key.Return)
+        if (e.Key == Key.Return)
         {
             if (viewModel.RenamingSlotIndex >= 0)
             {
                 viewModel.MemoryRenameConfirmCommand.Execute(null);
-                eventArgs.Handled = true;
+                e.Handled = true;
             }
             else if (viewModel.PresetGroups.Any(group => group.IsRenaming))
             {
                 viewModel.GroupRenameConfirmCommand.Execute(null);
-                eventArgs.Handled = true;
+                e.Handled = true;
             }
         }
-        else if (eventArgs.Key == Key.Escape)
+        else if (e.Key == Key.Escape)
         {
             if (viewModel.RenamingSlotIndex >= 0)
             {
                 viewModel.MemoryRenameCancelCommand.Execute(null);
-                eventArgs.Handled = true;
+                e.Handled = true;
             }
             else if (viewModel.PresetGroups.Any(group => group.IsRenaming))
             {
                 viewModel.GroupRenameCancelCommand.Execute(null);
-                eventArgs.Handled = true;
+                e.Handled = true;
             }
         }
     }

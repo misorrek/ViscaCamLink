@@ -2,6 +2,7 @@ namespace ViscaCamLink.Repositories.Presets;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 
@@ -180,7 +181,7 @@ public partial class PresetRepository(string directory, ILogger<PresetRepository
             {
                 GroupId = groupId,
                 SlotIndex = slotIndex,
-                Name = slotIndex.ToString(),
+                Name = slotIndex.ToString(CultureInfo.InvariantCulture),
             });
         }
 

@@ -16,7 +16,7 @@ using Velopack.Locators;
 
 using ViscaCamLink.Infrastructure;
 using ViscaCamLink.Infrastructure.HotKeys;
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Infrastructure.Logging;
 using ViscaCamLink.Infrastructure.Theming;
@@ -28,7 +28,7 @@ using ViscaCamLink.ViewModels;
 using ViscaCamLink.Views;
 using ViscaCamLink.Visca;
 
-public partial class App : Application
+public partial class App : Application, IDisposable
 {
     // Used until settings are loaded; afterwards FileLoggerProvider.MinimumLevel is the only filter and follows the Options dialog live.
     private const LogLevel BootstrapLogLevel = LogLevel.Information;
@@ -40,6 +40,7 @@ public partial class App : Application
     private IServiceProvider? _serviceProvider;
     private CancellationTokenSource? _updateCheckCancellation;
     private bool _activateWhenReady;
+    private bool _isDisposed;
 
     private void Application_Startup(object sender, StartupEventArgs startupEventArgs)
     {
@@ -249,22 +250,42 @@ public partial class App : Application
         LogApplicationShuttingDown(_logger);
         ThemeHelper.StopFollowingSystemTheme();
 
-        _updateCheckCancellation?.Cancel();
-        _updateCheckCancellation?.Dispose();
+        Dispose();
+        Current.Shutdown();
+    }
 
-        if (_serviceProvider is IDisposable disposable)
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_isDisposed)
         {
-            disposable.Dispose();
+            return;
         }
 
-        UnregisterUnhandledExceptionHandlers();
+        if (disposing)
+        {
+            _updateCheckCancellation?.Cancel();
+            _updateCheckCancellation?.Dispose();
 
-        // Neither logger factory disposes a provider instance passed via AddProvider, so the App owns it.
-        _logger = NullLogger.Instance;
-        _bootstrapLoggerFactory?.Dispose();
-        _fileLoggerProvider?.Dispose();
+            if (_serviceProvider is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
 
-        Current.Shutdown();
+            UnregisterUnhandledExceptionHandlers();
+
+            // Neither logger factory disposes a provider instance passed via AddProvider, so the App owns it.
+            _logger = NullLogger.Instance;
+            _bootstrapLoggerFactory?.Dispose();
+            _fileLoggerProvider?.Dispose();
+        }
+
+        _isDisposed = true;
     }
 
     private static void ShowMigrationDialogIfNeeded(

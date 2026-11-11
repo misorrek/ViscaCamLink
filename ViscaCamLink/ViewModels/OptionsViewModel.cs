@@ -8,7 +8,7 @@ using System.Windows.Input;
 
 using Microsoft.Extensions.Logging;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Infrastructure.Localization;
 using ViscaCamLink.Infrastructure.Theming;
 using ViscaCamLink.Services;

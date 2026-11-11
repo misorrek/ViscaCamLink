@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:converters="clr-namespace:ViscaCamLink.Converters"
-        xmlns:interface="clr-namespace:ViscaCamLink.Infrastructure.Interface"
+        xmlns:interface="clr-namespace:ViscaCamLink.Infrastructure.Abstractions"
         xmlns:localization="clr-namespace:ViscaCamLink.Infrastructure.Localization"
         xmlns:views="clr-namespace:ViscaCamLink.Views"
         xmlns:viewmodels="clr-namespace:ViscaCamLink.ViewModels"

@@ -4,14 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Microsoft.Extensions.Logging;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Repositories.Presets;
 using ViscaCamLink.Resources;
@@ -385,7 +387,10 @@ public class PresetsViewModel : ViewModelBase
     {
         var groupNumber = _presetService.Groups.Count + 1;
 
-        _presetService.AddGroup(string.Format(Strings.PresetGroup_NewName, groupNumber));
+        _presetService.AddGroup(string.Format(
+            CultureInfo.CurrentCulture,
+            CompositeFormat.Parse(Strings.PresetGroup_NewName),
+            groupNumber));
 
         var newGroup = _presetService.Groups[^1];
 
@@ -407,7 +412,10 @@ public class PresetsViewModel : ViewModelBase
             return;
         }
 
-        var message = string.Format(Strings.PresetGroup_RemoveConfirm, group.Name);
+        var message = string.Format(
+            CultureInfo.CurrentCulture,
+            CompositeFormat.Parse(Strings.PresetGroup_RemoveConfirm),
+            group.Name);
 
         if (!_dialogService.ShowConfirmation(message, Strings.PresetGroup_Remove))
         {
@@ -510,7 +518,7 @@ public class PresetsViewModel : ViewModelBase
         }
 
         var name = string.IsNullOrWhiteSpace(RenamingText)
-            ? RenamingSlotIndex.ToString()
+            ? RenamingSlotIndex.ToString(CultureInfo.CurrentCulture)
             : RenamingText.Trim();
 
         _presetService.RenamePreset(RenamingSlotIndex, name);

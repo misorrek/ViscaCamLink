@@ -8,7 +8,7 @@ using Moq;
 
 using Shouldly;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.ViewModels;

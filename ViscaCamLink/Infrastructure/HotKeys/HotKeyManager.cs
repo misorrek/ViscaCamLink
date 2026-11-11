@@ -11,7 +11,7 @@ using System.Windows.Interop;
 
 using Microsoft.Extensions.Logging;
 
-public partial class HotKeyManager : IHotKeyManager
+public sealed partial class HotKeyManager : IHotKeyManager
 {
     private const int WH_KEYBOARD_LL = 13;
     private const int WM_KEYUP = 0x0101;
@@ -143,8 +143,8 @@ public partial class HotKeyManager : IHotKeyManager
 
     private bool RegisterGlobalHotKey(ModifierKeys modifier, Key key, Action action)
     {
-        var modifierCode = Convert.ToUInt32(modifier);
-        var virtualKeyCode = Convert.ToUInt32(KeyInterop.VirtualKeyFromKey(key));
+        var modifierCode = (uint)modifier;
+        var virtualKeyCode = (uint)KeyInterop.VirtualKeyFromKey(key);
 
         _currentHotKeyId++;
 
@@ -446,7 +446,7 @@ public partial class HotKeyManager : IHotKeyManager
         public IntPtr dwExtraInfo;
     }
 
-    private class LocalKeyTargetState(Window window)
+    private sealed class LocalKeyTargetState(Window window)
     {
         public Window Window { get; } = window;
 

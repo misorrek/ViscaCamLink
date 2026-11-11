@@ -2,6 +2,7 @@ namespace ViscaCamLink.Services;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -87,7 +88,7 @@ public partial class PresetService : IPresetService
     {
         var preset = ActiveGroup.Presets.FirstOrDefault(candidate => candidate.SlotIndex == slotIndex);
 
-        return preset?.Name ?? slotIndex.ToString();
+        return preset?.Name ?? slotIndex.ToString(CultureInfo.InvariantCulture);
     }
 
     public void RenamePreset(int slotIndex, string name)
@@ -146,7 +147,7 @@ public partial class PresetService : IPresetService
             {
                 GroupId = groupId,
                 SlotIndex = slot,
-                Name = presetIndex.ToString(),
+                Name = presetIndex.ToString(CultureInfo.InvariantCulture),
             });
         }
 

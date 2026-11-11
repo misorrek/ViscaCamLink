@@ -1,6 +1,8 @@
 namespace ViscaCamLink.Tests.ViewModels;
 
 using System;
+using System.Globalization;
+using System.Text;
 
 using Moq;
 
@@ -113,9 +115,12 @@ public sealed class CameraProfilesViewModelTests
         _viewModel.AddCommand.Execute(null);
 
         _viewModel.IsEditing.ShouldBeTrue();
-        _viewModel.EditName.ShouldBe(string.Format(Strings.CameraProfile_DefaultName, 3));
+        _viewModel.EditName.ShouldBe(string.Format(
+            CultureInfo.CurrentCulture,
+            CompositeFormat.Parse(Strings.CameraProfile_DefaultName),
+            3));
         _viewModel.EditIp.ShouldBe(CameraProfile.DefaultIp);
-        _viewModel.EditPort.ShouldBe(CameraProfile.DefaultPort.ToString());
+        _viewModel.EditPort.ShouldBe(CameraProfile.DefaultPort.ToString(CultureInfo.InvariantCulture));
         _viewModel.AddCommand.CanExecute(null).ShouldBeFalse();
     }
 
@@ -176,7 +181,12 @@ public sealed class CameraProfilesViewModelTests
 
         _viewModel.DeleteCommand.Execute(null);
 
-        _dialogService.Verify(d => d.ShowConfirmation(string.Format(Strings.CameraProfile_DeleteConfirm, "Cam B"), Strings.Common_Delete), Times.Once);
+        _dialogService.Verify(d => d.ShowConfirmation(
+            string.Format(
+                CultureInfo.CurrentCulture,
+                CompositeFormat.Parse(Strings.CameraProfile_DeleteConfirm),
+                "Cam B"),
+            Strings.Common_Delete), Times.Once);
         _settings.Verify(s => s.RemoveCameraProfile(_secondProfile.Id), Times.Once);
         _viewModel.Cameras.ShouldHaveSingleItem().Id.ShouldBe(_firstProfile.Id);
         _viewModel.Cameras[0].IsActive.ShouldBeTrue();

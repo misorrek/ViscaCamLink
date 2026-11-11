@@ -14,7 +14,7 @@ public sealed partial class HotKeyService(
     IHotKeyManager hotKeyManager,
     IHotKeyRepository repository,
     ISettingsService settings,
-    ILogger<HotKeyService> logger) : IHotKeyService, IDisposable
+    ILogger<HotKeyService> logger) : IHotKeyService
 {
     private readonly Dictionary<HotKeyAction, Action> _actions = [];
     private readonly Dictionary<HotKeyAction, Action> _releaseActions = [];
@@ -22,8 +22,6 @@ public sealed partial class HotKeyService(
     private List<HotKeyBinding> _bindings = [.. repository.Load().Select(binding => binding.Copy())];
 
     public IReadOnlyList<HotKeyBinding> Bindings => [.. _bindings.Select(binding => binding.Copy())];
-
-    public void Dispose() => hotKeyManager.Dispose();
 
     public void RegisterActions(IEnumerable<HotKeyActionRegistration> registrations)
     {

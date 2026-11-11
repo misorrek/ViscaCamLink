@@ -1,6 +1,7 @@
 namespace ViscaCamLink.Visca;
 
 using System;
+using System.Globalization;
 using System.Text;
 
 public readonly struct ViscaPacket(long head, long tail, int length, string? cachedText)
@@ -77,7 +78,7 @@ public readonly struct ViscaPacket(long head, long tail, int length, string? cac
                 builder.Append(ByteSeparator);
             }
 
-            builder.AppendFormat($"{{0:x{HexCharsPerByte}}}", this[i]);
+            builder.AppendFormat(CultureInfo.InvariantCulture, $"{{0:x{HexCharsPerByte}}}", this[i]);
         }
 
         return builder.ToString();

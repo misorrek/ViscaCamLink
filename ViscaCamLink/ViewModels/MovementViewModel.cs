@@ -9,7 +9,7 @@ using System.Windows.Input;
 
 using Microsoft.Extensions.Logging;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Repositories.HotKeys;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca.Types;

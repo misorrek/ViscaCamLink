@@ -2,7 +2,9 @@ namespace ViscaCamLink.Tests.ViewModels;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging.Abstractions;
@@ -11,7 +13,7 @@ using Moq;
 
 using Shouldly;
 
-using ViscaCamLink.Infrastructure.Interface;
+using ViscaCamLink.Infrastructure.Abstractions;
 using ViscaCamLink.Repositories.AppSettings;
 using ViscaCamLink.Repositories.Presets;
 using ViscaCamLink.Resources;
@@ -218,7 +220,10 @@ public sealed class PresetsViewModelTests
     {
         _viewModel.GroupAddCommand.Execute(null);
 
-        _presetService.Verify(p => p.AddGroup(string.Format(Strings.PresetGroup_NewName, 3)), Times.Once);
+        _presetService.Verify(p => p.AddGroup(string.Format(
+            CultureInfo.CurrentCulture,
+            CompositeFormat.Parse(Strings.PresetGroup_NewName),
+            3)), Times.Once);
         _presetService.Verify(p => p.SwitchGroup(SecondGroupId), Times.Once);
     }
 
@@ -258,7 +263,12 @@ public sealed class PresetsViewModelTests
 
         _viewModel.GroupRemoveCommand.Execute(SecondGroupId);
 
-        _dialogService.Verify(d => d.ShowConfirmation(string.Format(Strings.PresetGroup_RemoveConfirm, "Second"), Strings.PresetGroup_Remove), Times.Once);
+        _dialogService.Verify(d => d.ShowConfirmation(
+            string.Format(
+                CultureInfo.CurrentCulture,
+                CompositeFormat.Parse(Strings.PresetGroup_RemoveConfirm),
+                "Second"),
+            Strings.PresetGroup_Remove), Times.Once);
         _presetService.Verify(p => p.RemoveGroup(SecondGroupId), Times.Once);
     }
 
@@ -269,7 +279,12 @@ public sealed class PresetsViewModelTests
 
         _viewModel.GroupRemoveCommand.Execute(null);
 
-        _dialogService.Verify(d => d.ShowConfirmation(string.Format(Strings.PresetGroup_RemoveConfirm, "Default"), Strings.PresetGroup_Remove), Times.Once);
+        _dialogService.Verify(d => d.ShowConfirmation(
+            string.Format(
+                CultureInfo.CurrentCulture,
+                CompositeFormat.Parse(Strings.PresetGroup_RemoveConfirm),
+                "Default"),
+            Strings.PresetGroup_Remove), Times.Once);
         _presetService.Verify(p => p.RemoveGroup(DefaultGroupId), Times.Once);
     }
 
@@ -403,6 +418,6 @@ public sealed class PresetsViewModelTests
 
     private static List<PresetMetadata> CreatePresets(int startSlot, int count)
     {
-        return [.. Enumerable.Range(startSlot, count).Select(i => new PresetMetadata { GroupId = DefaultGroupId, SlotIndex = i, Name = i.ToString() })];
+        return [.. Enumerable.Range(startSlot, count).Select(i => new PresetMetadata { GroupId = DefaultGroupId, SlotIndex = i, Name = i.ToString(CultureInfo.InvariantCulture) })];
     }
 }

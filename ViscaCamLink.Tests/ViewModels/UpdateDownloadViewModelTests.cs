@@ -18,7 +18,7 @@ using ViscaCamLink.ViewModels;
 
 using Xunit;
 
-public sealed class UpdateDownloadViewModelTests
+public sealed class UpdateDownloadViewModelTests : IDisposable
 {
     private static readonly UpdateInfo TestUpdateInfo = new(
         Version: SemanticVersion.Parse("2.0.0"),
@@ -37,6 +37,12 @@ public sealed class UpdateDownloadViewModelTests
             _updateService.Object,
             () => _closeCount++,
             NullLogger<UpdateDownloadViewModel>.Instance);
+    }
+
+    public void Dispose()
+    {
+        _viewModel.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

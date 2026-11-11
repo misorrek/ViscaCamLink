@@ -44,8 +44,6 @@ public partial class ViscaController(IViscaClient viscaClient, ILogger<ViscaCont
 
     public byte MaxFocusSpeed => ViscaProtocol.MaxFocusSpeed;
 
-    public void Dispose() => viscaClient.Dispose();
-
     public Task ReconnectAsync(string? host = null, int? port = null, CancellationToken cancellationToken = default) =>
         viscaClient.ReconnectAsync(host, port, cancellationToken);
 
