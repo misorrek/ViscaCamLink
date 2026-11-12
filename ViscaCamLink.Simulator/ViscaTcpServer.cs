@@ -1,42 +1,42 @@
 namespace ViscaCamLink.Simulator;
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 /// <summary>
 /// TCP server that listens for VISCA commands and dispatches them to the command handler.
 /// </summary>
-public class ViscaTcpServer : IDisposable
+public class ViscaTcpServer(ViscaCommandHandler handler, Action<string> log, Action<bool> onClientConnected) : IDisposable
 {
+    private const int ReceiveBufferSize = 256;
+
     private TcpListener? _listener;
-    private CancellationTokenSource? _cts;
-    private readonly ViscaCommandHandler _handler;
-    private readonly Action<string> _log;
-    private readonly Action<bool> _onClientConnected;
+    private CancellationTokenSource? _cancellationSource;
     private bool _isDisposed;
 
     public int Port { get; private set; }
-    public bool IsRunning { get; private set; }
 
-    public ViscaTcpServer(ViscaCommandHandler handler, Action<string> log, Action<bool> onClientConnected)
-    {
-        _handler = handler;
-        _log = log;
-        _onClientConnected = onClientConnected;
-    }
+    public bool IsRunning { get; private set; }
 
     public void Start(int port)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
         Stop();
         Port = port;
+
         var cancellationSource = new CancellationTokenSource();
         var listener = new TcpListener(IPAddress.Loopback, port);
+
         try
         {
             listener.Start();
         }
-        catch
+        catch (SocketException)
         {
             listener.Dispose();
             cancellationSource.Dispose();
@@ -44,27 +44,27 @@ public class ViscaTcpServer : IDisposable
             throw;
         }
 
-        _cts = cancellationSource;
+        _cancellationSource = cancellationSource;
         _listener = listener;
         IsRunning = true;
-        _log($"Server started on 127.0.0.1:{port}");
-        Task.Run(() => AcceptClientsAsync(listener, cancellationSource.Token));
+        log($"Server started on 127.0.0.1:{port}");
+        _ = Task.Run(() => AcceptClientsAsync(listener, cancellationSource.Token));
     }
 
     public void Stop()
     {
         var wasRunning = IsRunning;
 
-        _cts?.Cancel();
+        _cancellationSource?.Cancel();
         _listener?.Dispose();
         _listener = null;
-        _cts?.Dispose();
-        _cts = null;
+        _cancellationSource?.Dispose();
+        _cancellationSource = null;
         IsRunning = false;
 
         if (wasRunning)
         {
-            _log("Server stopped");
+            log("Server stopped");
         }
     }
 
@@ -88,66 +88,72 @@ public class ViscaTcpServer : IDisposable
             {
                 var client = await listener.AcceptTcpClientAsync(cancellationToken);
                 client.NoDelay = true;
-                _log($"Client connected: {client.Client.RemoteEndPoint}");
-                _onClientConnected(true);
+                log($"Client connected: {client.Client.RemoteEndPoint}");
+                onClientConnected(true);
                 _ = Task.Run(() => HandleClientAsync(client, cancellationToken), cancellationToken);
             }
-            catch (OperationCanceledException)
+            catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException)
             {
+                // Expected when the server stops while waiting for a client.
                 break;
             }
-            catch (ObjectDisposedException)
+            catch (SocketException ex)
             {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _log($"Accept error: {ex.Message}");
+                log($"Accept error: {ex.Message}");
             }
         }
     }
 
-    private async Task HandleClientAsync(TcpClient client, CancellationToken ct)
+    private async Task HandleClientAsync(TcpClient client, CancellationToken cancellationToken)
     {
-        var buffer = new byte[256];
+        var buffer = new byte[ReceiveBufferSize];
         var packetBuffer = new List<byte>();
 
         try
         {
             using var stream = client.GetStream();
-            while (!ct.IsCancellationRequested && client.Connected)
-            {
-                int bytesRead = await stream.ReadAsync(buffer, ct);
-                if (bytesRead == 0) break;
 
-                for (int i = 0; i < bytesRead; i++)
+            while (!cancellationToken.IsCancellationRequested && client.Connected)
+            {
+                var bytesRead = await stream.ReadAsync(buffer, cancellationToken);
+
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+
+                for (var i = 0; i < bytesRead; i++)
                 {
                     packetBuffer.Add(buffer[i]);
 
-                    if (buffer[i] == ViscaConstants.Terminator)
+                    if (buffer[i] != ViscaConstants.Terminator)
                     {
-                        var packet = packetBuffer.ToArray();
-                        packetBuffer.Clear();
+                        continue;
+                    }
 
-                        var response = _handler.ProcessPacket(packet);
-                        if (response != null)
-                        {
-                            await stream.WriteAsync(response, ct);
-                        }
+                    var response = handler.ProcessPacket([.. packetBuffer]);
+                    packetBuffer.Clear();
+
+                    if (response is not null)
+                    {
+                        await stream.WriteAsync(response, cancellationToken);
                     }
                 }
             }
         }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            _log($"Client error: {ex.Message}");
+            // Expected when the server stops while a client is connected.
+        }
+        catch (Exception ex) when (ex is IOException or SocketException or ObjectDisposedException)
+        {
+            log($"Client error: {ex.Message}");
         }
         finally
         {
             client.Dispose();
-            _onClientConnected(false);
-            _log("Client disconnected");
+            onClientConnected(false);
+            log("Client disconnected");
         }
     }
 }

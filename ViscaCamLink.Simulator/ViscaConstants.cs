@@ -82,4 +82,35 @@ public static class ViscaConstants
 
     // Pan/Tilt inquiry
     public const byte InquiryPanTiltPosition = 0x12;
+
+    // Variable speed arguments
+    public const byte SpeedMask = 0x0F;
+    public const byte ZoomInStandard = 0x02;
+    public const byte ZoomOutStandard = 0x03;
+    public const byte FocusStop = 0x00;
+    public const byte FocusFarStandard = 0x02;
+    public const byte FocusNearStandard = 0x03;
+    public const byte FocusFarVariable = 0x20;
+    public const byte FocusNearVariable = 0x30;
+    public const byte VariableRangeEnd = 0x10;
+
+    // Responses
+    public const byte ResponseAddress = 0x90;
+    public const byte ResponseDone = 0x50;
+    public const byte ResponseError = 0x60;
+    public const byte ErrorSyntax = 0x02;
+    public const byte ErrorNotExecutable = 0x41;
+    public const byte PowerStatusOn = 0x02;
+    public const byte PowerStatusOff = 0x03;
+
+    // Packet lengths (without terminator)
+    public const int MinPacketLength = 5;
+    public const int MinInquiryLength = 4;
+    public const int ArgumentPacketLength = 5;
+    public const int MemoryPacketLength = 6;
+    public const int DirectPacketLength = 8;
+    public const int PositionPacketLength = 14;
+
+    // Simulator defaults
+    public const int DefaultPort = 5678;
 }

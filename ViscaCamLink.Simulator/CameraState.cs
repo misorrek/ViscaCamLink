@@ -1,5 +1,7 @@
 namespace ViscaCamLink.Simulator;
 
+using System.Collections.Generic;
+
 /// <summary>
 /// Represents the simulated camera's internal state.
 /// </summary>
@@ -23,5 +25,20 @@ public class CameraState
     /// <summary>
     /// Stored preset positions (slot → pan, tilt, zoom).
     /// </summary>
-    public Dictionary<int, (short Pan, short Tilt, short Zoom)> Presets { get; } = new();
+    public Dictionary<int, (short Pan, short Tilt, short Zoom)> Presets { get; } = [];
+
+    public void StopMovement()
+    {
+        PanVelocity = 0;
+        TiltVelocity = 0;
+        ZoomVelocity = 0;
+    }
+
+    public void ResetPosition()
+    {
+        Pan = 0;
+        Tilt = 0;
+        Zoom = 0;
+        StopMovement();
+    }
 }

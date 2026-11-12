@@ -1,17 +1,21 @@
 namespace ViscaCamLink.Simulator;
 
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 public partial class PositionCompassControl : UserControl
 {
+    private const double CanvasCenter = 100.0;
+    private const double CompassRadius = 90.0;
+    private const double DotOffset = 5.0;
+    private const double ArrowLength = 80.0;
+    private const double MinVisibleVelocity = 0.5;
+
     public PositionCompassControl()
     {
         InitializeComponent();
     }
-
-    // --- Dependency Properties ---
 
     public static readonly DependencyProperty PanNormalizedProperty =
         DependencyProperty.Register(nameof(PanNormalized), typeof(double), typeof(PositionCompassControl),
@@ -63,65 +67,65 @@ public partial class PositionCompassControl : UserControl
         set => SetValue(TiltVelocityProperty, value);
     }
 
-    // --- Update Logic ---
-
     private static void OnPositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is PositionCompassControl ctrl) ctrl.UpdatePosition();
+        if (d is PositionCompassControl control)
+        {
+            control.UpdatePosition();
+        }
     }
 
     private static void OnZoomChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is PositionCompassControl ctrl) ctrl.UpdateZoom();
+        if (d is PositionCompassControl control)
+        {
+            control.UpdateZoom();
+        }
     }
 
     private static void OnVelocityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is PositionCompassControl ctrl) ctrl.UpdateVelocity();
+        if (d is PositionCompassControl control)
+        {
+            control.UpdateVelocity();
+        }
     }
 
     private void UpdatePosition()
     {
-        // Map normalized pan (-1..1) and tilt (-1..1) to canvas coordinates
-        // Center is (100, 100), radius is 90
-        double x = PanNormalized * 90.0;
-        double y = -TiltNormalized * 90.0; // positive tilt = up physically = negative Y on screen
+        var x = PanNormalized * CompassRadius;
+        var y = -TiltNormalized * CompassRadius; // positive tilt = up physically = negative Y on screen
 
-        PositionTransform.X = 95 + x; // 95 = center(100) - dot_radius(5)
-        PositionTransform.Y = 95 + y;
+        PositionTransform.X = CanvasCenter - DotOffset + x;
+        PositionTransform.Y = CanvasCenter - DotOffset + y;
     }
 
     private void UpdateZoom()
     {
-        // Show zoom as opacity of the outer ring
         ZoomRing.Opacity = ZoomNormalized;
     }
 
     private void UpdateVelocity()
     {
-        double vx = PanVelocity;
-        double vy = TiltVelocity; // positive tilt velocity = moving toward MaxTilt = "up" physically = dot moves up = negative screen Y
+        double velocityX = PanVelocity;
+        double velocityY = TiltVelocity;
+        var magnitude = Math.Sqrt(velocityX * velocityX + velocityY * velocityY);
 
-        double magnitude = Math.Sqrt(vx * vx + vy * vy);
-
-        if (magnitude < 0.5)
+        if (magnitude < MinVisibleVelocity)
         {
             VelocityLine.Visibility = Visibility.Collapsed;
+
             return;
         }
 
         VelocityLine.Visibility = Visibility.Visible;
 
-        // Arrow direction matches dot movement: same uniform scale for both axes
-        // Negate Y because screen Y is inverted (positive tilt = up = negative screen Y)
-        double maxSpeed = ViscaConstants.MaxPanSpeed;
-        double scale = Math.Min(magnitude / maxSpeed, 1.0) * 80.0;
-        double nx = vx / magnitude;
-        double ny = -vy / magnitude; // negate for screen coordinates
+        // Same uniform scale for both axes; negate Y because screen Y is inverted
+        var scale = Math.Min(magnitude / ViscaConstants.MaxPanSpeed, 1.0) * ArrowLength;
 
-        VelocityLine.X1 = 100;
-        VelocityLine.Y1 = 100;
-        VelocityLine.X2 = 100 + nx * scale;
-        VelocityLine.Y2 = 100 + ny * scale;
+        VelocityLine.X1 = CanvasCenter;
+        VelocityLine.Y1 = CanvasCenter;
+        VelocityLine.X2 = CanvasCenter + velocityX / magnitude * scale;
+        VelocityLine.Y2 = CanvasCenter - velocityY / magnitude * scale;
     }
 }

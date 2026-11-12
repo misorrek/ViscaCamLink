@@ -1,401 +1,417 @@
 namespace ViscaCamLink.Simulator;
 
+using System;
+
 /// <summary>
 /// Parses incoming VISCA packets and produces appropriate responses while updating camera state.
 /// </summary>
-public class ViscaCommandHandler
+public class ViscaCommandHandler(CameraState state, Action onStateChanged, Action<string> log)
 {
-    private readonly CameraState _state;
-    private readonly Action _onStateChanged;
-    private readonly Action<string> _log;
-
-    public ViscaCommandHandler(CameraState state, Action onStateChanged, Action<string> log)
-    {
-        _state = state;
-        _onStateChanged = onStateChanged;
-        _log = log;
-    }
-
     public byte[]? ProcessPacket(byte[] packet)
     {
-        // Minimum packet: address + prefix + category + command + terminator = 5 bytes
-        if (packet.Length < 5 || packet[0] != ViscaConstants.CameraAddress)
+        if (packet.Length < ViscaConstants.MinPacketLength || packet[0] != ViscaConstants.CameraAddress)
         {
             return SyntaxError();
         }
 
-        // Remove terminator for easier processing
-        int len = packet.Length - 1; // exclude 0xFF terminator
+        var length = packet.Length - 1;
 
         return packet[1] switch
         {
-            ViscaConstants.CommandPrefix => ProcessCommand(packet, len),
-            ViscaConstants.InquiryPrefix => ProcessInquiry(packet, len),
+            ViscaConstants.CommandPrefix => ProcessCommand(packet, length),
+            ViscaConstants.InquiryPrefix => ProcessInquiry(packet, length),
             _ => SyntaxError()
         };
     }
 
-    private byte[] ProcessCommand(byte[] packet, int len)
+    private static bool IsInVariableRange(byte argument, byte rangeStart) =>
+        argument >= rangeStart && argument < rangeStart + ViscaConstants.VariableRangeEnd;
+
+    private static byte[] Done() => [ViscaConstants.ResponseAddress, ViscaConstants.ResponseDone, ViscaConstants.Terminator];
+
+    private static byte[] SyntaxError() => ErrorResponse(ViscaConstants.ErrorSyntax);
+
+    private static byte[] CommandNotExecutable() => ErrorResponse(ViscaConstants.ErrorNotExecutable);
+
+    private static byte[] ErrorResponse(byte errorCode) =>
+        [ViscaConstants.ResponseAddress, ViscaConstants.ResponseError, errorCode, ViscaConstants.Terminator];
+
+    private static byte[] QueryResponse(params byte[] data) =>
+        [ViscaConstants.ResponseAddress, ViscaConstants.ResponseDone, .. data, ViscaConstants.Terminator];
+
+    private static short DecodeInt16(byte[] data, int offset) =>
+        (short)((data[offset] << 12) | (data[offset + 1] << 8) | (data[offset + 2] << 4) | data[offset + 3]);
+
+    private static byte[] EncodeInt16(short value) =>
+    [
+        (byte)((value >> 12) & 0x0F),
+        (byte)((value >> 8) & 0x0F),
+        (byte)((value >> 4) & 0x0F),
+        (byte)(value & 0x0F)
+    ];
+
+    private byte[] ProcessCommand(byte[] packet, int length)
     {
         return packet[2] switch
         {
-            ViscaConstants.CategoryCamera => ProcessCameraCommand(packet, len),
-            ViscaConstants.CategoryPanTilt => ProcessPanTiltCommand(packet, len),
+            ViscaConstants.CategoryCamera => ProcessCameraCommand(packet, length),
+            ViscaConstants.CategoryPanTilt => ProcessPanTiltCommand(packet, length),
             _ => CommandNotExecutable()
         };
     }
 
-    private byte[] ProcessCameraCommand(byte[] packet, int len)
+    private byte[] ProcessCameraCommand(byte[] packet, int length)
     {
         switch (packet[3])
         {
-            // Power
             case ViscaConstants.CmdPower:
-                if (len < 5) return SyntaxError();
-                if (packet[4] == ViscaConstants.PowerOnArg)
-                {
-                    _state.IsPoweredOn = true;
-                    _log("CMD: Power ON");
-                }
-                else if (packet[4] == ViscaConstants.PowerOffArg)
-                {
-                    _state.IsPoweredOn = false;
-                    _state.PanVelocity = 0;
-                    _state.TiltVelocity = 0;
-                    _state.ZoomVelocity = 0;
-                    _log("CMD: Power OFF");
-                }
-                _onStateChanged();
-                return Done();
+                return length < ViscaConstants.ArgumentPacketLength ? SyntaxError() : ProcessPower(packet[4]);
 
-            // Zoom variable (continuous)
             case ViscaConstants.CmdZoomVariable:
-                if (len < 5) return SyntaxError();
-                byte zoomArg = packet[4];
-                if (zoomArg == ViscaConstants.ZoomStop)
-                {
-                    _state.ZoomVelocity = 0;
-                    _log("CMD: Zoom STOP");
-                }
-                else if (zoomArg >= 0x20 && zoomArg < 0x30)
-                {
-                    _state.ZoomVelocity = (sbyte)(zoomArg & 0x0F);
-                    _log($"CMD: Zoom IN speed={zoomArg & 0x0F}");
-                }
-                else if (zoomArg >= 0x30 && zoomArg < 0x40)
-                {
-                    _state.ZoomVelocity = (sbyte)-(zoomArg & 0x0F);
-                    _log($"CMD: Zoom OUT speed={zoomArg & 0x0F}");
-                }
-                else if (zoomArg == 0x02)
-                {
-                    _state.ZoomVelocity = (sbyte)ViscaConstants.MaxZoomSpeed;
-                    _log("CMD: Zoom IN (standard)");
-                }
-                else if (zoomArg == 0x03)
-                {
-                    _state.ZoomVelocity = (sbyte)-ViscaConstants.MaxZoomSpeed;
-                    _log("CMD: Zoom OUT (standard)");
-                }
-                _onStateChanged();
-                return Done();
+                return length < ViscaConstants.ArgumentPacketLength ? SyntaxError() : ProcessZoomVariable(packet[4]);
 
-            // Zoom direct (absolute)
             case ViscaConstants.CmdZoomDirect:
-                if (len < 8) return SyntaxError();
-                short zoomPos = DecodeInt16(packet, 4);
-                zoomPos = Math.Clamp(zoomPos, ViscaConstants.MinZoom, ViscaConstants.MaxZoom);
-                _state.Zoom = zoomPos;
-                _state.ZoomVelocity = 0;
-                _log($"CMD: Zoom Direct pos={zoomPos}");
-                _onStateChanged();
-                return Done();
-
-            // Memory (preset)
-            case ViscaConstants.CmdMemoryReset:
-                if (len < 6) return SyntaxError();
-                byte memorySub = packet[4];
-                byte slot = packet[5];
-
-                if (memorySub == ViscaConstants.MemorySubSet)
-                {
-                    _state.Presets[slot] = (_state.Pan, _state.Tilt, _state.Zoom);
-                    _state.LastSavedPreset = slot;
-                    _log($"CMD: Preset SAVE slot={slot}");
-                }
-                else if (memorySub == ViscaConstants.MemorySubRecall)
-                {
-                    if (_state.Presets.TryGetValue(slot, out var pos))
-                    {
-                        _state.Pan = pos.Pan;
-                        _state.Tilt = pos.Tilt;
-                        _state.Zoom = pos.Zoom;
-                    }
-                    _state.LastRecalledPreset = slot;
-                    _state.PanVelocity = 0;
-                    _state.TiltVelocity = 0;
-                    _state.ZoomVelocity = 0;
-                    _log($"CMD: Preset RECALL slot={slot}");
-                }
-                _onStateChanged();
-                return Done();
-
-            // Focus variable (continuous)
-            case ViscaConstants.CmdFocus:
-                if (len < 5) return SyntaxError();
-                byte focusArg = packet[4];
-                if (focusArg == 0x00)
-                {
-                    _state.FocusVelocity = 0;
-                    _log("CMD: Focus STOP");
-                }
-                else if (focusArg == 0x02 || (focusArg >= 0x20 && focusArg < 0x30))
-                {
-                    _state.FocusVelocity = (sbyte)(focusArg == 0x02 ? 1 : (focusArg & 0x0F) + 1);
-                    _log($"CMD: Focus FAR arg=0x{focusArg:X2}");
-                }
-                else if (focusArg == 0x03 || (focusArg >= 0x30 && focusArg < 0x40))
-                {
-                    _state.FocusVelocity = (sbyte)-(focusArg == 0x03 ? 1 : (focusArg & 0x0F) + 1);
-                    _log($"CMD: Focus NEAR arg=0x{focusArg:X2}");
-                }
-                else
+                if (length < ViscaConstants.DirectPacketLength)
                 {
                     return SyntaxError();
                 }
-                _onStateChanged();
+
+                state.Zoom = Math.Clamp(DecodeInt16(packet, 4), ViscaConstants.MinZoom, ViscaConstants.MaxZoom);
+                state.ZoomVelocity = 0;
+                log($"CMD: Zoom Direct pos={state.Zoom}");
+                onStateChanged();
+
                 return Done();
 
-            // Focus direct (absolute)
+            case ViscaConstants.CmdMemoryReset:
+                return length < ViscaConstants.MemoryPacketLength ? SyntaxError() : ProcessMemory(packet[4], packet[5]);
+
+            case ViscaConstants.CmdFocus:
+                return length < ViscaConstants.ArgumentPacketLength ? SyntaxError() : ProcessFocusVariable(packet[4]);
+
             case ViscaConstants.CmdFocusDirect:
-                if (len < 8) return SyntaxError();
-                _state.Focus = (ushort)DecodeInt16(packet, 4);
-                _state.FocusVelocity = 0;
-                _log($"CMD: Focus Direct pos={_state.Focus}");
-                _onStateChanged();
+                if (length < ViscaConstants.DirectPacketLength)
+                {
+                    return SyntaxError();
+                }
+
+                state.Focus = (ushort)DecodeInt16(packet, 4);
+                state.FocusVelocity = 0;
+                log($"CMD: Focus Direct pos={state.Focus}");
+                onStateChanged();
+
                 return Done();
 
-            // Focus mode
             case ViscaConstants.CmdFocusMode:
-                if (len < 5) return SyntaxError();
-                switch (packet[4])
-                {
-                    case ViscaConstants.FocusModeAuto: _state.IsAutoFocus = true; break;
-                    case ViscaConstants.FocusModeManual: _state.IsAutoFocus = false; break;
-                    case ViscaConstants.FocusModeToggle: _state.IsAutoFocus = !_state.IsAutoFocus; break;
-                    default: return SyntaxError();
-                }
-                _log($"CMD: Focus mode {(_state.IsAutoFocus ? "AUTO" : "MANUAL")}");
-                _onStateChanged();
-                return Done();
+                return length < ViscaConstants.ArgumentPacketLength ? SyntaxError() : ProcessFocusMode(packet[4]);
 
-            // One-push AF
             case ViscaConstants.CmdFocusOnePush:
-                _log("CMD: One-push AF trigger");
+                log("CMD: One-push AF trigger");
+
                 return Done();
 
-            // Iris up/down/reset (only in manual or iris priority AE mode)
             case ViscaConstants.CmdIris:
-                if (len < 5) return SyntaxError();
-                if (!IsIrisControllable())
-                {
-                    _log("CMD: Iris rejected (AE mode is not manual/iris priority)");
-                    return CommandNotExecutable();
-                }
-                switch (packet[4])
-                {
-                    case ViscaConstants.IrisReset: _state.Iris = ViscaConstants.DefaultIris; break;
-                    case ViscaConstants.IrisUp: _state.Iris = (byte)Math.Min(_state.Iris + 1, ViscaConstants.MaxIris); break;
-                    case ViscaConstants.IrisDown: _state.Iris = (byte)Math.Max(_state.Iris - 1, 0); break;
-                    default: return SyntaxError();
-                }
-                _log($"CMD: Iris 0x{packet[4]:X2} → {_state.Iris}");
-                _onStateChanged();
-                return Done();
+                return length < ViscaConstants.ArgumentPacketLength ? SyntaxError() : ProcessIris(packet[4]);
 
-            // Iris direct
             case ViscaConstants.CmdIrisDirect:
-                if (len < 8) return SyntaxError();
-                if (!IsIrisControllable())
-                {
-                    _log("CMD: Iris direct rejected (AE mode is not manual/iris priority)");
-                    return CommandNotExecutable();
-                }
-                _state.Iris = (byte)Math.Min((packet[6] << 4) | packet[7], ViscaConstants.MaxIris);
-                _log($"CMD: Iris Direct pos={_state.Iris}");
-                _onStateChanged();
-                return Done();
+                return length < ViscaConstants.DirectPacketLength ? SyntaxError() : ProcessIrisDirect(packet);
 
-            // AE mode
             case ViscaConstants.CmdExposureMode:
-                if (len < 5) return SyntaxError();
-                _state.ExposureMode = packet[4];
-                _log($"CMD: AE mode 0x{packet[4]:X2}");
-                _onStateChanged();
+                if (length < ViscaConstants.ArgumentPacketLength)
+                {
+                    return SyntaxError();
+                }
+
+                state.ExposureMode = packet[4];
+                log($"CMD: AE mode 0x{packet[4]:X2}");
+                onStateChanged();
+
                 return Done();
 
             default:
-                _log($"CMD: Unknown camera cmd 0x{packet[3]:X2}");
+                log($"CMD: Unknown camera cmd 0x{packet[3]:X2}");
+
                 return CommandNotExecutable();
         }
     }
 
-    private byte[] ProcessPanTiltCommand(byte[] packet, int len)
+    private byte[] ProcessPower(byte argument)
+    {
+        if (argument == ViscaConstants.PowerOnArg)
+        {
+            state.IsPoweredOn = true;
+            log("CMD: Power ON");
+        }
+        else if (argument == ViscaConstants.PowerOffArg)
+        {
+            state.IsPoweredOn = false;
+            state.StopMovement();
+            log("CMD: Power OFF");
+        }
+
+        onStateChanged();
+
+        return Done();
+    }
+
+    private byte[] ProcessZoomVariable(byte argument)
+    {
+        var speed = argument & ViscaConstants.SpeedMask;
+
+        if (argument == ViscaConstants.ZoomStop)
+        {
+            state.ZoomVelocity = 0;
+            log("CMD: Zoom STOP");
+        }
+        else if (IsInVariableRange(argument, ViscaConstants.ZoomInMask))
+        {
+            state.ZoomVelocity = (sbyte)speed;
+            log($"CMD: Zoom IN speed={speed}");
+        }
+        else if (IsInVariableRange(argument, ViscaConstants.ZoomOutMask))
+        {
+            state.ZoomVelocity = (sbyte)-speed;
+            log($"CMD: Zoom OUT speed={speed}");
+        }
+        else if (argument == ViscaConstants.ZoomInStandard)
+        {
+            state.ZoomVelocity = (sbyte)ViscaConstants.MaxZoomSpeed;
+            log("CMD: Zoom IN (standard)");
+        }
+        else if (argument == ViscaConstants.ZoomOutStandard)
+        {
+            state.ZoomVelocity = (sbyte)-ViscaConstants.MaxZoomSpeed;
+            log("CMD: Zoom OUT (standard)");
+        }
+
+        onStateChanged();
+
+        return Done();
+    }
+
+    private byte[] ProcessMemory(byte subCommand, byte slot)
+    {
+        if (subCommand == ViscaConstants.MemorySubSet)
+        {
+            state.Presets[slot] = (state.Pan, state.Tilt, state.Zoom);
+            state.LastSavedPreset = slot;
+            log($"CMD: Preset SAVE slot={slot}");
+        }
+        else if (subCommand == ViscaConstants.MemorySubRecall)
+        {
+            if (state.Presets.TryGetValue(slot, out var position))
+            {
+                state.Pan = position.Pan;
+                state.Tilt = position.Tilt;
+                state.Zoom = position.Zoom;
+            }
+
+            state.LastRecalledPreset = slot;
+            state.StopMovement();
+            log($"CMD: Preset RECALL slot={slot}");
+        }
+
+        onStateChanged();
+
+        return Done();
+    }
+
+    private byte[] ProcessFocusVariable(byte argument)
+    {
+        var speed = (argument & ViscaConstants.SpeedMask) + 1;
+
+        if (argument == ViscaConstants.FocusStop)
+        {
+            state.FocusVelocity = 0;
+            log("CMD: Focus STOP");
+        }
+        else if (argument == ViscaConstants.FocusFarStandard || IsInVariableRange(argument, ViscaConstants.FocusFarVariable))
+        {
+            state.FocusVelocity = (sbyte)(argument == ViscaConstants.FocusFarStandard ? 1 : speed);
+            log($"CMD: Focus FAR arg=0x{argument:X2}");
+        }
+        else if (argument == ViscaConstants.FocusNearStandard || IsInVariableRange(argument, ViscaConstants.FocusNearVariable))
+        {
+            state.FocusVelocity = (sbyte)-(argument == ViscaConstants.FocusNearStandard ? 1 : speed);
+            log($"CMD: Focus NEAR arg=0x{argument:X2}");
+        }
+        else
+        {
+            return SyntaxError();
+        }
+
+        onStateChanged();
+
+        return Done();
+    }
+
+    private byte[] ProcessFocusMode(byte argument)
+    {
+        switch (argument)
+        {
+            case ViscaConstants.FocusModeAuto:
+                state.IsAutoFocus = true;
+                break;
+            case ViscaConstants.FocusModeManual:
+                state.IsAutoFocus = false;
+                break;
+            case ViscaConstants.FocusModeToggle:
+                state.IsAutoFocus = !state.IsAutoFocus;
+                break;
+            default:
+                return SyntaxError();
+        }
+
+        log($"CMD: Focus mode {(state.IsAutoFocus ? "AUTO" : "MANUAL")}");
+        onStateChanged();
+
+        return Done();
+    }
+
+    private byte[] ProcessIris(byte argument)
+    {
+        if (!IsIrisControllable())
+        {
+            log("CMD: Iris rejected (AE mode is not manual/iris priority)");
+
+            return CommandNotExecutable();
+        }
+
+        switch (argument)
+        {
+            case ViscaConstants.IrisReset:
+                state.Iris = ViscaConstants.DefaultIris;
+                break;
+            case ViscaConstants.IrisUp:
+                state.Iris = (byte)Math.Min(state.Iris + 1, ViscaConstants.MaxIris);
+                break;
+            case ViscaConstants.IrisDown:
+                state.Iris = (byte)Math.Max(state.Iris - 1, 0);
+                break;
+            default:
+                return SyntaxError();
+        }
+
+        log($"CMD: Iris 0x{argument:X2} → {state.Iris}");
+        onStateChanged();
+
+        return Done();
+    }
+
+    private byte[] ProcessIrisDirect(byte[] packet)
+    {
+        if (!IsIrisControllable())
+        {
+            log("CMD: Iris direct rejected (AE mode is not manual/iris priority)");
+
+            return CommandNotExecutable();
+        }
+
+        state.Iris = (byte)Math.Min((packet[6] << 4) | packet[7], ViscaConstants.MaxIris);
+        log($"CMD: Iris Direct pos={state.Iris}");
+        onStateChanged();
+
+        return Done();
+    }
+
+    private byte[] ProcessPanTiltCommand(byte[] packet, int length)
     {
         switch (packet[3])
         {
-            // Continuous pan/tilt
             case ViscaConstants.CmdContinuousPanTilt:
-                if (len < 8) return SyntaxError();
-                byte panSpeed = packet[4];
-                byte tiltSpeed = packet[5];
-                byte panDir = packet[6];
-                byte tiltDir = packet[7];
+                return length < ViscaConstants.DirectPacketLength ? SyntaxError() : ProcessContinuousPanTilt(packet);
 
-                int panSign = panDir switch
-                {
-                    ViscaConstants.DirectionNegative => -1,
-                    ViscaConstants.DirectionPositive => 1,
-                    ViscaConstants.DirectionStop => 0,
-                    _ => 0
-                };
-                // Tilt direction is inverted in VISCA protocol
-                int tiltSign = tiltDir switch
-                {
-                    ViscaConstants.DirectionNegative => 1,
-                    ViscaConstants.DirectionPositive => -1,
-                    ViscaConstants.DirectionStop => 0,
-                    _ => 0
-                };
-
-                _state.PanVelocity = (sbyte)(panSpeed * panSign);
-                _state.TiltVelocity = (sbyte)(tiltSpeed * tiltSign);
-                _log($"CMD: Pan/Tilt vel=({_state.PanVelocity},{_state.TiltVelocity})");
-                _onStateChanged();
-                return Done();
-
-            // Absolute position
             case ViscaConstants.CmdAbsolutePosition:
-                if (len < 14) return SyntaxError();
-                short absPan = DecodeInt16(packet, 6);
-                short absTilt = DecodeInt16(packet, 10);
-                absPan = Math.Clamp(absPan, ViscaConstants.MinPan, ViscaConstants.MaxPan);
-                absTilt = Math.Clamp(absTilt, ViscaConstants.MinTilt, ViscaConstants.MaxTilt);
-                _state.Pan = absPan;
-                _state.Tilt = absTilt;
-                _state.PanVelocity = 0;
-                _state.TiltVelocity = 0;
-                _log($"CMD: Absolute pos=({absPan},{absTilt})");
-                _onStateChanged();
+                if (length < ViscaConstants.PositionPacketLength)
+                {
+                    return SyntaxError();
+                }
+
+                state.Pan = Math.Clamp(DecodeInt16(packet, 6), ViscaConstants.MinPan, ViscaConstants.MaxPan);
+                state.Tilt = Math.Clamp(DecodeInt16(packet, 10), ViscaConstants.MinTilt, ViscaConstants.MaxTilt);
+                state.PanVelocity = 0;
+                state.TiltVelocity = 0;
+                log($"CMD: Absolute pos=({state.Pan},{state.Tilt})");
+                onStateChanged();
+
                 return Done();
 
-            // Relative position
             case ViscaConstants.CmdRelativePosition:
-                if (len < 14) return SyntaxError();
-                short relPan = DecodeInt16(packet, 6);
-                short relTilt = DecodeInt16(packet, 10);
-                _state.Pan = Math.Clamp((short)(_state.Pan + relPan), ViscaConstants.MinPan, ViscaConstants.MaxPan);
-                _state.Tilt = Math.Clamp((short)(_state.Tilt + relTilt), ViscaConstants.MinTilt, ViscaConstants.MaxTilt);
-                _state.PanVelocity = 0;
-                _state.TiltVelocity = 0;
-                _log($"CMD: Relative delta=({relPan},{relTilt}) → pos=({_state.Pan},{_state.Tilt})");
-                _onStateChanged();
+                if (length < ViscaConstants.PositionPacketLength)
+                {
+                    return SyntaxError();
+                }
+
+                var deltaPan = DecodeInt16(packet, 6);
+                var deltaTilt = DecodeInt16(packet, 10);
+
+                state.Pan = Math.Clamp((short)(state.Pan + deltaPan), ViscaConstants.MinPan, ViscaConstants.MaxPan);
+                state.Tilt = Math.Clamp((short)(state.Tilt + deltaTilt), ViscaConstants.MinTilt, ViscaConstants.MaxTilt);
+                state.PanVelocity = 0;
+                state.TiltVelocity = 0;
+                log($"CMD: Relative delta=({deltaPan},{deltaTilt}) → pos=({state.Pan},{state.Tilt})");
+                onStateChanged();
+
                 return Done();
 
-            // Home
             case ViscaConstants.CmdHome:
-                _state.Pan = 0;
-                _state.Tilt = 0;
-                _state.Zoom = 0;
-                _state.PanVelocity = 0;
-                _state.TiltVelocity = 0;
-                _state.ZoomVelocity = 0;
-                _log("CMD: HOME");
-                _onStateChanged();
+                state.ResetPosition();
+                log("CMD: HOME");
+                onStateChanged();
+
                 return Done();
 
             default:
-                _log($"CMD: Unknown pan/tilt cmd 0x{packet[3]:X2}");
+                log($"CMD: Unknown pan/tilt cmd 0x{packet[3]:X2}");
+
                 return CommandNotExecutable();
         }
     }
 
-    private byte[] ProcessInquiry(byte[] packet, int len)
+    private byte[] ProcessContinuousPanTilt(byte[] packet)
     {
-        if (len < 4) return SyntaxError();
+        var panSign = packet[6] switch
+        {
+            ViscaConstants.DirectionNegative => -1,
+            ViscaConstants.DirectionPositive => 1,
+            _ => 0
+        };
+
+        // Tilt direction is inverted in the VISCA protocol
+        var tiltSign = packet[7] switch
+        {
+            ViscaConstants.DirectionNegative => 1,
+            ViscaConstants.DirectionPositive => -1,
+            _ => 0
+        };
+
+        state.PanVelocity = (sbyte)(packet[4] * panSign);
+        state.TiltVelocity = (sbyte)(packet[5] * tiltSign);
+        log($"CMD: Pan/Tilt vel=({state.PanVelocity},{state.TiltVelocity})");
+        onStateChanged();
+
+        return Done();
+    }
+
+    private byte[] ProcessInquiry(byte[] packet, int length)
+    {
+        if (length < ViscaConstants.MinInquiryLength)
+        {
+            return SyntaxError();
+        }
 
         return (packet[2], packet[3]) switch
         {
-            // Power status
             (ViscaConstants.CategoryCamera, ViscaConstants.CmdPower) =>
-                QueryResponse(_state.IsPoweredOn ? (byte)0x02 : (byte)0x03),
-
-            // Zoom position
+                QueryResponse(state.IsPoweredOn ? ViscaConstants.PowerStatusOn : ViscaConstants.PowerStatusOff),
             (ViscaConstants.CategoryCamera, ViscaConstants.CmdZoomDirect) =>
-                QueryResponseInt16(_state.Zoom),
-
-            // Pan/Tilt position
+                QueryResponse(EncodeInt16(state.Zoom)),
             (ViscaConstants.CategoryPanTilt, ViscaConstants.InquiryPanTiltPosition) =>
-                QueryResponseInt16Int16(_state.Pan, _state.Tilt),
-
+                QueryResponse([.. EncodeInt16(state.Pan), .. EncodeInt16(state.Tilt)]),
             _ => CommandNotExecutable()
         };
     }
 
     private bool IsIrisControllable() =>
-        _state.ExposureMode is ViscaConstants.ExposureModeManual or ViscaConstants.ExposureModeIrisPriority;
-
-    // --- Response helpers ---
-
-    private static byte[] Done() => [0x90, 0x50, 0xFF];
-
-    private static byte[] SyntaxError() => [0x90, 0x60, 0x02, 0xFF];
-
-    private static byte[] CommandNotExecutable() => [0x90, 0x60, 0x41, 0xFF];
-
-    private static byte[] QueryResponse(params byte[] data)
-    {
-        var result = new byte[2 + data.Length + 1];
-        result[0] = 0x90;
-        result[1] = 0x50;
-        Array.Copy(data, 0, result, 2, data.Length);
-        result[^1] = 0xFF;
-        return result;
-    }
-
-    private static byte[] QueryResponseInt16(short value)
-    {
-        var nibbles = EncodeInt16(value);
-        return QueryResponse(nibbles);
-    }
-
-    private static byte[] QueryResponseInt16Int16(short v1, short v2)
-    {
-        var n1 = EncodeInt16(v1);
-        var n2 = EncodeInt16(v2);
-        var data = new byte[8];
-        Array.Copy(n1, 0, data, 0, 4);
-        Array.Copy(n2, 0, data, 4, 4);
-        return QueryResponse(data);
-    }
-
-    private static short DecodeInt16(byte[] data, int offset)
-    {
-        return (short)(
-            (data[offset] << 12) |
-            (data[offset + 1] << 8) |
-            (data[offset + 2] << 4) |
-            data[offset + 3]);
-    }
-
-    private static byte[] EncodeInt16(short value)
-    {
-        return
-        [
-            (byte)((value >> 12) & 0x0F),
-            (byte)((value >> 8) & 0x0F),
-            (byte)((value >> 4) & 0x0F),
-            (byte)(value & 0x0F)
-        ];
-    }
+        state.ExposureMode is ViscaConstants.ExposureModeManual or ViscaConstants.ExposureModeIrisPriority;
 }
