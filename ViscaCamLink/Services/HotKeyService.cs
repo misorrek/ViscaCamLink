@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 using ViscaCamLink.Infrastructure.HotKeys;
 using ViscaCamLink.Repositories.HotKeys;
+using ViscaCamLink.Resources;
 
 public sealed partial class HotKeyService(
     IHotKeyManager hotKeyManager,
@@ -68,7 +69,10 @@ public sealed partial class HotKeyService(
 
         if (duplicateAction is not null)
         {
-            return HotKeyBindingValidationResult.Invalid($"{HotKeyDefinitions.GetDisplayName(duplicateAction.Key)} is listed more than once.");
+            return HotKeyBindingValidationResult.Invalid(Strings.HotKey_DuplicateAction.Replace(
+                "{0}",
+                HotKeyDefinitions.GetDisplayName(duplicateAction.Key),
+                StringComparison.Ordinal));
         }
 
         var duplicateGesture = bindingList
@@ -78,7 +82,10 @@ public sealed partial class HotKeyService(
 
         if (duplicateGesture is not null)
         {
-            return HotKeyBindingValidationResult.Invalid($"{FormatGesture(duplicateGesture.Key.Modifier, duplicateGesture.Key.Key)} is assigned more than once.");
+            return HotKeyBindingValidationResult.Invalid(Strings.HotKey_DuplicateGesture.Replace(
+                "{0}",
+                FormatGesture(duplicateGesture.Key.Modifier, duplicateGesture.Key.Key),
+                StringComparison.Ordinal));
         }
 
         return HotKeyBindingValidationResult.Valid();

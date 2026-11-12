@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
@@ -23,7 +24,7 @@ using ViscaCamLink.Visca.Types;
 
 using Xunit;
 
-public sealed class PresetsViewModelTests
+public sealed class PresetsViewModelTests : IDisposable
 {
     private static readonly Guid DefaultGroupId = Guid.NewGuid();
     private static readonly Guid SecondGroupId = Guid.NewGuid();
@@ -35,6 +36,7 @@ public sealed class PresetsViewModelTests
     private readonly Mock<IPowerService> _powerService = new();
     private readonly Mock<IUiDispatcher> _uiDispatcher = new();
     private readonly Mock<IDialogService> _dialogService = new();
+    private readonly FakeTimeProvider _timeProvider = new();
     private readonly PresetsViewModel _viewModel;
 
     private List<PresetMetadata> _presets;
@@ -53,6 +55,8 @@ public sealed class PresetsViewModelTests
         _presetService.Setup(p => p.Groups).Returns(() => _groups);
         _presetService.Setup(p => p.ActiveGroupId).Returns(DefaultGroupId);
         _presetService.Setup(p => p.CanAddGroup).Returns(true);
+        _presetService.Setup(p => p.SetMemoryAsync(It.IsAny<byte>())).Returns(Task.CompletedTask);
+        _presetService.Setup(p => p.RecallMemoryAsync(It.IsAny<byte>())).Returns(Task.CompletedTask);
         _settings.SetupProperty(s => s.UseNumpadLayout, true);
         _settings.SetupProperty(s => s.UsePresetGroups, true);
         _settings.Setup(s => s.ActiveCameraProfile).Returns(new CameraProfile());
@@ -143,6 +147,44 @@ public sealed class PresetsViewModelTests
 
         _presetService.Verify(p => p.SetMemoryAsync(5), Times.Once);
         _viewModel.IsSettingMemory.ShouldBeFalse();
+        _viewModel.MemoryInfo.ShouldBe(Strings.Common_Saved);
+    }
+
+    [Fact]
+    public void MemoryCommand_WhenSavingFails_ShowsLocalizedFailure()
+    {
+        _presetService
+            .Setup(p => p.SetMemoryAsync(It.IsAny<byte>()))
+            .Returns(Task.FromException(new InvalidOperationException("camera unavailable")));
+        BeginMemorySave();
+
+        _viewModel.MemoryCommand.Execute(5);
+
+        _viewModel.MemoryInfo.ShouldBe(Strings.Presets_SaveFailed);
+        _viewModel.IsSettingMemory.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task MemoryInfoTimer_WhenMessageIsReplaced_DoesNotClearNewerMessage()
+    {
+        _presetService
+            .SetupSequence(p => p.SetMemoryAsync(It.IsAny<byte>()))
+            .Returns(Task.CompletedTask)
+            .Returns(Task.FromException(new InvalidOperationException("camera unavailable")));
+        BeginMemorySave();
+        _viewModel.MemoryCommand.Execute(5);
+        _timeProvider.Advance(TimeSpan.FromSeconds(1.5));
+
+        BeginMemorySave();
+        _viewModel.MemoryCommand.Execute(5);
+        _timeProvider.Advance(TimeSpan.FromMilliseconds(500));
+        await Task.Delay(20, TestContext.Current.CancellationToken);
+
+        _viewModel.MemoryInfo.ShouldBe(Strings.Presets_SaveFailed);
+
+        _timeProvider.Advance(TimeSpan.FromSeconds(1.5));
+        await Task.Delay(20, TestContext.Current.CancellationToken);
+
         _viewModel.MemoryInfo.ShouldBeEmpty();
     }
 
@@ -218,13 +260,24 @@ public sealed class PresetsViewModelTests
     [Fact]
     public void GroupAddCommand_Success()
     {
+        var newGroupId = Guid.NewGuid();
+
+        _presetService
+            .Setup(p => p.AddGroup(It.IsAny<string>()))
+            .Callback<string>(name => _groups.Add(new PresetGroup
+            {
+                Id = newGroupId,
+                Name = name,
+                Presets = CreatePresets(20, 10),
+            }));
+
         _viewModel.GroupAddCommand.Execute(null);
 
         _presetService.Verify(p => p.AddGroup(string.Format(
             CultureInfo.CurrentCulture,
             CompositeFormat.Parse(Strings.PresetGroup_NewName),
             3)), Times.Once);
-        _presetService.Verify(p => p.SwitchGroup(SecondGroupId), Times.Once);
+        _presetService.Verify(p => p.SwitchGroup(newGroupId), Times.Once);
     }
 
     [Fact]
@@ -237,6 +290,7 @@ public sealed class PresetsViewModelTests
         _viewModel.CanAddGroup.ShouldBeFalse();
         _viewModel.GroupAddCommand.CanExecute(null).ShouldBeFalse();
         _presetService.Verify(p => p.AddGroup(It.IsAny<string>()), Times.Never);
+        _presetService.Verify(p => p.SwitchGroup(It.IsAny<Guid>()), Times.Never);
     }
 
     [Fact]
@@ -413,8 +467,20 @@ public sealed class PresetsViewModelTests
             _hotKeyService.Object,
             _dialogService.Object,
             connection,
-            NullLogger<PresetsViewModel>.Instance);
+            NullLogger<PresetsViewModel>.Instance,
+            _timeProvider);
     }
+
+    private void BeginMemorySave()
+    {
+        _connectionService.Raise(
+            service => service.ConnectionStatusChanged += null,
+            _connectionService.Object,
+            ConnectionStatus.Ok);
+        _viewModel.MemorySetCommand.Execute(null);
+    }
+
+    public void Dispose() => _viewModel.Dispose();
 
     private static List<PresetMetadata> CreatePresets(int startSlot, int count)
     {

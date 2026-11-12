@@ -210,6 +210,12 @@
   <data name="HotKey_PressKey" xml:space="preserve">
     <value>Taste drücken…</value>
   </data>
+  <data name="HotKey_DuplicateAction" xml:space="preserve">
+    <value>Die Aktion &quot;{0}&quot; ist mehrfach aufgeführt.</value>
+  </data>
+  <data name="HotKey_DuplicateGesture" xml:space="preserve">
+    <value>Die Tastenkombination &quot;{0}&quot; ist mehrfach zugewiesen.</value>
+  </data>
   <data name="PresetGroup_DefaultName" xml:space="preserve">
     <value>Standard</value>
   </data>
@@ -278,6 +284,9 @@
   </data>
   <data name="Presets_ChooseSlot" xml:space="preserve">
     <value>Wähle eine Position</value>
+  </data>
+  <data name="Presets_SaveFailed" xml:space="preserve">
+    <value>Die Voreinstellung konnte nicht auf der Kamera gespeichert werden.</value>
   </data>
   <data name="Presets_ContainerTitle" xml:space="preserve">
     <value>Voreinstellungen</value>

@@ -167,10 +167,8 @@ public class ConnectionViewModel : ViewModelBase
         }
     }
 
-    public void Initialize()
-    {
-        ExecuteReconnect();
-    }
+    public Task InitializeAsync() =>
+        RunSafeAsync(() => _connectionService.ReconnectAsync(), _logger, nameof(InitializeAsync));
 
     public void OnLanguageChanged()
     {

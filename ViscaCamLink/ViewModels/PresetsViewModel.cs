@@ -20,8 +20,9 @@ using ViscaCamLink.Resources;
 using ViscaCamLink.Services;
 using ViscaCamLink.Visca.Types;
 
-public class PresetsViewModel : ViewModelBase
+public class PresetsViewModel : ViewModelBase, IDisposable
 {
+    private static readonly TimeSpan MemoryInfoDuration = TimeSpan.FromSeconds(2);
 
     // Grid cell order (left to right, top to bottom) mapped to preset indexes 1-9.
     private static readonly int[] NumpadLayoutPositions = [7, 8, 9, 4, 5, 6, 1, 2, 3];
@@ -33,6 +34,7 @@ public class PresetsViewModel : ViewModelBase
     private readonly IDialogService _dialogService;
     private readonly ConnectionViewModel _connection;
     private readonly ILogger<PresetsViewModel> _logger;
+    private readonly TimeProvider _timeProvider;
     private readonly Command _groupAddCommand;
 
     private bool _isSettingMemory;
@@ -46,6 +48,8 @@ public class PresetsViewModel : ViewModelBase
     private int _lastRecalledPresetSlot = -1;
     private PresetIndicatorState _presetIndicatorState = PresetIndicatorState.None;
     private readonly Command _memorySetCommand;
+    private CancellationTokenSource? _memoryInfoCancellation;
+    private int _memoryInfoVersion;
 
     public PresetsViewModel(
         IPresetService presetService,
@@ -53,7 +57,8 @@ public class PresetsViewModel : ViewModelBase
         IHotKeyService hotKeyService,
         IDialogService dialogService,
         ConnectionViewModel connection,
-        ILogger<PresetsViewModel> logger)
+        ILogger<PresetsViewModel> logger,
+        TimeProvider timeProvider)
     {
         _presetService = presetService;
         _settings = settings;
@@ -61,6 +66,7 @@ public class PresetsViewModel : ViewModelBase
         _dialogService = dialogService;
         _connection = connection;
         _logger = logger;
+        _timeProvider = timeProvider;
 
         _useNumpadLayout = _settings.UseNumpadLayout;
         _usePresetGroups = _settings.UsePresetGroups;
@@ -264,6 +270,7 @@ public class PresetsViewModel : ViewModelBase
     {
         if (IsSettingMemory)
         {
+            CancelMemoryInfoTimer();
             MemoryInfo = Strings.Presets_ChooseSlot;
         }
     }
@@ -273,6 +280,7 @@ public class PresetsViewModel : ViewModelBase
         if (IsSettingMemory)
         {
             IsSettingMemory = false;
+            CancelMemoryInfoTimer();
             MemoryInfo = string.Empty;
         }
 
@@ -305,6 +313,7 @@ public class PresetsViewModel : ViewModelBase
             if (_connection.ConnectionStatus != ConnectionStatus.Ok && IsSettingMemory)
             {
                 IsSettingMemory = false;
+                CancelMemoryInfoTimer();
                 MemoryInfo = string.Empty;
             }
 
@@ -385,12 +394,23 @@ public class PresetsViewModel : ViewModelBase
 
     private void ExecuteGroupAdd()
     {
+        if (!_presetService.CanAddGroup)
+        {
+            return;
+        }
+
+        var groupCount = _presetService.Groups.Count;
         var groupNumber = _presetService.Groups.Count + 1;
 
         _presetService.AddGroup(string.Format(
             CultureInfo.CurrentCulture,
             CompositeFormat.Parse(Strings.PresetGroup_NewName),
             groupNumber));
+
+        if (_presetService.Groups.Count <= groupCount)
+        {
+            return;
+        }
 
         var newGroup = _presetService.Groups[^1];
 
@@ -472,6 +492,7 @@ public class PresetsViewModel : ViewModelBase
 
     private void ExecuteMemorySet()
     {
+        CancelMemoryInfoTimer();
         IsSettingMemory = !IsSettingMemory;
         MemoryInfo = IsSettingMemory ? Strings.Presets_ChooseSlot : string.Empty;
     }
@@ -579,10 +600,10 @@ public class PresetsViewModel : ViewModelBase
     {
         if (IsSettingMemory)
         {
-            await TryCameraOperation(_presetService.SetMemoryAsync(slot));
+            var succeeded = await TryCameraOperation(_presetService.SetMemoryAsync(slot));
 
             IsSettingMemory = false;
-            MemoryInfo = string.Empty;
+            await ShowMemoryInfoAsync(succeeded ? Strings.Common_Saved : Strings.Presets_SaveFailed);
         }
         else
         {
@@ -592,5 +613,54 @@ public class PresetsViewModel : ViewModelBase
 
             await TryCameraOperation(_presetService.RecallMemoryAsync(slot));
         }
+    }
+
+    public void Dispose()
+    {
+        CancelMemoryInfoTimer();
+        _presetService.PresetsChanged -= OnPresetsChanged;
+        _presetService.GroupsChanged -= OnGroupsChanged;
+        _connection.PropertyChanged -= OnConnectionPropertyChanged;
+        GC.SuppressFinalize(this);
+    }
+
+    private async Task ShowMemoryInfoAsync(string message)
+    {
+        var version = Interlocked.Increment(ref _memoryInfoVersion);
+        var cancellation = new CancellationTokenSource();
+        var previousCancellation = Interlocked.Exchange(ref _memoryInfoCancellation, cancellation);
+        previousCancellation?.Cancel();
+        previousCancellation?.Dispose();
+
+        MemoryInfo = message;
+
+        try
+        {
+            await Task.Delay(MemoryInfoDuration, _timeProvider, cancellation.Token);
+
+            if (version == Volatile.Read(ref _memoryInfoVersion))
+            {
+                MemoryInfo = string.Empty;
+            }
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            if (Interlocked.CompareExchange(ref _memoryInfoCancellation, null, cancellation) == cancellation)
+            {
+                cancellation.Dispose();
+            }
+        }
+    }
+
+    private void CancelMemoryInfoTimer()
+    {
+        Interlocked.Increment(ref _memoryInfoVersion);
+
+        var cancellation = Interlocked.Exchange(ref _memoryInfoCancellation, null);
+        cancellation?.Cancel();
+        cancellation?.Dispose();
     }
 }

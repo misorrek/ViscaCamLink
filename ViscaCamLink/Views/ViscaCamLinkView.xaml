@@ -17,7 +17,6 @@
         MaxWidth="500"
         SizeToContent="Height"
         ResizeMode="CanResize"
-        LayoutUpdated="Window_LayoutUpdated"
         Deactivated="Window_Deactivated"
         Activated="Window_Activated"
         Background="{DynamicResource SurfaceBrush}"

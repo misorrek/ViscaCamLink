@@ -1,6 +1,7 @@
 namespace ViscaCamLink.ViewModels;
 
 using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 using ViscaCamLink.Infrastructure.Abstractions;
@@ -47,8 +48,6 @@ public class ViscaCamLinkViewModel : ViewModelBase
         SidebarCommand = new Command(ExecuteSidebar);
         UpdateCommand = new Command(OpenUpdateDialog);
         OptionsCommand = new Command(OpenOptions);
-
-        Connection.Initialize();
     }
 
     public event Action? UpdateAvailable;
@@ -74,6 +73,8 @@ public class ViscaCamLinkViewModel : ViewModelBase
         Movement.StopPanTiltCommand.Execute(null);
         Zoom.StopZoomCommand.Execute(null);
     }
+
+    public Task InitializeAsync() => Connection.InitializeAsync();
 
     public bool ConnectionContainerVisible
     {

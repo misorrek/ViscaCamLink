@@ -90,6 +90,7 @@ public partial class App : Application, IDisposable
 
         MainWindow = viscaCamLinkView;
         viscaCamLinkView.Show();
+        _ = viscaCamLinkViewModel.InitializeAsync();
 
         if (_activateWhenReady)
         {

@@ -87,11 +87,6 @@ public partial class ViscaCamLinkView : Window
         _settingsService.Save();
     }
 
-    private void Window_LayoutUpdated(object sender, EventArgs eventArgs)
-    {
-        SizeToContent = SizeToContent.Height;
-    }
-
     private void Window_Deactivated(object sender, EventArgs eventArgs)
     {
         if (DataContext is ViscaCamLinkViewModel viewModel)

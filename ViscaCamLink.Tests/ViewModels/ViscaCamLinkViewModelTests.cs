@@ -20,7 +20,7 @@ using ViscaCamLink.ViewModels;
 
 using Xunit;
 
-public sealed class ViscaCamLinkViewModelTests
+public sealed class ViscaCamLinkViewModelTests : IDisposable
 {
     private static readonly Guid DefaultGroupId = Guid.NewGuid();
 
@@ -55,6 +55,7 @@ public sealed class ViscaCamLinkViewModelTests
         _settings.Setup(s => s.ActiveCameraProfile).Returns(new CameraProfile());
         _movementService.Setup(m => m.MaxPanTiltSpeed).Returns(24);
         _movementService.Setup(m => m.MaxZoomSpeed).Returns(7);
+        _connectionService.Setup(service => service.ReconnectAsync()).Returns(Task.CompletedTask);
         _presetService.Setup(p => p.Presets).Returns(CreatePresets());
         _presetService.Setup(p => p.Groups).Returns([new PresetGroup { Id = DefaultGroupId, Name = "Default", Presets = CreatePresets() }]);
         _presetService.Setup(p => p.ActiveGroupId).Returns(DefaultGroupId);
@@ -83,7 +84,8 @@ public sealed class ViscaCamLinkViewModelTests
             _hotKeyService.Object,
             _dialogService.Object,
             _connection,
-            NullLogger<PresetsViewModel>.Instance);
+            NullLogger<PresetsViewModel>.Instance,
+            TimeProvider.System);
         _movement = new MovementViewModel(
             _movementService.Object,
             _settings.Object,
@@ -104,14 +106,29 @@ public sealed class ViscaCamLinkViewModelTests
             _uiDispatcher.Object);
     }
 
+    public void Dispose()
+    {
+        _presets.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
     [Fact]
     public void Constructor_Success()
     {
+        _connectionService.Verify(service => service.ReconnectAsync(), Times.Never);
         _viewModel.Connection.ShouldBeSameAs(_connection);
         _viewModel.Presets.ShouldBeSameAs(_presets);
         _viewModel.Movement.ShouldBeSameAs(_movement);
         _viewModel.Zoom.ShouldBeSameAs(_zoom);
         _viewModel.Hints.ShouldBeSameAs(_hints);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_StartsConnection()
+    {
+        await _viewModel.InitializeAsync();
+
+        _connectionService.Verify(service => service.ReconnectAsync(), Times.Once);
     }
 
     [Fact]

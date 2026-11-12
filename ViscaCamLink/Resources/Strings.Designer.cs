@@ -329,7 +329,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("Connection_Reconnect", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Failed to connect ähnelt.
         /// </summary>
@@ -383,7 +383,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("Control_Home", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Increase move speed ähnelt.
         /// </summary>
@@ -392,7 +392,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("Control_IncreaseSpeed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Click and drag to pan/tilt ähnelt.
         /// </summary>
@@ -401,7 +401,7 @@ namespace ViscaCamLink.Resources {
                 return ResourceManager.GetString("Control_MousePan", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dismiss tip ähnelt.
         /// </summary>
@@ -435,6 +435,24 @@ namespace ViscaCamLink.Resources {
         public static string HotKey_PressKey {
             get {
                 return ResourceManager.GetString("HotKey_PressKey", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge für doppelte Aktionen.
+        /// </summary>
+        public static string HotKey_DuplicateAction {
+            get {
+                return ResourceManager.GetString("HotKey_DuplicateAction", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge für doppelte Tastenkombinationen.
+        /// </summary>
+        public static string HotKey_DuplicateGesture {
+            get {
+                return ResourceManager.GetString("HotKey_DuplicateGesture", resourceCulture);
             }
         }
         
@@ -896,6 +914,15 @@ namespace ViscaCamLink.Resources {
         public static string Presets_ChooseSlot {
             get {
                 return ResourceManager.GetString("Presets_ChooseSlot", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge für einen fehlgeschlagenen Speichervorgang.
+        /// </summary>
+        public static string Presets_SaveFailed {
+            get {
+                return ResourceManager.GetString("Presets_SaveFailed", resourceCulture);
             }
         }
         

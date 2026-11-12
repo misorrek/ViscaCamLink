@@ -18,9 +18,7 @@ public sealed class ViewModelBaseTests
     [Fact]
     public async Task TryCameraOperation_Success()
     {
-        static Task act() => TestViewModel.RunOperation(Task.CompletedTask);
-
-        await Should.NotThrowAsync(act);
+        (await TestViewModel.RunOperation(Task.CompletedTask)).ShouldBeTrue();
     }
 
     [Fact]
@@ -28,9 +26,7 @@ public sealed class ViewModelBaseTests
     {
         var faultedOperation = Task.FromException(new InvalidOperationException("camera error"));
 
-        Task act() => TestViewModel.RunOperation(faultedOperation);
-
-        await Should.NotThrowAsync(act);
+        (await TestViewModel.RunOperation(faultedOperation)).ShouldBeFalse();
     }
 
     [Fact]
@@ -73,7 +69,7 @@ public sealed class ViewModelBaseTests
 
     private sealed class TestViewModel : ViewModelBase
     {
-        public static Task RunOperation(Task operation) => TryCameraOperation(operation);
+        public static Task<bool> RunOperation(Task operation) => TryCameraOperation(operation);
 
         public static Task RunSafeOperation(Func<Task> operation, ILogger logger, string operationName) =>
             RunSafeAsync(operation, logger, operationName);
