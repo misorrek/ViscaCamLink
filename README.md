@@ -2,16 +2,15 @@
 
 ViscaCamLink is a camera controller for [PTZ cameras](https://en.wikipedia.org/wiki/Pan%E2%80%93tilt%E2%80%93zoom_camera) that can be reached via a network connection using the VISCA protocol (VISCA over IP).
 
-🇩🇪 | 🇦🇹 | 🇨🇭 – [In Deutsch lesen](README-de.md)
+🇩🇪 – [In Deutsch lesen](README-de.md)
 
 ## Features
 
 ### Presets
 
 * Save and recall camera positions (including zoom) as presets
-* Numpad layout (default) or standard layout, selectable in Options
-* Optional preset groups of 10 presets each, up to 255 camera slots (0–254)
-* Rename a preset or a group by double-clicking its name (Enter confirms, Escape cancels)
+* Optional preset groups of 10 presets each, up to 255 camera slots
+* Rename a preset or a group by double-clicking its name
 
 <br/>
 <img src="Assets/presets.png" alt="Picture of the preset panel" width="250" style="margin-left: 40px;"/>
@@ -37,10 +36,9 @@ ViscaCamLink is a camera controller for [PTZ cameras](https://en.wikipedia.org/w
 
 ### Hotkeys
 
-* All hotkeys can be customized in Options → Hotkeys: click an action and press the new key (Escape cancels)
+* All hotkeys can be customized in Options → Hotkeys
 * Available actions: presets 0–9 of the active group, move up/down/left/right, zoom in/out, previous/next camera profile, previous/next preset group
 * By default, presets 0–9 are assigned to the numpad keys 0–9
-* Conflicting assignments are detected and shown
 * A global hotkeys switch decides whether hotkeys also work while the app is not focused
 
 <!-- TODO screenshot: Options dialog, Hotkeys section (e.g. Assets/options.png) -->
@@ -48,7 +46,7 @@ ViscaCamLink is a camera controller for [PTZ cameras](https://en.wikipedia.org/w
 ### Camera profiles
 
 * Store several cameras (name, IP address, port) as profiles and switch between them in the main window
-* Manage the profiles in the camera profile dialog (add, edit, delete)
+* Manage the profiles in the camera profile dialog
 
 <!-- TODO screenshot: camera profile dialog (e.g. Assets/camera-profiles.png) -->
 
@@ -57,13 +55,6 @@ ViscaCamLink is a camera controller for [PTZ cameras](https://en.wikipedia.org/w
 * With "Use compact view when minimizing" enabled in Options, minimizing the app opens a small window with presets, movement and zoom in tabs
 
 <!-- TODO screenshot: compact window (e.g. Assets/compact.png) -->
-
-### Themes and languages
-
-* Light, dark or system theme; with "System based", the app follows the Windows app mode live
-* Interface available in English and German
-* Full Windows scaling support
-* Layout and settings are saved per user
 
 ### Automatic updates
 
@@ -80,7 +71,7 @@ Coming from version 0.3.0? Your camera settings are imported automatically on th
 
 After the first start, the IP address of the camera and the port for the VISCA protocol (if different from the default) must be typed in. (How to get this information is described in the user manual of the camera.)
 
-After that, the connection can be established using the corresponding button in the address bar. Whether this was successful is shown in the status display below. It also shows if the camera is switched on or is in standby mode. The connection is checked regularly: if the camera becomes unreachable, the status shows it and recovers automatically once the camera is back.
+After that, the connection can be established using the corresponding button in the address bar. Whether this was successful is shown in the status display below. It also shows if the camera is switched on or is in standby mode.
 
 <br/>
 <img src="Assets/connection.png" alt="Picture of the connection panel" width="250"/>
