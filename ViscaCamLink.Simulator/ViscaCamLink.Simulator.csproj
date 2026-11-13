@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Page Include="..\ViscaCamLink\Resources\DarkTheme.xaml" Link="Resources\DarkTheme.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
 
