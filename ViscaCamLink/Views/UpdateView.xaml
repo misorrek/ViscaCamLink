@@ -79,7 +79,8 @@
                 <wv2:WebView2 x:Name="ChangelogWebView"
                               Source="{Binding ChangelogUrl}"
                               CoreWebView2InitializationCompleted="ChangelogWebView_CoreWebView2InitializationCompleted"
-                              NavigationStarting="ChangelogWebView_NavigationStarting" />
+                              NavigationStarting="ChangelogWebView_NavigationStarting"
+                              NavigationCompleted="ChangelogWebView_NavigationCompleted" />
                 <TextBlock x:Name="ChangelogFallback"
                            Visibility="Collapsed"
                            HorizontalAlignment="Center"

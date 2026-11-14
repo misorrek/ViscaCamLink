@@ -18,7 +18,9 @@
     The release channel (default: "win").
 
 .PARAMETER ReleaseNotes
-    Path to a markdown file passed to vpk pack --releaseNotes (shown in the update dialog).
+    Path to the English markdown file passed to vpk pack --releaseNotes (used as the GitHub release body).
+    Keep the corresponding German file at Docs\RELEASE-NOTES-<version>-de.md and link to it from
+    the English notes using its GitHub URL at the release tag. The update dialog uses these tagged files.
 
 .PARAMETER SkipTests
     Skip running the unit tests before publishing.

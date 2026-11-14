@@ -74,6 +74,7 @@ jobs:
             --channel win `
             --tag "v$version" `
             --releaseName "ViscaCamLink $version" `
+            --targetCommitish "$env:GITHUB_SHA" `
             --publish
 
       # Code signing is out of scope for this release.

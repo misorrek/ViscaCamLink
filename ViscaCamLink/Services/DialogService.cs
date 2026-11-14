@@ -3,6 +3,7 @@ namespace ViscaCamLink.Services;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -51,7 +52,12 @@ public class DialogService(
     public void ShowUpdateDialog(UpdateInfo updateInfo)
     {
         var view = new UpdateView();
-        var viewModel = new UpdateViewModel(updateInfo, updateService.InstalledVersion, view.Close, ShowUpdateDownloadDialog);
+        var viewModel = new UpdateViewModel(
+            updateInfo,
+            updateService.InstalledVersion,
+            view.Close,
+            ShowUpdateDownloadDialog,
+            Strings.Culture ?? CultureInfo.CurrentUICulture);
 
         view.DataContext = viewModel;
         view.ShowDialog();

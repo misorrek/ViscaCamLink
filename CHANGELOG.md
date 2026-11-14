@@ -7,6 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-11-11
 
-See the [1.0.0 release notes](Docs/RELEASE-NOTES-1.0.0.md).
+See the 1.0.0 release notes in [English](Docs/RELEASE-NOTES-1.0.0.md) or [German](Docs/RELEASE-NOTES-1.0.0-de.md).
 
 [1.0.0]: Docs/RELEASE-NOTES-1.0.0.md

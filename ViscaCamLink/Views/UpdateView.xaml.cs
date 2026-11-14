@@ -9,11 +9,14 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 
 using ViscaCamLink.Infrastructure;
+using ViscaCamLink.ViewModels;
 
 using WpfAnimatedGif;
 
 public partial class UpdateView : Window
 {
+    private ulong? _changelogNavigationId;
+
     public UpdateView()
     {
         InitializeComponent();
@@ -50,6 +53,12 @@ public partial class UpdateView : Window
 
     private void ChangelogWebView_NavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs eventArgs)
     {
+        if (DataContext is UpdateViewModel viewModel && viewModel.IsChangelogUrl(eventArgs.Uri))
+        {
+            _changelogNavigationId = eventArgs.NavigationId;
+            return;
+        }
+
         if (IsReleasePage(eventArgs.Uri))
         {
             return;
@@ -59,11 +68,27 @@ public partial class UpdateView : Window
         OpenExternalUrl(eventArgs.Uri);
     }
 
+    private void ChangelogWebView_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs eventArgs)
+    {
+        if (_changelogNavigationId == eventArgs.NavigationId && eventArgs.HttpStatusCode == 404
+            && DataContext is UpdateViewModel viewModel)
+        {
+            _changelogNavigationId = null;
+            var previousUrl = viewModel.ChangelogUrl;
+            viewModel.ShowReleasePage();
+            if (previousUrl == viewModel.ChangelogUrl)
+            {
+                ChangelogWebView.CoreWebView2.Navigate(viewModel.ChangelogUrl);
+            }
+        }
+    }
+
     private void ChangelogWebView_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs eventArgs)
     {
         eventArgs.Handled = true;
 
-        if (IsReleasePage(eventArgs.Uri))
+        if (IsReleasePage(eventArgs.Uri)
+            || (DataContext is UpdateViewModel viewModel && viewModel.IsChangelogUrl(eventArgs.Uri)))
         {
             ChangelogWebView.CoreWebView2.Navigate(eventArgs.Uri);
             return;
